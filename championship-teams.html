@@ -1,0 +1,2451 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Equipos del Campeonato | Liga Barrial</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/global-swal-patch.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="icon" href="img/logo.png" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/global-theme.css" />
+    <link rel="stylesheet" href="css/championship-teams.css" />
+
+    <!-- ExcelJS y FileSaver para reportes con imágenes -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+    <!-- PDF.js & Tesseract.js for dynamic client-side OCR data extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  </head>
+  <body>
+    <!-- Main Background -->
+    <div class="main-bg"></div>
+
+    <!-- Toast de nuevos jugadores -->
+    <div id="newPlayersToast" class="glass-toast">
+      <button
+        class="toast-close"
+        onclick="document.getElementById('newPlayersToast').style.display = 'none'"
+      >
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="toast-title">
+        <i class="fas fa-bell me-2 brand-accent"></i>Registros Nuevos
+      </div>
+      <div id="newPlayersToastBody"></div>
+    </div>
+
+    <!-- Botón flotante de jugadores nuevos -->
+    <button id="newPlayersFloatingBtn" class="floating-btn-premium" onclick="showNewPlayersModal()">
+      <i class="fas fa-users"></i>
+      <span class="badge-count">0</span>
+    </button>
+
+    <!-- Botón flotante de calificaciones -->
+    <button id="qualificationsFloatingBtn" class="floating-btn-premium" style="bottom: 140px; display: none;" onclick="showQualifications()">
+      <i class="fas fa-folder-open"></i>
+      <span class="badge-count" id="qualificationsBadgeCount" style="display: none;">0</span>
+    </button>
+
+    <!-- Navigation -->
+    <nav class="nav-premium shadow-sm">
+      <div class="nav-content">
+        <a href="dashboard.html" class="nav-logo">
+          <img src="img/logo.png" alt="Logo" />
+          <span>LDBAA <span class="brand-accent">ARGELIA ALTA</span></span>
+        </a>
+        <div class="nav-links d-none d-md-flex">
+          <a href="dashboard.html"><i class="fas fa-home me-2"></i>Dashboard</a>
+          <a href="#" class="active"><i class="fas fa-id-card me-2"></i>Equipos</a>
+        </div>
+        <button class="btn-logout-premium" onclick="logout()">
+          <i class="fas fa-sign-out-alt me-2"></i><span>Salir</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="container py-4">
+      <div class="d-flex align-items-center mb-5">
+        <a href="dashboard.html" class="btn-secondary-glass me-4" style="border-radius: 50%; width: 50px; height: 50px; padding: 0;">
+          <i class="fas fa-arrow-left"></i>
+        </a>
+        <div>
+          <h2 class="section-title mb-0" id="championshipTitle" style="text-align: left;">EQUIPOS DEL CAMPEONATO</h2>
+          <p class="text-white-50 mb-0" id="championshipDescription"></p>
+        </div>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+          <button class="btn-secondary-glass px-3" onclick="exportarJugadoresCampeonatoExcel()">
+            <i class="fas fa-file-excel me-2"></i>Reporte
+          </button>
+          <button class="btn-secondary-glass px-3" data-bs-toggle="modal" data-bs-target="#championshipDocumentsModal">
+            <i class="fas fa-file-pdf me-2"></i>Formatos de Documentos
+          </button>
+          <button class="btn-premium px-3" data-bs-toggle="modal" data-bs-target="#addTeamModal">
+            <i class="fas fa-plus-circle me-2"></i>Agregar Equipo
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter Section -->
+      <div class="filter-grid mb-5">
+        <div class="input-group-premium">
+          <i class="fas fa-search"></i>
+          <input type="text" id="teamSearchInput" class="search-input" placeholder="Buscar equipo por nombre..." oninput="filterTeamsLocal()">
+        </div>
+        
+        <select id="teamCategoryFilter" class="select-premium" onchange="filterTeamsLocal()">
+          <option value="">TODAS LAS CATEGORÍAS</option>
+          <option value="MÁXIMA">MÁXIMA</option>
+          <option value="PRIMERA">PRIMERA</option>
+          <option value="FEMENINO">FEMENINO</option>
+        </select>
+      </div>
+
+      <!-- Contenedor de tarjetas -->
+      <div class="row" id="teamCardsContainer">
+        <!-- Se cargan dinámicamente -->
+      </div>
+    </div>
+
+    <!-- Modal para agregar equipo -->
+    <div class="modal fade" id="addTeamModal" tabindex="-1">
+      <div class="modal-dialog">
+        <div class="modal-content modal-premium">
+          <form id="teamForm">
+            <div class="modal-header">
+              <h5 class="modal-title">
+                <i class="fas fa-plus-circle me-2 brand-accent"></i>REGISTRAR EQUIPO
+              </h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+              <div class="mb-4">
+                <label for="teamLogo" class="form-label">LOGO DEL EQUIPO</label>
+                <input type="file" class="input-premium" id="teamLogo" accept="image/*" required />
+              </div>
+              <div class="mb-4">
+                <label for="teamName" class="form-label">NOMBRE DEL EQUIPO</label>
+                <input type="text" class="input-premium" id="teamName" placeholder="Ej: Águilas Negras" required />
+              </div>
+              <div class="mb-4">
+                <label for="teamCategory" class="form-label">CATEGORÍA</label>
+                <select class="select-premium" id="teamCategory" required>
+                  <option value="">Selecciona una categoría</option>
+                  <option value="MÁXIMA">MÁXIMA</option>
+                  <option value="PRIMERA">PRIMERA</option>
+                  <option value="FEMENINO">FEMENINO</option>
+                </select>
+              </div>
+              <div class="mb-4">
+                <label for="teamFoundationDate" class="form-label">FECHA DE FUNDACIÓN</label>
+                <input type="date" class="input-premium text-white" id="teamFoundationDate" style="background: rgba(255,255,255,0.05);" />
+              </div>
+              <div class="mb-4">
+                <label class="form-label">CORREO DE ACCESO (AUTO)</label>
+                <input type="text" class="input-premium" id="teamEmailPreview" readonly style="background: rgba(255,255,255,0.05); color: #2ecc71; font-weight: bold;" />
+              </div>
+              <div class="mb-4">
+                <label class="form-label">CONTRASEÑA (AUTO)</label>
+                <input type="text" class="input-premium" id="teamPasswordPreview" readonly style="background: rgba(255,255,255,0.05); color: #f1c40f; font-weight: bold;" />
+              </div>
+              <div class="mb-4">
+                <label class="form-label text-white-50">FORMATOS DE DOCUMENTOS A ENVIAR</label>
+                <div id="teamDocsChecklist" class="p-3 rounded-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); max-height: 200px; overflow-y: auto;">
+                  <!-- Checkboxes cargados dinámicamente -->
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer border-0">
+              <button type="submit" class="btn-premium w-100 justify-content-center py-3">
+                <i class="fas fa-save me-2"></i> GUARDAR EQUIPO
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para gestionar archivos -->
+    <div class="modal fade" id="manageFilesModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-premium">
+          <div class="modal-header">
+            <h5 class="modal-title" id="manageFilesModalLabel">
+              <i class="fas fa-folder-open me-2 brand-accent"></i>GESTIONAR ARCHIVOS
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="fileUploadForm">
+              <div class="mb-4">
+                <label for="fileType" class="form-label">TIPO DE DOCUMENTO</label>
+                <select class="select-premium" id="fileType" required>
+                  <option value="">Selecciona el tipo de documento</option>
+                  <option value="carta_pase">Carta de Pase</option>
+                  <option value="autorizacion">Autorización</option>
+                  <option value="otro">Otro Documento</option>
+                </select>
+              </div>
+              <div class="mb-4">
+                <label for="fileUpload" class="form-label">ARCHIVO PDF</label>
+                <input type="file" class="input-premium" id="fileUpload" accept=".pdf" required />
+              </div>
+              <button type="submit" class="btn-premium w-100 justify-content-center py-3">
+                <i class="fas fa-upload me-2"></i> SUBIR ARCHIVO
+              </button>
+            </form>
+
+            <hr class="my-4" />
+
+            <h6>Archivos Subidos</h6>
+            <div id="filesList" class="list-group">
+              <!-- Los archivos se cargarán dinámicamente aquí -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para gestionar formatos de documentos del campeonato -->
+    <div class="modal fade" id="championshipDocumentsModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-premium">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-file-pdf me-2 brand-accent"></i>FORMATOS DE DOCUMENTOS DEL CAMPEONATO
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form id="champDocUploadForm">
+              <div class="mb-4">
+                <label for="champDocName" class="form-label">NOMBRE DEL FORMATO</label>
+                <input type="text" class="input-premium" id="champDocName" placeholder="Ej: Ficha de Inscripción, Formato de Protesta" required />
+              </div>
+              <div class="mb-4">
+                <label for="champDocUpload" class="form-label">ARCHIVO PDF</label>
+                <input type="file" class="input-premium" id="champDocUpload" accept=".pdf" required />
+              </div>
+              <button type="submit" class="btn-premium w-100 justify-content-center py-3">
+                <i class="fas fa-upload me-2"></i> SUBIR FORMATO
+              </button>
+            </form>
+
+            <hr class="my-4" style="border-color: rgba(255,255,255,0.1);" />
+
+            <h6 class="text-white mb-3">Formatos Disponibles</h6>
+            <div id="champDocsList" class="list-group">
+              <!-- Los formatos se cargarán dinámicamente aquí -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para ver PDF -->
+    <div
+      class="modal fade"
+      id="viewPdfModal"
+      tabindex="-1"
+      aria-labelledby="viewPdfModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content" style="height: 90vh">
+          <div class="modal-header">
+            <h5 class="modal-title" id="viewPdfModalLabel">Ver Archivo PDF</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Cerrar"
+            ></button>
+          </div>
+          <div class="modal-body p-0" style="height: 80vh">
+            <iframe
+              id="pdfViewerFrame"
+              src=""
+              style="width: 100%; height: 100%"
+              frameborder="0"
+            ></iframe>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Comisión de Calificaciones (Documentación de Equipos) -->
+    <div class="modal fade" id="qualificationsModal">
+      <div class="modal-dialog modal-xl" style="max-width: 90%;">
+        <div class="modal-content modal-premium border-white border-opacity-10" style="background: rgba(15,15,15,0.95); backdrop-filter: blur(20px);">
+          <div class="modal-header border-bottom border-white border-opacity-10">
+            <h5 class="modal-title text-white fw-bold text-uppercase">
+              <i class="fas fa-folder-open me-2 text-info" style="filter: drop-shadow(0 0 8px rgba(0,188,212,0.5));"></i> COMISIÓN DE CALIFICACIONES
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4 text-uppercase">
+            
+            <!-- Buscador de Documentos -->
+            <div class="filter-grid mb-4" style="max-width: 400px;">
+              <div class="input-group-premium">
+                <i class="fas fa-search"></i>
+                <input type="text" id="qualificationsSearch" class="search-input text-uppercase fs-6" placeholder="BUSCAR POR EQUIPO..." oninput="filterQualifications()">
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table text-white align-middle mb-0 fs-6" style="background: transparent; --bs-table-bg: transparent; --bs-table-color: white;">
+                <thead style="background: rgba(255,255,255,0.05);">
+                  <tr class="text-white-50 fw-bold" style="letter-spacing: 1px;">
+                    <th class="ps-4 py-4 border-bottom-0">EQUIPO</th>
+                    <th class="py-4 border-bottom-0">TIPO DE DOCUMENTO</th>
+                    <th class="py-4 border-bottom-0">NOTAS</th>
+                    <th class="py-4 border-bottom-0">FECHA</th>
+                    <th class="text-center pe-4 py-4 border-bottom-0">ACCIONES</th>
+                  </tr>
+                </thead>
+                <tbody id="qualificationsList">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para ver Documento PDF/Imagen -->
+    <div class="modal fade" id="viewDocModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-premium">
+          <div class="modal-header">
+            <h5 class="modal-title" id="viewDocTitle">Ver Documento</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-0 text-center" style="min-height: 500px">
+            <iframe id="docViewerFrame" src="" style="width: 100%; height: 80vh; display: none;" frameborder="0"></iframe>
+            <img id="docViewerImg" src="" style="max-width: 100%; display: none;" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de jugadores nuevos -->
+    <div
+      class="modal fade"
+      id="newPlayersModal"
+      tabindex="-1"
+      aria-labelledby="newPlayersModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow">
+          <div class="modal-header">
+            <h5 class="modal-title" id="newPlayersModalLabel">
+              Jugadores Nuevos Registrados
+            </h5>
+            <button
+              type="button"
+              class="btn-close btn-close-white"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div id="newPlayersList">
+              <!-- Los jugadores se cargarán dinámicamente aquí -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-storage.js"></script>
+
+    <script>
+      // Configuración de Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+        authDomain: "ldbaa-calificaciones.firebaseapp.com",
+        projectId: "ldbaa-calificaciones",
+        storageBucket: "ldbaa-calificaciones.appspot.com",
+        messagingSenderId: "277579489603",
+        appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6",
+      };
+
+      // Inicializar Firebase
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+
+      const db = firebase.firestore();
+      const auth = firebase.auth();
+      let championshipId = null;
+      let isAdmin = false;
+      let championshipListener = null; // Variable para almacenar el listener del campeonato
+
+      // Verificar estado de autenticación
+      auth.onAuthStateChanged((user) => {
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
+        // Obtener el ID del campeonato de la URL
+        const urlParams = new URLSearchParams(window.location.search);
+        championshipId = urlParams.get("id");
+        if (!championshipId) {
+          window.location.href = "dashboard.html";
+          return;
+        }
+        loadChampionshipInfo();
+        loadTeams();
+        // Mostrar toast y botón solo a admin
+        isAdmin = user.email === "admin@gmail.com";
+        if (isAdmin) {
+          showNewPlayersToast();
+          checkNewPlayers();
+          // Asegúrate de mostrar el botón aunque no haya jugadores nuevos
+          document.getElementById("newPlayersFloatingBtn").style.display =
+            "block";
+
+          // Escuchar cambios en el campeonato para actualizar notificaciones
+          championshipListener = db
+            .collection("championships")
+            .doc(championshipId)
+            .onSnapshot((doc) => {
+              if (doc.exists) {
+                const championship = doc.data();
+                // Si la fecha de deadline cambió, actualizar las notificaciones
+                if (championship.deadlineLastChanged) {
+                  console.log(
+                    "Fecha de deadline actualizada, recargando notificaciones...",
+                  );
+                  showNewPlayersToast();
+                  checkNewPlayers();
+                }
+              }
+            });
+            
+          // Mostrar botón de calificaciones y verificar pendientes
+          document.getElementById("qualificationsFloatingBtn").style.display = "block";
+          checkPendingDocs();
+        } else {
+          document.getElementById("newPlayersFloatingBtn").style.display =
+            "none";
+          document.getElementById("qualificationsFloatingBtn").style.display =
+            "none";
+        }
+      });
+
+      function checkPendingDocs() {
+        db.collection("team_documentation")
+          .onSnapshot(snapshot => {
+            let pendingCount = 0;
+            snapshot.forEach(doc => {
+              const d = doc.data();
+              if (d.status !== "Aprobado" && d.status !== "Denegado") {
+                pendingCount++;
+              }
+            });
+            const badge = document.getElementById("qualificationsBadgeCount");
+            if (pendingCount > 0) {
+              badge.textContent = pendingCount;
+              badge.style.display = "flex";
+            } else {
+              badge.style.display = "none";
+            }
+          });
+      }
+
+      // Cargar información del campeonato
+      function loadChampionshipInfo() {
+        db.collection("championships")
+          .doc(championshipId)
+          .get()
+          .then((doc) => {
+            if (doc.exists) {
+              const championship = doc.data();
+              document.getElementById("championshipTitle").textContent =
+                championship.name;
+              document.getElementById("championshipDescription").textContent =
+                championship.description || "";
+            }
+          })
+          .catch((error) => {
+            console.error("Error al cargar información del campeonato:", error);
+            Swal.fire(
+              "Error",
+              "No se pudo cargar la información del campeonato",
+              "error",
+            );
+          });
+      }
+
+      let allTeamsLocal = [];
+
+      // Cargar equipos
+      function loadTeams() {
+        const container = document.getElementById("teamCardsContainer");
+        container.innerHTML = '<div class="col-12 text-center"><div class="spinner-border text-success" role="status"></div></div>';
+
+        db.collection("teams")
+          .where("championshipId", "==", championshipId)
+          .get()
+          .then((querySnapshot) => {
+            container.innerHTML = "";
+            allTeamsLocal = [];
+            if (querySnapshot.empty) {
+              container.innerHTML = '<div class="col-12 text-center"><p class="text-white-50">No hay equipos registrados</p></div>';
+              return;
+            }
+
+            querySnapshot.forEach((doc) => {
+              const team = doc.data();
+              team.id = doc.id;
+              allTeamsLocal.push(team);
+            });
+            renderTeams(allTeamsLocal);
+          })
+          .catch((error) => {
+            console.error("Error al cargar equipos:", error);
+            Swal.fire("Error", "No se pudieron cargar los equipos", "error");
+          });
+      }
+
+      function filterTeamsLocal() {
+        const term = document.getElementById('teamSearchInput').value.toLowerCase();
+        const cat = document.getElementById('teamCategoryFilter').value;
+        const filtered = allTeamsLocal.filter(t => {
+          const matchName = t.name.toLowerCase().includes(term);
+          const matchCat = !cat || t.category === cat;
+          return matchName && matchCat;
+        });
+        renderTeams(filtered);
+      }
+
+      function formatDate(dateString) {
+         if (!dateString) return '---';
+         const parts = dateString.split('-');
+         if (parts.length === 3) {
+           return `${parts[2]}/${parts[1]}/${parts[0]}`;
+         }
+         return dateString;
+       }
+
+       async function editFoundationDate(teamId, teamName) {
+         try {
+           const doc = await db.collection("teams").doc(teamId).get();
+           if (!doc.exists) {
+             Swal.fire("Error", "El equipo no existe", "error");
+             return;
+           }
+           const team = doc.data();
+           const currentVal = team.foundationDate || "";
+
+           const { value: dateStr } = await Swal.fire({
+             title: 'FECHA DE FUNDACIÓN',
+             html: `
+               <div class="text-start mb-3">
+                 <p class="text-white-50 small mb-2">Ingresa o edita la fecha de fundación para <b>${teamName}</b>:</p>
+                 <input type="date" id="swal-foundation-date" class="form-control text-white bg-dark border-secondary" value="${currentVal}" />
+               </div>
+             `,
+             background: '#111',
+             color: '#fff',
+             showCancelButton: true,
+             confirmButtonText: 'GUARDAR',
+             cancelButtonText: 'CANCELAR',
+             confirmButtonColor: '#2ecc71',
+             customClass: {
+               popup: 'glass-popup rounded-4',
+               confirmButton: 'btn btn-premium px-4 py-2',
+               cancelButton: 'btn btn-outline-light px-4 py-2'
+             },
+             preConfirm: () => {
+               return document.getElementById('swal-foundation-date').value;
+             }
+           });
+
+           if (dateStr !== undefined) {
+             Swal.fire({
+               title: 'Guardando...',
+               allowOutsideClick: false,
+               didOpen: () => Swal.showLoading()
+             });
+
+             await db.collection("teams").doc(teamId).update({
+               foundationDate: dateStr
+             });
+
+             Swal.fire('¡Éxito!', 'Fecha de fundación actualizada correctamente.', 'success');
+             loadTeams();
+           }
+         } catch (e) {
+           console.error(e);
+           Swal.fire('Error', 'No se pudo actualizar la fecha de fundación.', 'error');
+         }
+       }
+
+       window.editFoundationDate = editFoundationDate;
+
+      function renderTeams(teams) {
+        const container = document.getElementById("teamCardsContainer");
+        container.innerHTML = "";
+        teams.forEach(team => createTeamCard(team.id, team));
+      }
+
+      // Crear tarjeta de equipo
+      function createTeamCard(id, team) {
+        const card = document.createElement("div");
+        card.className = "col-md-4 mb-4";
+        const dateDisplay = team.foundationDate ? formatDate(team.foundationDate) : 'No registrada';
+        card.innerHTML = `
+        <div class="glass-card text-center" style="position: relative; height: 100%; display: flex; flex-direction: column; justify-content: space-between; background: rgba(0, 0, 0, 0.15); backdrop-filter: blur(3px); border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div>
+            <img src="${team.logo || 'img/logo.png'}" class="mb-3" alt="Logo" style="height: 100px; width: auto; max-width: 100%; object-fit: contain; border-radius: 8px;">
+            <h5 class="text-white mb-2 fw-bold text-uppercase">${team.name}</h5>
+            <p class="text-white-50 small mb-2"><span class="badge" style="background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">${team.category}</span></p>
+            <p class="text-white-50 small mb-4" style="font-size: 0.85rem;"><i class="far fa-calendar-alt me-1 text-info"></i> Fundación: <strong class="text-white">${dateDisplay}</strong></p>
+          </div>
+          
+          <div class="d-grid gap-2 w-100 mt-auto">
+            <button class="btn btn-success-premium w-100 py-2" onclick="gestionarArchivos('${id}', '${team.name}')">
+              <i class="fas fa-folder-open me-2"></i>DOCUMENTACIÓN
+            </button>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-warning border-0 flex-grow-1" style="background: rgba(243, 156, 18, 0.1);" title="Asignar Credenciales" onclick="assignCredentials('${id}', '${team.name}')">
+                <i class="fas fa-user-plus"></i>
+              </button>
+              <button class="btn btn-outline-warning border-0 flex-grow-1" style="background: rgba(243, 156, 18, 0.1);" title="Resetear Clave" onclick="resetAdminKey('${id}')">
+                <i class="fas fa-key"></i>
+              </button>
+              <button class="btn btn-outline-info border-0 flex-grow-1" style="background: rgba(52, 152, 219, 0.1);" title="Fecha de Fundación" onclick="editFoundationDate('${id}', '${team.name}')">
+                <i class="far fa-calendar-alt"></i>
+              </button>
+              <button class="btn btn-outline-danger border-0 flex-grow-1" style="background: rgba(231, 76, 60, 0.1);" title="Eliminar Equipo" onclick="deleteTeam('${id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+        document.getElementById("teamCardsContainer").appendChild(card);
+      }
+
+      // Generar correo y clave en tiempo real incluyendo la categoría para evitar duplicados
+      function updateEmailAndPasswordPreview() {
+        const name = document.getElementById("teamName").value;
+        const category = document.getElementById("teamCategory").value;
+        if (!name) {
+          document.getElementById("teamEmailPreview").value = "";
+          document.getElementById("teamPasswordPreview").value = "";
+          return;
+        }
+        const currentYear = new Date().getFullYear();
+        const cleanName = name.toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]/g, '');
+        
+        const cleanCategory = category.toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]/g, '');
+
+        const suffix = cleanCategory ? `.${cleanCategory}` : "";
+
+        document.getElementById("teamEmailPreview").value = `${cleanName}${suffix}@ldbaa.com`;
+        document.getElementById("teamPasswordPreview").value = `${cleanName}${suffix}${currentYear}`;
+      }
+
+      document.getElementById("teamName").addEventListener("input", updateEmailAndPasswordPreview);
+      document.getElementById("teamCategory").addEventListener("change", updateEmailAndPasswordPreview);
+
+      // Manejar el envío del formulario de equipo
+      document
+        .getElementById("teamForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const name = document.getElementById("teamName").value.toUpperCase();
+          const category = document
+            .getElementById("teamCategory")
+            .value.toUpperCase();
+          const foundationDate = document.getElementById("teamFoundationDate").value || "";
+          const email = document.getElementById("teamEmailPreview").value;
+          const password = document.getElementById("teamPasswordPreview").value;
+          const logoInput = document.getElementById("teamLogo");
+          
+          if (!logoInput.files[0]) {
+            Swal.fire("Error", "Por favor selecciona un logo", "error");
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function () {
+            const logoURL = reader.result;
+
+            const teamData = {
+              name,
+              category,
+              foundationDate,
+              logo: logoURL,
+              championshipId,
+              email: email,
+              adminKey: password,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            };
+
+            Swal.fire({
+              title: 'Guardando...',
+              text: 'Registrando equipo y creando credenciales...',
+              allowOutsideClick: false,
+              didOpen: () => {
+                Swal.showLoading();
+              }
+            });
+
+            // Crear usuario en Firebase Auth usando una app secundaria para no cerrar la sesión actual
+            let secondaryApp;
+            const secondaryAppName = "SecondaryApp";
+            const existingApp = firebase.apps.find(app => app.name === secondaryAppName);
+            if (existingApp) {
+              secondaryApp = existingApp;
+            } else {
+              secondaryApp = firebase.initializeApp(firebaseConfig, secondaryAppName);
+            }
+
+            // Helper function to save checked formats
+            function saveTeamFormats(teamId) {
+              const checkedCheckboxes = Array.from(document.querySelectorAll(".champ-doc-cb:checked"));
+              if (checkedCheckboxes.length > 0) {
+                const promises = checkedCheckboxes.map(cb => {
+                  const docId = cb.value;
+                  const fileName = cb.getAttribute("data-filename");
+                  
+                  return db.collection("championshipDocuments").doc(docId).get()
+                    .then(docSnap => {
+                      if (docSnap.exists) {
+                        const docData = docSnap.data();
+                        return db.collection("teamFiles").add({
+                          teamId: teamId,
+                          fileName: fileName + ".pdf",
+                          fileType: "FORMATO",
+                          fileBase64: docData.fileBase64,
+                          uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                      }
+                    });
+                });
+                return Promise.all(promises);
+              }
+              return Promise.resolve();
+            }
+
+            secondaryApp.auth().createUserWithEmailAndPassword(email, password)
+              .then(() => {
+                return secondaryApp.auth().signOut();
+              })
+              .then(() => {
+                return db.collection("teams").add(teamData);
+              })
+              .then((teamDocRef) => {
+                const teamId = teamDocRef.id;
+                return saveTeamFormats(teamId);
+              })
+              .then(() => {
+                Swal.fire({
+                  title: "¡EQUIPO REGISTRADO!",
+                  html: `
+                    <div class="text-start p-3 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                      <p class="mb-3 text-white-50">El equipo <b>${name}</b> ha sido registrado exitosamente.</p>
+                      <div class="mb-2">
+                        <small class="text-success d-block">CORREO DE ACCESO:</small>
+                        <code class="fs-5 text-white">${email}</code>
+                      </div>
+                      <div>
+                        <small class="text-warning d-block">CONTRASEÑA:</small>
+                        <code class="fs-5 text-white">${password}</code>
+                      </div>
+                      <p class="mt-4 mb-0 small text-info"><i class="fas fa-info-circle me-1"></i> Por favor, entregue estas credenciales al representante del equipo.</p>
+                    </div>
+                  `,
+                  icon: "success",
+                  confirmButtonText: "ENTENDIDO",
+                  customClass: {
+                    popup: "glass-popup rounded-4",
+                    confirmButton: "btn btn-premium px-5",
+                  }
+                });
+                document.getElementById("teamForm").reset();
+                document.getElementById("teamEmailPreview").value = "";
+                document.getElementById("teamPasswordPreview").value = "";
+                const modal = bootstrap.Modal.getInstance(
+                  document.getElementById("addTeamModal"),
+                );
+                modal.hide();
+                loadTeams();
+              })
+              .catch((error) => {
+                console.error("Error al registrar:", error);
+                if (error.code === 'auth/email-already-in-use') {
+                  // Si el correo ya existe, intentamos guardar solo en Firestore (posible re-registro)
+                  db.collection("teams").add(teamData)
+                    .then((teamDocRef) => {
+                      const teamId = teamDocRef.id;
+                      return saveTeamFormats(teamId);
+                    })
+                    .then(() => {
+                      Swal.fire({
+                        title: "¡Equipo Registrado!",
+                        html: `El equipo se guardó, pero el correo <b>${email}</b> ya estaba registrado en el sistema de autenticación.`,
+                        icon: "info",
+                      });
+                      document.getElementById("teamForm").reset();
+                      const modal = bootstrap.Modal.getInstance(
+                        document.getElementById("addTeamModal"),
+                      );
+                      modal.hide();
+                      loadTeams();
+                    })
+                    .catch(dbError => {
+                      Swal.fire("Error", "No se pudo guardar el equipo en la base de datos.", "error");
+                    });
+                } else {
+                  Swal.fire("Error", "Hubo un problema: " + error.message, "error");
+                }
+              });
+          };
+
+          reader.readAsDataURL(logoInput.files[0]);
+        });
+
+      // Función para eliminar equipo
+      function deleteTeam(teamId) {
+        Swal.fire({
+          title: "¿Estás seguro?",
+          text: "Este equipo será eliminado permanentemente",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            db.collection("teams")
+              .doc(teamId)
+              .delete()
+              .then(() => {
+                Swal.fire(
+                  "Eliminado",
+                  "El equipo ha sido eliminado",
+                  "success",
+                );
+                loadTeams();
+              })
+              .catch((error) => {
+                console.error("Error al eliminar equipo:", error);
+                Swal.fire("Error", "No se pudo eliminar el equipo", "error");
+              });
+          }
+        });
+      }
+
+      // Función para asignar credenciales a equipos ya registrados
+      async function assignCredentials(teamId, teamName) {
+        const currentYear = new Date().getFullYear();
+        const cleanName = teamName.toLowerCase()
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .replace(/[^a-z0-9]/g, '');
+        
+        const email = `${cleanName}@ldbaa.com`;
+        const password = `${cleanName}${currentYear}`;
+
+        const result = await Swal.fire({
+          title: "Asignar Credenciales",
+          html: `
+            <div class="text-start p-3 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+              <p class="mb-3">Se generarán las siguientes credenciales para <b>${teamName}</b>:</p>
+              <div class="mb-2">
+                <small class="text-success d-block">CORREO:</small>
+                <code class="fs-6 text-white">${email}</code>
+              </div>
+              <div>
+                <small class="text-warning d-block">CONTRASEÑA:</small>
+                <code class="fs-6 text-white">${password}</code>
+              </div>
+              <p class="mt-3 mb-0 small text-white-50">Si el usuario ya existe en Auth, se actualizará la información en la base de datos.</p>
+            </div>
+          `,
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "GENERAR Y GUARDAR",
+          cancelButtonText: "CANCELAR",
+          customClass: {
+            popup: "glass-popup rounded-4",
+            confirmButton: "btn btn-premium px-4",
+            cancelButton: "btn btn-secondary-glass px-4"
+          }
+        });
+
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: 'Procesando...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+          });
+
+          // Inicializar o usar App Secundaria
+          let secondaryApp;
+          const secondaryAppName = "SecondaryApp";
+          const existingApp = firebase.apps.find(app => app.name === secondaryAppName);
+          if (existingApp) {
+            secondaryApp = existingApp;
+          } else {
+            secondaryApp = firebase.initializeApp(firebaseConfig, secondaryAppName);
+          }
+
+          try {
+            // Intentar crear el usuario
+            await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
+            await secondaryApp.auth().signOut();
+            
+            // Actualizar Firestore
+            await db.collection("teams").doc(teamId).update({
+              email: email,
+              adminKey: password
+            });
+
+            Swal.fire({
+              title: "¡Éxito!",
+              text: "Credenciales asignadas y guardadas correctamente.",
+              icon: "success"
+            });
+            loadTeams();
+          } catch (error) {
+            console.error("Error al asignar:", error);
+            if (error.code === 'auth/email-already-in-use') {
+              // Si ya existe en Auth, solo actualizamos Firestore por si acaso
+              await db.collection("teams").doc(teamId).update({
+                email: email,
+                adminKey: password
+              });
+              Swal.fire({
+                title: "Actualizado",
+                text: "El usuario ya existía en Auth. Se ha actualizado la información local del equipo.",
+                icon: "info"
+              });
+              loadTeams();
+            } else {
+              Swal.fire("Error", "No se pudo completar la operación: " + error.message, "error");
+            }
+          }
+        }
+      }
+
+      // Función para resetear la clave de administrador
+      function resetAdminKey(teamId) {
+        Swal.fire({
+          title: "¿Resetear la clave?",
+          text: "Se eliminará la clave actual y se deberá establecer una nueva la próxima vez que se acceda al registro de jugadores.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#28a745",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, resetear",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            db.collection("teams")
+              .doc(teamId)
+              .update({
+                adminKey: null,
+              })
+              .then(() => {
+                Swal.fire({
+                  title: "¡Clave reseteada!",
+                  text: "La clave ha sido eliminada. Se solicitará una nueva clave la próxima vez que se acceda al registro de jugadores.",
+                  icon: "success",
+                });
+              })
+              .catch((error) => {
+                console.error("Error al resetear la clave:", error);
+                Swal.fire("Error", "No se pudo resetear la clave", "error");
+              });
+          }
+        });
+      }
+
+      // Función para gestionar archivos
+      function gestionarArchivos(teamId, teamName) {
+        const modal = new bootstrap.Modal(
+          document.getElementById("manageFilesModal"),
+        );
+        document.getElementById("manageFilesModalLabel").textContent =
+          `Gestionar Archivos - ${teamName}`;
+
+        // Cargar archivos existentes
+        loadTeamFiles(teamId);
+
+        // Manejar el envío del formulario
+        document.getElementById("fileUploadForm").onsubmit = function (e) {
+          e.preventDefault();
+          const fileType = document.getElementById("fileType").value;
+          const file = document.getElementById("fileUpload").files[0];
+
+          if (!file || !fileType) {
+            Swal.fire(
+              "Error",
+              "Por favor selecciona un tipo de documento y un archivo",
+              "error",
+            );
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            const base64PDF = event.target.result; // PDF en base64
+
+            db.collection("teamFiles")
+              .add({
+                teamId: teamId,
+                fileName: file.name,
+                fileType: fileType,
+                fileBase64: base64PDF,
+                uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              })
+              .then(() => {
+                Swal.fire("Éxito", "Archivo subido correctamente", "success");
+                document.getElementById("fileUploadForm").reset();
+                loadTeamFiles(teamId); // Recarga la lista de archivos
+              })
+              .catch((error) => {
+                console.error("Error al subir archivo:", error);
+                Swal.fire("Error", "No se pudo subir el archivo", "error");
+              });
+          };
+          reader.readAsDataURL(file); // Convierte el PDF a base64
+        };
+
+        modal.show();
+      }
+
+      // --- COMISIÓN DE CALIFICACIONES ---
+      function filterQualifications() {
+        const input = document.getElementById("qualificationsSearch").value.toLowerCase();
+        const list = document.getElementById("qualificationsList");
+        const rows = list.getElementsByTagName("tr");
+        for (let i = 0; i < rows.length; i++) {
+          const teamNameCell = rows[i].cells[0];
+          if (teamNameCell) {
+            const teamName = teamNameCell.textContent.toLowerCase();
+            if (teamName.includes(input)) {
+              rows[i].style.display = "";
+            } else {
+              rows[i].style.display = "none";
+            }
+          }
+        }
+      }
+
+      let qualificationsModalInstance = null;
+      async function showQualifications() {
+        if (!qualificationsModalInstance) {
+          qualificationsModalInstance = new bootstrap.Modal(document.getElementById('qualificationsModal'));
+        }
+        
+        const modalEl = document.getElementById('qualificationsModal');
+        if (!modalEl.classList.contains('show')) {
+          qualificationsModalInstance.show();
+        }
+        
+        const list = document.getElementById('qualificationsList');
+        list.innerHTML = '<tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>';
+        
+        try {
+          const snapshot = await db.collection("team_documentation").orderBy("timestamp", "desc").get();
+          list.innerHTML = "";
+          
+          let pendingDocs = [];
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            if (d.status !== 'Aprobado' && d.status !== 'Denegado') {
+              pendingDocs.push({ id: doc.id, ...d });
+            }
+          });
+          
+          if (pendingDocs.length === 0) {
+            list.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-white-50">No hay documentos pendientes.</td></tr>';
+            return;
+          }
+          
+          pendingDocs.forEach(d => {
+            const date = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'N/A';
+            const statusBadge = '<span class="badge bg-warning text-dark">Pendiente</span>';
+            list.insertAdjacentHTML('beforeend', `
+              <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                <td class="ps-4 py-3 fw-bold text-info fs-6 text-uppercase">${d.teamName}</td>
+                <td class="py-3 fs-6 text-uppercase">
+                  <span class="d-block text-white fw-bold mb-1">${d.type}</span>
+                  ${statusBadge}
+                </td>
+                <td class="py-3 text-white-50 fs-6 text-uppercase">${d.notes || '-'}</td>
+                <td class="py-3 text-white-50 fs-6 text-uppercase">${date}</td>
+                <td class="text-center pe-4 py-3">
+                  <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-outline-info rounded-circle" style="width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border-width: 2px;" onclick="viewTeamDoc('${d.id}')" title="Ver Documento">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-outline-success rounded-circle" style="width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border-width: 2px;" onclick="approveTeamDoc('${d.id}', '${d.type}')" title="Aprobar">
+                      <i class="fas fa-check"></i>
+                    </button>
+                    <button class="btn btn-outline-danger rounded-circle" style="width: 38px; height: 38px; display: inline-flex; align-items: center; justify-content: center; padding: 0; border-width: 2px;" onclick="deleteTeamDoc('${d.id}')" title="Denegar Documento">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `);
+          });
+        } catch (e) {
+          console.error(e);
+          list.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-danger">Error al cargar documentos.</td></tr>';
+        }
+      }
+
+      async function viewTeamDoc(id) {
+        try {
+          const doc = await db.collection("team_documentation").doc(id).get();
+          if (!doc.exists) return;
+          const data = doc.data();
+          
+          const frame = document.getElementById('docViewerFrame');
+          const img = document.getElementById('docViewerImg');
+          
+          document.getElementById('viewDocTitle').textContent = `Documento: ${data.teamName} (${data.type})`;
+          
+          if (data.file.startsWith('data:application/pdf')) {
+            frame.src = data.file;
+            frame.style.display = 'block';
+            img.style.display = 'none';
+          } else {
+            img.src = data.file;
+            img.style.display = 'inline-block';
+            frame.style.display = 'none';
+          }
+          
+          const modal = new bootstrap.Modal(document.getElementById('viewDocModal'));
+          modal.show();
+        } catch (e) {
+          Swal.fire("Error", "No se pudo cargar el documento.", "error");
+        }
+      }
+
+      async function deleteTeamDoc(id) {
+        const { value: reason } = await Swal.fire({
+          title: 'Denegar Documento',
+          input: 'textarea',
+          inputLabel: 'Motivo del rechazo',
+          inputPlaceholder: 'Escribe el motivo por el cual no se acepta el documento...',
+          showCancelButton: true,
+          confirmButtonColor: '#e74c3c',
+          confirmButtonText: 'Denegar',
+          cancelButtonText: 'Cancelar',
+          target: document.getElementById('qualificationsModal'),
+          customClass: {
+            input: 'text-uppercase'
+          },
+          inputValidator: (value) => {
+            if (!value) {
+              return '¡Debes escribir un motivo!';
+            }
+          }
+        });
+        
+        if (reason) {
+          await db.collection("team_documentation").doc(id).update({
+            status: 'Denegado',
+            motivo: reason.toUpperCase(),
+            fechaAprobacion: firebase.firestore.FieldValue.serverTimestamp(),
+            notified: false
+          });
+          Swal.fire("Denegado", "El documento ha sido denegado y se ha notificado al equipo.", "success");
+          showQualifications();
+        }
+      }
+
+      async function extractTransferData(base64Data) {
+        let detectedNum = "";
+        let detectedName = "";
+        try {
+          let text = "";
+          if (base64Data.startsWith('data:application/pdf')) {
+            const pdfjsLib = window.pdfjsLib || window['pdfjs-dist/build/pdf'];
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+            const pdfData = atob(base64Data.split(',')[1]);
+            const loadingTask = pdfjsLib.getDocument({ data: pdfData });
+            const pdf = await loadingTask.promise;
+            const page = await pdf.getPage(1);
+            
+            // Try extracting text content first (text-based PDF)
+            const textContent = await page.getTextContent();
+            text = textContent.items.map(item => item.str).join(' ');
+            
+            if (!text || text.trim().length < 15) {
+              // Scanned PDF -> render page to canvas for OCR
+              const viewport = page.getViewport({ scale: 2.0 });
+              const canvas = document.createElement('canvas');
+              canvas.width = viewport.width;
+              canvas.height = viewport.height;
+              const ctx = canvas.getContext('2d');
+              await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+              const ocrResult = await Tesseract.recognize(canvas, 'spa');
+              text = ocrResult.data.text;
+            }
+          } else if (base64Data.startsWith('data:image')) {
+            const ocrResult = await Tesseract.recognize(base64Data, 'spa');
+            text = ocrResult.data.text;
+          }
+          
+          if (text) {
+            text = text.toUpperCase();
+            console.log("OCR Extracted Text:\n", text);
+            
+            // 1. Extract Number: search for patterns like Nº 0001 or N° 0001
+            const numMatches = [
+              /N[º°\.\s:oO]{1,3}\s*(\d+)/,
+              /N[º°]O?\s*(\d+)/,
+              /N[º°\.\-\s]{1,3}\s*(\d+)/,
+              /NUMERO\s*:\s*(\d+)/,
+              /CARTA\s*PASE\s*N[º°O\.\-\s]*(\d+)/,
+              /(\d{4})/
+            ];
+            for (let regex of numMatches) {
+              const match = text.match(regex);
+              if (match) {
+                detectedNum = match[1];
+                break;
+              }
+            }
+            
+            // If number has non-digits, strip them
+            if (detectedNum) {
+              detectedNum = detectedNum.replace(/\D/g, '');
+            }
+            
+            // 2. Extract Player Name: search for YO [NAME] CON NRO. DE CEDULA or similar
+            // We use a denylist to make sure we don't pick up legal document template text as a player's name
+            const nameDenylist = [
+              "PUEDE", "HACER", "USO", "PRESENTE", "DOCUMENTO", "FINES", "REQUERIDOS", 
+              "DEPORTE", "BARRIAL", "LIGA", "CLUB", "PRESIDENTE", "SECRETARIO", "VOCAL", 
+              "TESORERO", "DIRECTIVA", "CAMPEONATO", "CON", "NRO", "CEDULA", "IDENTIDAD", 
+              "PERTENECIENTE", "LIGA", "DEPORTIVA", "BARRIAL", "ARGELIA", "ALTA", 
+              "VIRTUD", "VOLUNTAD", "SEGUIR", "PARTICIPANDO", "SOLICITO", "USTED", 
+              "SEÑOR", "PRESIDENTE", "CONCEDA", "PASE", "PRESTAMO", "LIBRE", "COMPRA", 
+              "DEFINITIVA", "MENCIONADO", "DEPORTISTA", "JUGADOR", "REQUISITO", "REGISTRADO"
+            ];
+
+            const isValidName = (val) => {
+              if (!val || val.length < 3 || val.length > 60) return false;
+              const upperVal = val.toUpperCase();
+              for (let badWord of nameDenylist) {
+                if (upperVal.includes(badWord)) return false;
+              }
+              return true;
+            };
+
+            // Capture text right after "Yo" (supporting spaces, underscores, dots, hyphens)
+            const yoMatches = [
+              /YO[\s\_\-\.]*([A-ZÀ-ÿ\s\.\_\-\,]{3,80}?)(?:\s+CON|\s+NRO|\s+DE\s+C[EÉ]DULA|\s+C\.?C\.?)/,
+              /YO[\s\_\-\.]*([A-ZÀ-ÿ\s\.\_\-\,]{3,80}?)(?:\s+CO[NÑ]|\s+C[EÉ]DULA)/,
+              /YO[\s\_\-\.]{1,30}([A-ZÀ-ÿ\s]{3,40})/,
+              /YO\s+([A-ZÀ-ÿ\s\.\_\-\,]{3,80}?)(?:\s+CON|\s+NRO|\s+DE\s+C[EÉ]DULA|\s+C\.?C\.?)/
+            ];
+            for (let regex of yoMatches) {
+              const match = text.match(regex);
+              if (match) {
+                const possibleName = match[1].replace(/[\_\-\.\,]/g, '').replace(/\s+/g, ' ').trim();
+                if (isValidName(possibleName)) {
+                  detectedName = possibleName;
+                  break;
+                }
+              }
+            }
+
+            // Fallbacks if "Yo" match failed or was invalid
+            if (!detectedName) {
+              const depMatch = text.match(/(?:DEPORTISTA|JUGADOR)\s+([A-ZÀ-ÿ\s\.\_\-]{5,80}?)(?:\s+CON\s+|\s+DEJANDO\s+|\s*,|\s*\n)/) || text.match(/(?:DEPORTISTA|JUGADOR)\s+([A-ZÀ-ÿ\s\.\_\-]{5,80})/);
+              if (depMatch) {
+                const possibleName = depMatch[1].replace(/[\_\-\.]/g, '').replace(/\s+/g, ' ').trim();
+                if (isValidName(possibleName)) {
+                  detectedName = possibleName;
+                }
+              }
+            }
+
+            if (!detectedName) {
+              const nomMatch = text.match(/NOMBRES\s*:\s*([A-ZÀ-ÿ\s]{3,})\s*\n/);
+              const apeMatch = text.match(/APELLIDOS\s*:\s*([A-ZÀ-ÿ\s]{3,})\s*\n/);
+              if (nomMatch && apeMatch) {
+                const possibleName = `${nomMatch[1].trim()} ${apeMatch[1].trim()}`;
+                if (isValidName(possibleName)) {
+                  detectedName = possibleName;
+                }
+              }
+            }
+
+            // High-End Fallback: Smart Heuristic Template Word Elimination
+            if (!detectedName) {
+              const templateWords = new Set([
+                "LIGA", "DEPORTIVA", "BARRIAL", "ARGELIA", "ALTA", "FUNDADA", "JULIO", "FILIAL", 
+                "ASOCIACION", "LIGAS", "MICROFUTBOL", "QUITO", "ACUERDO", "MINISTERIAL", "CARTA", 
+                "PASE", "CON", "NRO", "DE", "CEDULA", "ME", "ENCUENTRO", "REGISTRADO", "REGISTRADA", 
+                "EN", "EL", "CLUB", "PERTENECIENTE", "LA", "VIRTUD", "QUE", "ES", "MI", "VOLUNTAD", 
+                "SEGUIR", "PARTICIPANDO", "DEPORTE", "SOLICITO", "USTED", "SEÑOR", "PRESIDENTE", 
+                "CONCEDA", "PRESTAMO", "LIBRE", "COMPRA", "DEFINITIVA", "MENCIONADO", "DEPORTISTA", 
+                "PUEDE", "HACER", "USO", "PRESENTE", "DOCUMENTO", "PARA", "LOS", "FINES", "REQUERIDOS", 
+                "JUGADOR", "REGISTRO", "DEL", "CERTIFICO", "DEJANDO", "CONSTANCIA", "NUESTRO", 
+                "ARCHIVO", "INTERESADO", "PARTICIPARA", "ACTUARA", "DESDE", "FECHA", "DONDE", 
+                "SECRETARIO", "VOCAL", "TESORERO", "DIRECTIVA", "CAMPEONATO", "IDENTIDAD", "SOCIOS",
+                "REQUISITO", "NOMBRES", "APELLIDOS", "FOTO", "FIRMA", "CEDULAS", "PARTIDA", "NACIMIENTO",
+                "IMAGEN", "PDF", "QUITO", "ESTE", "ESTA", "DEPORTES", "BARRIALES", "PRESIDENTES", 
+                "SECRETARIOS", "VOCALES", "TESOREROS", "DIRECTIVOS", "SANCIONES", "CARNETS", "CARNET", 
+                "FICHA", "INSCRIPCION", "TRANSFERENCIAS", "COPIA", "ORIGINAL", "ENVIO", "ENVIADO", 
+                "ACTUAR", "PARTICIPAR", "JUGAR", "LIGAS", "DEPORTIVAS", "VALOR"
+              ]);
+              
+              // Extract all letters, clean them up, split into individual words
+              const rawWords = text.replace(/[^A-ZÀ-ÿ\s]/g, ' ').split(/\s+/);
+              const filteredWords = rawWords.filter(w => {
+                if (w.length < 3) return false;
+                if (templateWords.has(w)) return false;
+                return true;
+              });
+              
+              if (filteredWords.length > 0) {
+                // Take up to 3 remaining unique non-template words as candidate
+                const candidateName = filteredWords.slice(0, 3).join(' ').trim();
+                if (isValidName(candidateName)) {
+                  detectedName = candidateName;
+                }
+              }
+            }
+          }
+        } catch (err) {
+          console.error("Error in automated OCR extraction:", err);
+        }
+        return { num: detectedNum, name: detectedName };
+      }
+
+      async function approveTeamDoc(id, type) {
+        const updatedDoc = await db.collection("team_documentation").doc(id).get();
+        const data = updatedDoc.data();
+        
+        if (type === 'transferencia') {
+            // Show progress indicator
+            Swal.fire({
+                title: 'ANALIZANDO CARTA PASE...',
+                html: `
+                    <div class="py-3 text-center">
+                        <div class="spinner-border text-info mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                        <p class="text-white-50 small mb-0">Extrayendo automáticamente el número de carta pase mediante IA...</p>
+                    </div>
+                `,
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                background: '#1a1a1a',
+                target: document.getElementById('qualificationsModal'),
+                didOpen: () => Swal.showLoading()
+            });
+
+            const extracted = await extractTransferData(data.file);
+            Swal.close();
+
+             const num = (extracted.num || 'CARTA_PASE').toUpperCase();
+
+             const result = await Swal.fire({
+                 title: '<h4 class="text-white fw-bold mb-0"><i class="fas fa-check-circle text-success me-2 animate__animated animate__bounceIn"></i>¿APROBAR Y REGISTRAR?</h4>',
+                 html: `
+                     <div class="py-3 text-start text-white-50">
+                         <p class="mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">SE REGISTRARÁ LA CARTA PASE DE FORMA AUTOMÁTICA CON EL NÚMERO DETECTADO POR IA:</p>
+                         <div class="bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-10 mb-2">
+                             <div class="mb-0"><strong class="text-white-50 small">Nº CARTA PASE:</strong> <span class="text-success fw-bold font-monospace">${num}</span></div>
+                         </div>
+                     </div>
+                 `,
+                 showCancelButton: true,
+                 confirmButtonText: '<i class="fas fa-check me-2"></i>APROBAR Y REGISTRAR',
+                 cancelButtonText: '<i class="fas fa-times me-2"></i>CANCELAR',
+                 confirmButtonColor: '#2ecc71',
+                 cancelButtonColor: '#e74c3c',
+                 background: '#1a1a1a',
+                 target: document.getElementById('qualificationsModal'),
+                 customClass: {
+                     popup: 'rounded-4 border border-white border-opacity-10',
+                     confirmButton: 'btn btn-success rounded-pill px-4 py-2 text-uppercase fw-bold m-1',
+                     cancelButton: 'btn btn-danger rounded-pill px-4 py-2 text-uppercase fw-bold m-1'
+                 }
+             });
+
+             if (result.isConfirmed) {
+                 await db.collection("team_documentation").doc(id).update({
+                     status: 'Aprobado',
+                     numeroCartaPase: num,
+                     playerName: "",
+                     fechaAprobacion: firebase.firestore.FieldValue.serverTimestamp(),
+                     notified: false
+                 });
+                 
+                 // Dynamic Extension detection based on original file name
+                 const originalExt = data.fileName && data.fileName.includes('.') 
+                   ? data.fileName.substring(data.fileName.lastIndexOf('.')).toLowerCase() 
+                   : '.pdf';
+                 
+                 // Guardar en Gestor de Archivos del equipo
+                 await db.collection("teamFiles").add({
+                     teamId: data.teamId,
+                     fileName: num + originalExt,
+                     fileType: data.type.toUpperCase(),
+                     fileBase64: data.file,
+                     uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+                 });
+                 
+                 Swal.fire('¡APROBADO!', 'LA CARTA PASE HA SIDO APROBADA Y REGISTRADA EN LOS ARCHIVOS DEL EQUIPO.', 'success');
+                 showQualifications();
+             }
+        } else {
+            const result = await Swal.fire({
+                title: '¿Aprobar documento?',
+                text: 'Se marcará como aprobado por la comisión y se guardará en los archivos del equipo.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Aprobar',
+            });
+            if (result.isConfirmed) {
+                await db.collection("team_documentation").doc(id).update({
+                    status: 'Aprobado',
+                    fechaAprobacion: firebase.firestore.FieldValue.serverTimestamp(),
+                    notified: false
+                });
+                
+                // Guardar en Gestor de Archivos del equipo
+                await db.collection("teamFiles").add({
+                    teamId: data.teamId,
+                    fileName: "Documento - " + data.type.toUpperCase() + ".pdf",
+                    fileType: data.type.toUpperCase(),
+                    fileBase64: data.file,
+                    uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                Swal.fire('¡Aprobado!', 'El documento ha sido aprobado y guardado en archivos.', 'success');
+                showQualifications();
+            }
+        }
+      }
+      // --- END COMISIÓN DE CALIFICACIONES ---
+
+      // Función para cargar archivos del equipo
+      function loadTeamFiles(teamId) {
+        const filesList = document.getElementById("filesList");
+        filesList.innerHTML =
+          '<div class="text-center"><div class="spinner-border text-success" role="status"></div></div>';
+
+        db.collection("teamFiles")
+          .where("teamId", "==", teamId)
+          .orderBy("uploadedAt", "desc")
+          .get()
+          .then((querySnapshot) => {
+            filesList.innerHTML = "";
+            if (querySnapshot.empty) {
+              filesList.innerHTML =
+                '<p class="text-center">No hay archivos subidos</p>';
+              return;
+            }
+
+            querySnapshot.forEach((doc) => {
+              const file = doc.data();
+              const fileItem = document.createElement("div");
+              fileItem.className =
+                "list-group-item d-flex justify-content-between align-items-center";
+              fileItem.innerHTML = `
+                <div>
+                  <strong>${file.fileName}</strong>
+                  <br>
+                  <small class="text-muted">Tipo: ${file.fileType
+                    .replace("_", " ")
+                    .toUpperCase()}</small>
+                </div>
+                <div>
+                  <button class="btn btn-info btn-sm me-2" onclick="verArchivo('${
+                    file.fileBase64
+                  }')">
+                    <i class="fas fa-eye"></i> Ver
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteFile('${
+                    doc.id
+                  }', '${teamId}')">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              `;
+              filesList.appendChild(fileItem);
+            });
+          })
+          .catch((error) => {
+            console.error("Error al cargar archivos:", error);
+            filesList.innerHTML =
+              '<p class="text-center text-danger">Error al cargar los archivos</p>';
+          });
+      }
+
+      // Función para eliminar archivo
+      function deleteFile(fileId, teamId) {
+        Swal.fire({
+          title: "¿Eliminar archivo?",
+          text: "Esta acción no se puede deshacer",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Eliminar la referencia de Firestore
+            db.collection("teamFiles")
+              .doc(fileId)
+              .delete()
+              .then(() => {
+                Swal.fire(
+                  "Eliminado",
+                  "El archivo ha sido eliminado",
+                  "success",
+                );
+                loadTeamFiles(teamId);
+              })
+              .catch((error) => {
+                console.error("Error al eliminar archivo:", error);
+                Swal.fire("Error", "No se pudo eliminar el archivo", "error");
+              });
+          }
+        });
+      }
+
+      // Cargar los formatos de documentos del campeonato
+      function loadChampionshipDocuments() {
+        const list = document.getElementById("champDocsList");
+        list.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-success" role="status"></div></div>';
+
+        db.collection("championshipDocuments")
+          .where("championshipId", "==", championshipId)
+          .get()
+          .then((querySnapshot) => {
+            list.innerHTML = "";
+            if (querySnapshot.empty) {
+              list.innerHTML = '<p class="text-center text-white-50 py-3">No hay formatos subidos para este campeonato</p>';
+              return;
+            }
+
+            const docs = [];
+            querySnapshot.forEach((doc) => {
+              docs.push({ id: doc.id, ...doc.data() });
+            });
+
+            // Ordenar localmente por fecha de subida de forma descendente
+            docs.sort((a, b) => {
+              const dateA = a.uploadedAt ? a.uploadedAt.toDate() : new Date(0);
+              const dateB = b.uploadedAt ? b.uploadedAt.toDate() : new Date(0);
+              return dateB - dateA;
+            });
+
+            docs.forEach((file) => {
+              const item = document.createElement("div");
+              item.className = "list-group-item d-flex justify-content-between align-items-center bg-dark text-white border-secondary mb-2 rounded";
+              item.innerHTML = `
+                <div>
+                  <strong class="text-white">${file.fileName}</strong>
+                  <br>
+                  <small class="text-white-50">Subido: ${file.uploadedAt ? file.uploadedAt.toDate().toLocaleDateString() : 'N/A'}</small>
+                </div>
+                <div>
+                  <button class="btn btn-info btn-sm me-2" onclick="verFormatoCampeonato('${file.fileBase64}')">
+                    <i class="fas fa-eye"></i> Ver
+                  </button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteChampionshipDocument('${file.id}')">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              `;
+              list.appendChild(item);
+            });
+          })
+          .catch((error) => {
+            console.error("Error al cargar formatos:", error);
+            list.innerHTML = '<p class="text-center text-danger py-3">Error al cargar formatos</p>';
+          });
+      }
+
+      // Eliminar formato del campeonato
+      function deleteChampionshipDocument(docId) {
+        Swal.fire({
+          title: "¿Eliminar formato?",
+          text: "Esta acción eliminará el formato de documento de este campeonato de forma permanente",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            db.collection("championshipDocuments")
+              .doc(docId)
+              .delete()
+              .then(() => {
+                Swal.fire("Eliminado", "El formato de documento ha sido eliminado", "success");
+                loadChampionshipDocuments();
+              })
+              .catch((error) => {
+                console.error("Error al eliminar formato:", error);
+                Swal.fire("Error", "No se pudo eliminar el formato", "error");
+              });
+          }
+        });
+      }
+
+      // Ver archivo en iframe de ver PDF
+      function verFormatoCampeonato(base64PDF) {
+        const champModal = bootstrap.Modal.getInstance(
+          document.getElementById("championshipDocumentsModal"),
+        );
+        if (champModal) {
+          champModal.hide();
+        }
+
+        document.getElementById("pdfViewerFrame").src = base64PDF;
+        const pdfModal = new bootstrap.Modal(
+          document.getElementById("viewPdfModal"),
+        );
+        pdfModal.show();
+      }
+
+      // Inicializar el formulario y eventos para los documentos del campeonato
+      document.addEventListener("DOMContentLoaded", () => {
+        const addTeamModalEl = document.getElementById("addTeamModal");
+        if (addTeamModalEl) {
+          addTeamModalEl.addEventListener("show.bs.modal", () => {
+            const checklistContainer = document.getElementById("teamDocsChecklist");
+            checklistContainer.innerHTML = '<div class="text-white-50 small">Cargando formatos disponibles...</div>';
+            
+            db.collection("championshipDocuments")
+              .where("championshipId", "==", championshipId)
+              .get()
+              .then((querySnapshot) => {
+                checklistContainer.innerHTML = "";
+                if (querySnapshot.empty) {
+                  checklistContainer.innerHTML = '<div class="text-white-50 small">No hay formatos de documentos creados para este campeonato.</div>';
+                  return;
+                }
+                
+                querySnapshot.forEach((doc) => {
+                  const data = doc.data();
+                  const div = document.createElement("div");
+                  div.className = "form-check mb-2";
+                  div.innerHTML = `
+                    <input class="form-check-input champ-doc-cb" type="checkbox" value="${doc.id}" id="cb_${doc.id}" data-filename="${data.fileName}">
+                    <label class="form-check-label text-white small" for="cb_${doc.id}">
+                      ${data.fileName}
+                    </label>
+                  `;
+                  checklistContainer.appendChild(div);
+                });
+              })
+              .catch((err) => {
+                console.error(err);
+                checklistContainer.innerHTML = '<div class="text-danger small">Error al cargar formatos.</div>';
+              });
+          });
+        }
+
+        const modalEl = document.getElementById("championshipDocumentsModal");
+        if (modalEl) {
+          modalEl.addEventListener("show.bs.modal", () => {
+            loadChampionshipDocuments();
+          });
+        }
+
+        const uploadForm = document.getElementById("champDocUploadForm");
+        if (uploadForm) {
+          uploadForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const name = document.getElementById("champDocName").value.trim();
+            const fileInput = document.getElementById("champDocUpload");
+            const file = fileInput.files[0];
+
+            if (!file || !name) {
+              Swal.fire("Error", "Por favor ingresa un nombre y selecciona un archivo PDF", "error");
+              return;
+            }
+
+            Swal.fire({
+              title: "Subiendo...",
+              text: "Subiendo formato de documento...",
+              allowOutsideClick: false,
+              didOpen: () => {
+                Swal.showLoading();
+              }
+            });
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+              const base64PDF = event.target.result;
+
+              db.collection("championshipDocuments")
+                .add({
+                  championshipId: championshipId,
+                  fileName: name,
+                  fileBase64: base64PDF,
+                  uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                })
+                .then(() => {
+                  Swal.fire("Éxito", "Formato de documento subido correctamente", "success");
+                  uploadForm.reset();
+                  loadChampionshipDocuments();
+                })
+                .catch((error) => {
+                  console.error("Error al subir formato:", error);
+                  Swal.fire("Error", "No se pudo subir el formato de documento", "error");
+                });
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+      });
+
+      // Función para ver el archivo PDF
+      function verArchivo(base64PDF) {
+        // Cierra el modal de gestionar archivos si está abierto
+        const manageFilesModal = bootstrap.Modal.getInstance(
+          document.getElementById("manageFilesModal"),
+        );
+        if (manageFilesModal) {
+          manageFilesModal.hide();
+        }
+
+        // Establece el src del iframe al PDF en base64
+        document.getElementById("pdfViewerFrame").src = base64PDF;
+        // Muestra el modal de ver PDF
+        const pdfModal = new bootstrap.Modal(
+          document.getElementById("viewPdfModal"),
+        );
+        pdfModal.show();
+      }
+
+      // Función para cerrar sesión
+      function logout() {
+        Swal.fire({
+          title: "¿Cerrar sesión?",
+          text: "¿Estás seguro de que deseas salir?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, salir",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Limpiar el listener del campeonato
+            if (championshipListener) {
+              championshipListener();
+            }
+
+            auth
+              .signOut()
+              .then(() => {
+                window.location.href = "login.html";
+              })
+              .catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+                Swal.fire("Error", "No se pudo cerrar la sesión", "error");
+              });
+          }
+        });
+      }
+
+      // Limpiar listener cuando se cierre la página
+      window.addEventListener("beforeunload", function () {
+        if (championshipListener) {
+          championshipListener();
+        }
+      });
+
+      // Track which modal was open before viewing a PDF
+      let lastOpenModal = null;
+      document.addEventListener("DOMContentLoaded", () => {
+        const teamFilesModalEl = document.getElementById("manageFilesModal");
+        if (teamFilesModalEl) {
+          teamFilesModalEl.addEventListener("show.bs.modal", () => {
+            lastOpenModal = "teamFiles";
+          });
+        }
+        const champDocsModalEl = document.getElementById("championshipDocumentsModal");
+        if (champDocsModalEl) {
+          champDocsModalEl.addEventListener("show.bs.modal", () => {
+            lastOpenModal = "champDocs";
+          });
+        }
+      });
+
+      document
+        .getElementById("viewPdfModal")
+        .addEventListener("hidden.bs.modal", function () {
+          // Reabrir el modal correspondiente anterior
+          if (lastOpenModal === "champDocs") {
+            const champDocsModal = new bootstrap.Modal(
+              document.getElementById("championshipDocumentsModal"),
+            );
+            champDocsModal.show();
+          } else {
+            const manageFilesModal = new bootstrap.Modal(
+              document.getElementById("manageFilesModal"),
+            );
+            manageFilesModal.show();
+          }
+        });
+
+      // Toast de nuevos jugadores registrados
+      async function showNewPlayersToast() {
+        try {
+          // Obtener la fecha límite del campeonato
+          const champDoc = await db
+            .collection("championships")
+            .doc(championshipId)
+            .get();
+          if (!champDoc.exists) return;
+          const championship = champDoc.data();
+          if (!championship.deadline) return;
+          const deadline = new Date(championship.deadline);
+
+          // Usar la fecha de inicio de notificaciones si existe, sino usar 30 días antes
+          let startDate;
+          if (championship.deadlineLastChanged) {
+            startDate = new Date(championship.deadlineLastChanged.toDate());
+          } else if (championship.notificationStartDate) {
+            startDate = new Date(championship.notificationStartDate);
+          } else {
+            // Fallback: considerar 30 días antes de la fecha límite
+            startDate = new Date(deadline.getTime() - 30 * 24 * 60 * 60 * 1000);
+          }
+
+          // Consultar jugadores registrados en ese periodo y campeonato
+          const playersSnapshot = await db
+            .collection("players")
+            .where("campeonatoId", "==", championshipId)
+            .where("createdAt", ">=", startDate)
+            .where("createdAt", "<=", deadline)
+            .get();
+
+          if (playersSnapshot.empty) return;
+
+          // Agrupar por equipo
+          const teamMap = {};
+          playersSnapshot.forEach((doc) => {
+            const player = doc.data();
+            if (!player.teamName) return;
+            if (!teamMap[player.teamName]) {
+              teamMap[player.teamName] = 0;
+            }
+            teamMap[player.teamName]++;
+          });
+
+          // Si no hay equipos con jugadores nuevos, no mostrar
+          const teamNames = Object.keys(teamMap);
+          if (teamNames.length === 0) return;
+
+          // Construir HTML
+          let html = '<ul style="margin-bottom:0; padding-left: 18px;">';
+          teamNames.forEach((name) => {
+            html += `<li><b>${name}</b> <span class='text-muted'>(${
+              teamMap[name]
+            } jugador${teamMap[name] > 1 ? "es" : ""})</span></li>`;
+          });
+          html += "</ul>";
+
+          document.getElementById("newPlayersToastBody").innerHTML = html;
+          document.getElementById("newPlayersToast").style.display = "block";
+          // Ocultar automáticamente después de 10 segundos
+          setTimeout(() => {
+            document.getElementById("newPlayersToast").style.display = "none";
+          }, 10000);
+        } catch (e) {
+          console.error("Error mostrando toast de nuevos jugadores:", e);
+        }
+      }
+
+      // Verificar jugadores nuevos para el botón flotante
+      async function checkNewPlayers() {
+        try {
+          if (!isAdmin) {
+            document.getElementById("newPlayersFloatingBtn").style.display =
+              "none";
+            return;
+          }
+          // Obtener la fecha límite del campeonato
+          const champDoc = await db
+            .collection("championships")
+            .doc(championshipId)
+            .get();
+          if (!champDoc.exists) return;
+          const championship = champDoc.data();
+          if (!championship.deadline) return;
+          const deadline = new Date(championship.deadline);
+
+          // Usar la fecha de inicio de notificaciones si existe, sino usar 30 días antes
+          let startDate;
+          if (championship.deadlineLastChanged) {
+            startDate = new Date(championship.deadlineLastChanged.toDate());
+          } else if (championship.notificationStartDate) {
+            startDate = new Date(championship.notificationStartDate);
+          } else {
+            // Fallback: considerar 30 días antes de la fecha límite
+            startDate = new Date(deadline.getTime() - 30 * 24 * 60 * 60 * 1000);
+          }
+
+          // Consultar jugadores registrados en ese periodo y campeonato
+          const playersSnapshot = await db
+            .collection("players")
+            .where("campeonatoId", "==", championshipId)
+            .where("createdAt", ">=", startDate)
+            .where("createdAt", "<=", deadline)
+            .get();
+
+          const floatingBtn = document.getElementById("newPlayersFloatingBtn");
+
+          // Mostrar el botón SIEMPRE para admin
+          const count = playersSnapshot.size;
+          floatingBtn.querySelector(".badge-count").textContent = count;
+          floatingBtn.style.display = "block";
+
+          // Guardar los datos de los jugadores para el modal
+          window.newPlayersData = [];
+          playersSnapshot.forEach((doc) => {
+            const player = doc.data();
+            window.newPlayersData.push({
+              id: doc.id,
+              ...player,
+            });
+          });
+        } catch (e) {
+          console.error("Error verificando jugadores nuevos:", e);
+        }
+      }
+
+      // Mostrar modal con jugadores nuevos
+      async function showNewPlayersModal() {
+        if (!window.newPlayersData || window.newPlayersData.length === 0) {
+          Swal.fire("Info", "No hay jugadores nuevos para mostrar", "info");
+          return;
+        }
+
+        // Obtener información del campeonato para mostrar el período
+        let periodInfo = "";
+        try {
+          const champDoc = await db
+            .collection("championships")
+            .doc(championshipId)
+            .get();
+          if (champDoc.exists) {
+            const championship = champDoc.data();
+            if (championship.deadline) {
+              const deadline = new Date(championship.deadline);
+              let startDate;
+              if (championship.deadlineLastChanged) {
+                startDate = new Date(championship.deadlineLastChanged.toDate());
+              } else if (championship.notificationStartDate) {
+                startDate = new Date(championship.notificationStartDate);
+              } else {
+                startDate = new Date(
+                  deadline.getTime() - 30 * 24 * 60 * 60 * 1000,
+                );
+              }
+
+              periodInfo = `
+                <div class="alert alert-info mb-3">
+                  <strong>Período de notificación:</strong> Desde ${startDate.toLocaleDateString(
+                    "es-ES",
+                  )} hasta ${deadline.toLocaleDateString("es-ES")}
+                  ${
+                    championship.deadlineLastChanged
+                      ? '<br><small class="text-muted">Fecha de finalización actualizada el ' +
+                        new Date(
+                          championship.deadlineLastChanged.toDate(),
+                        ).toLocaleDateString("es-ES") +
+                        "</small>"
+                      : ""
+                  }
+                </div>
+              `;
+            }
+          }
+        } catch (e) {
+          console.error("Error obteniendo información del campeonato:", e);
+        }
+
+        const playersList = document.getElementById("newPlayersList");
+        let html = periodInfo;
+
+        window.newPlayersData.forEach((player) => {
+          html += `
+            <div class="player-card d-flex align-items-center">
+              <img src="${
+                player.playerPhoto || "img/default-avatar.png"
+              }" alt="Foto del jugador" class="player-photo">
+              <div class="player-info flex-grow-1">
+                <div class="player-name">${player.nombres} ${
+                  player.apellidos
+                }</div>
+                <div class="player-details">
+                  <strong>Club:</strong> ${player.teamName || "No asignado"}<br>
+                  <strong>Número:</strong> ${
+                    player.numeroJugador || "No asignado"
+                  }<br>
+                  <strong>Categoría:</strong> ${
+                    player.teamCategory || "No especificada"
+                  }<br>
+                  <strong>Fecha de registro:</strong> ${
+                    player.createdAt
+                      ? new Date(player.createdAt.toDate()).toLocaleDateString(
+                          "es-ES",
+                        )
+                      : "No disponible"
+                  }
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        playersList.innerHTML = html;
+
+        // Mostrar el modal
+        const modal = new bootstrap.Modal(
+          document.getElementById("newPlayersModal"),
+        );
+        modal.show();
+      }
+
+      // Función para calcular la edad
+      function calcularEdad(fechaNacimiento) {
+        if (!fechaNacimiento) return 0;
+        const hoy = new Date();
+        const fechaNac = new Date(fechaNacimiento);
+        let edad = hoy.getFullYear() - fechaNac.getFullYear();
+        const mes = hoy.getMonth() - fechaNac.getMonth();
+
+        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
+          edad--;
+        }
+
+        return edad;
+      }
+
+      // Función para verificar si es juvenil (< 18 años)
+      function esJuvenil(fechaNacimiento) {
+        return calcularEdad(fechaNacimiento) < 18;
+      }
+
+      // Función para verificar si es master (> 40 años)
+      function esMaster(fechaNacimiento) {
+        return calcularEdad(fechaNacimiento) > 40;
+      }
+
+      // Función para exportar todos los jugadores del campeonato actual a Excel con Fotos
+      async function exportarJugadoresCampeonatoExcel() {
+        try {
+          // 1. Selección de Rango de Edad (Múltiple)
+          const { value: ageFilters } = await Swal.fire({
+            title: "Seleccionar Rango de Edad",
+            html: `
+              <div class="text-start p-2">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" value="senior" id="age_senior" checked>
+                  <label class="form-check-label" for="age_senior">Senior (Normal)</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" value="master" id="age_master" checked>
+                  <label class="form-check-label" for="age_master">Master (> 40 años)</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" value="juvenil" id="age_juvenil" checked>
+                  <label class="form-check-label" for="age_juvenil">Juvenil (15 - 17 años)</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" value="infantil" id="age_infantil" checked>
+                  <label class="form-check-label" for="age_infantil">Infantil (< 15 años)</label>
+                </div>
+              </div>
+            `,
+            focusConfirm: false,
+            confirmButtonText: "Siguiente",
+            showCancelButton: true,
+            cancelButtonText: "Cancelar",
+            preConfirm: () => {
+              const selected = [];
+              if (document.getElementById("age_senior").checked)
+                selected.push("senior");
+              if (document.getElementById("age_master").checked)
+                selected.push("master");
+              if (document.getElementById("age_juvenil").checked)
+                selected.push("juvenil");
+              if (document.getElementById("age_infantil").checked)
+                selected.push("infantil");
+
+              if (selected.length === 0) {
+                Swal.showValidationMessage(
+                  "Debes seleccionar al menos una opción",
+                );
+              }
+              return selected;
+            },
+          });
+
+          if (!ageFilters) return;
+
+          // 2. Selección de Divisiones (Múltiple)
+          const { value: divisionFilters } = await Swal.fire({
+            title: "Seleccionar Divisiones",
+            html: `
+              <div class="text-start p-2">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" value="MÁXIMA" id="div_maxima" checked>
+                  <label class="form-check-label" for="div_maxima">MÁXIMA</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" value="PRIMERA" id="div_primera" checked>
+                  <label class="form-check-label" for="div_primera">PRIMERA</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" value="FEMENINO" id="div_femenino" checked>
+                  <label class="form-check-label" for="div_femenino">FEMENINO</label>
+                </div>
+              </div>
+            `,
+            focusConfirm: false,
+            confirmButtonText: "Siguiente",
+            showCancelButton: true,
+            cancelButtonText: "Cancelar",
+            preConfirm: () => {
+              const selected = [];
+              if (document.getElementById("div_maxima").checked)
+                selected.push("MÁXIMA");
+              if (document.getElementById("div_primera").checked)
+                selected.push("PRIMERA");
+              if (document.getElementById("div_femenino").checked)
+                selected.push("FEMENINO");
+              if (selected.length === 0) {
+                Swal.showValidationMessage(
+                  "Debes seleccionar al menos una opción",
+                );
+              }
+              return selected;
+            },
+          });
+
+          if (!divisionFilters) return;
+
+          // 3. Incluir Fotografías
+          const { value: incluirFotos } = await Swal.fire({
+            title: "Incluir Fotografías",
+            text: "¿Deseas incluir las fotos de los jugadores en el reporte? (Esto puede tardar un poco más por el volumen de datos)",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonText: "Sí, incluir fotos",
+            cancelButtonText: "No, solo texto",
+          });
+
+          if (incluirFotos === undefined) return; // Cancelado
+
+          const procesarFotos = incluirFotos === true;
+
+          Swal.fire({
+            title: "Preparando reporte...",
+            html: "Obteniendo datos... <br><b><span id='exportProgress'>0</span></b> jugadores procesados",
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            },
+          });
+
+          // 1. Obtener todos los equipos de este campeonato
+          const teamsSnapshot = await db
+            .collection("teams")
+            .where("championshipId", "==", championshipId)
+            .get();
+
+          const teamIds = new Set();
+          const teamNamesMap = {};
+          const teamCategoriesMap = {};
+
+          teamsSnapshot.forEach((doc) => {
+            teamIds.add(doc.id);
+            const data = doc.data();
+            teamNamesMap[doc.id] = data.name;
+            teamCategoriesMap[doc.id] = data.category;
+          });
+
+          // 2. Obtener todos los jugadores
+          const snapshot = await db.collection("players").get();
+
+          if (snapshot.empty) {
+            Swal.fire("Atención", "No hay jugadores registrados", "info");
+            return;
+          }
+
+          const playersToExport = [];
+          snapshot.forEach((doc) => {
+            const player = doc.data();
+            if (
+              teamIds.has(player.teamId) ||
+              player.campeonatoId === championshipId
+            ) {
+              // Filtrar por Rango de Edad
+              let matchAge = false;
+              const edad = calcularEdad(player.fechaNacimiento);
+              if (ageFilters.includes("infantil") && edad < 15) matchAge = true;
+              else if (ageFilters.includes("juvenil") && edad >= 15 && edad < 18) matchAge = true;
+              else if (ageFilters.includes("master") && edad > 40)
+                matchAge = true;
+              else if (
+                ageFilters.includes("senior") &&
+                edad >= 18 &&
+                edad <= 40
+              )
+                matchAge = true;
+
+              if (matchAge) {
+                // Filtrar por División de Equipo
+                const teamCat = (
+                  player.teamCategory ||
+                  teamCategoriesMap[player.teamId] ||
+                  ""
+                ).toUpperCase();
+                if (divisionFilters.includes(teamCat)) {
+                  playersToExport.push({
+                    ...player,
+                    clubRef: (
+                      player.teamName ||
+                      teamNamesMap[player.teamId] ||
+                      "SIN ASIGNAR"
+                    ).toUpperCase(),
+                    catRef: (
+                      player.teamCategory ||
+                      teamCategoriesMap[player.teamId] ||
+                      ""
+                    ).toUpperCase(),
+                  });
+                }
+              }
+            }
+          });
+
+          if (playersToExport.length === 0) {
+            Swal.fire(
+              "Atención",
+              "No se encontraron jugadores para los filtros seleccionados.",
+              "info",
+            );
+            return;
+          }
+
+          // Ordenar por Equipo y luego por Categoría
+          playersToExport.sort((a, b) => {
+            if (a.clubRef < b.clubRef) return -1;
+            if (a.clubRef > b.clubRef) return 1;
+            if (a.catRef < b.catRef) return -1;
+            if (a.catRef > b.catRef) return 1;
+            return 0;
+          });
+
+          // 3. Crear el libro de Excel con ExcelJS
+          const workbook = new ExcelJS.Workbook();
+          const worksheet = workbook.addWorksheet("Lista de Jugadores");
+
+          // Definir columnas
+          const columns = [
+            { header: "FOTO", key: "foto", width: 15 },
+            { header: "NÚMERO", key: "numero", width: 12 },
+            { header: "NOMBRES", key: "nombres", width: 35 },
+            { header: "APELLIDOS", key: "apellidos", width: 35 },
+            { header: "CÉDULA", key: "cedula", width: 20 },
+            { header: "CLUB/EQUIPO", key: "club", width: 40 },
+            { header: "CATEGORÍA", key: "categoria", width: 20 },
+            { header: "TIPO JUGADOR", key: "tipo_jugador", width: 20 },
+            { header: "ESTADO", key: "estado", width: 20 },
+          ];
+          worksheet.columns = columns;
+
+          // Estilo para el encabezado
+          worksheet.getRow(1).font = { bold: true };
+          worksheet.getRow(1).height = 25;
+          worksheet.getRow(1).alignment = {
+            vertical: "middle",
+            horizontal: "center",
+          };
+
+          // 4. Agregar jugadores y sus imágenes
+          for (let i = 0; i < playersToExport.length; i++) {
+            const player = playersToExport[i];
+            const rowIndex = i + 2; // +1 por encabezado
+            const edad = calcularEdad(player.fechaNacimiento);
+
+            const row = worksheet.addRow({
+              numero: player.numeroJugador || "S/N",
+              nombres: (player.nombres || "").toUpperCase(),
+              apellidos: (player.apellidos || "").toUpperCase(),
+              cedula: player.cedula || "",
+              club: player.clubRef,
+              categoria: player.catRef,
+              tipo_jugador: edad < 15 ? "INFANTIL" : (edad < 18 ? "JUVENIL" : (edad > 40 ? "MASTER" : "SENIOR")),
+              estado:
+                player.status === "recalificado"
+                  ? "RECALIFICADO"
+                  : "CALIFICADO",
+            });
+
+            row.alignment = { vertical: "middle" };
+
+            // Agregar foto si se solicitó
+            if (procesarFotos && player.playerPhoto) {
+              row.height = 90;
+              try {
+                if (player.playerPhoto.startsWith("data:image")) {
+                  const parts = player.playerPhoto.split(",");
+                  const extension = parts[0].split("/")[1].split(";")[0];
+                  const base64Data = parts[1];
+
+                  const imageId = workbook.addImage({
+                    base64: base64Data,
+                    extension: extension,
+                  });
+
+                  worksheet.addImage(imageId, {
+                    tl: { col: 0.1, row: rowIndex - 0.9 },
+                    ext: { width: 80, height: 110 },
+                  });
+                } else if (player.playerPhoto.startsWith("http")) {
+                  row.getCell("foto").value = {
+                    text: "Ver Foto",
+                    hyperlink: player.playerPhoto,
+                  };
+                }
+              } catch (err) {
+                console.warn("Error con foto del jugador:", player.cedula, err);
+              }
+            }
+
+            // Actualizar progreso
+            if (i % 5 === 0) {
+              const progressEl = document.getElementById("exportProgress");
+              if (progressEl)
+                progressEl.textContent = `${i} / ${playersToExport.length}`;
+            }
+          }
+
+          // 5. Descargar archivo
+          const champTitle = document
+            .getElementById("championshipTitle")
+            .textContent.trim();
+          const champName = champTitle.replace(/\s+/g, "_");
+          const fecha = new Date()
+            .toLocaleDateString("es-ES")
+            .replace(/\//g, "-");
+
+          const buffer = await workbook.xlsx.writeBuffer();
+          const blob = new Blob([buffer], {
+            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          });
+          saveAs(blob, `Reporte_Filtros_${champName}_${fecha}.xlsx`);
+
+          Swal.fire({
+            title: "¡Éxito!",
+            text: `El reporte de jugadores se ha generado correctamente con los filtros seleccionados.`,
+            icon: "success",
+          });
+        } catch (error) {
+          console.error("Error al exportar a Excel:", error);
+          Swal.fire({
+            title: "Error",
+            text: "No se pudo generar el reporte. El volumen de imágenes podría ser muy alto para el navegador.",
+            icon: "error",
+          });
+        }
+      }
+      async function exportarCredencialesExcel() {
+        try {
+          Swal.fire({
+            title: 'Preparando Credenciales',
+            text: 'Obteniendo accesos de todos los equipos del campeonato...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+          });
+
+          const snapshot = await db.collection("teams").where("championshipId", "==", championshipId).get();
+          
+          if (snapshot.empty) {
+            Swal.fire("Aviso", "No hay equipos registrados en este campeonato.", "info");
+            return;
+          }
+
+          const data = [];
+          snapshot.forEach(doc => {
+            const team = doc.data();
+            data.push({
+              "EQUIPO": team.name || "N/A",
+              "CATEGORÍA": team.category || "N/A",
+              "CORREO DE ACCESO": team.email || "N/A",
+              "CONTRASEÑA": team.password || "N/A",
+              "FECHA REGISTRO": team.createdAt ? team.createdAt.toDate().toLocaleDateString() : 'N/A'
+            });
+          });
+
+          // Usar XLSX (ya disponible en el proyecto)
+          const ws = XLSX.utils.json_to_sheet(data);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Credenciales_Equipos");
+
+          // Ajustar anchos
+          ws['!cols'] = [
+            { wch: 30 }, // Equipo
+            { wch: 15 }, // Categoría
+            { wch: 35 }, // Email
+            { wch: 20 }, // Password
+            { wch: 15 }  // Fecha
+          ];
+
+          const fecha = new Date().toLocaleDateString().replace(/\//g, '-');
+          XLSX.writeFile(wb, `Credenciales_LDBAA_${fecha}.xlsx`);
+
+          Swal.fire("¡Éxito!", "Se ha generado el archivo con las credenciales de los equipos.", "success");
+        } catch (error) {
+          console.error(error);
+          Swal.fire("Error", "No se pudo generar el archivo de credenciales.", "error");
+        }
+      }
+    </script>
+  </body>
+</html>
+

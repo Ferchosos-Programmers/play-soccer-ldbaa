@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tabla de Posiciones | Liga Barrial LDBAA</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+
+    <link rel="icon" href="img/logo.png" />
+    <link rel="stylesheet" href="css/global-theme.css" />
+    <link rel="stylesheet" href="css/tabla-posiciones.css" />
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/global-swal-patch.js"></script>
+
+    <style>
+      .section-header {
+        margin-top: 40px;
+        margin-bottom: 30px;
+      }
+      .btn-export {
+          background: rgba(46, 204, 113, 0.1);
+          border: 1px solid rgba(46, 204, 113, 0.3);
+          color: #2ecc71;
+          font-weight: 700;
+          padding: 8px 15px;
+          border-radius: 12px;
+          transition: all 0.3s ease;
+      }
+      .btn-export:hover {
+          background: #2ecc71;
+          color: #000;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-bg"></div>
+
+    <nav class="nav-premium shadow-sm">
+      <div class="nav-content">
+        <a href="dashboard.html" class="nav-logo">
+          <img src="img/logo.png" alt="Logo" />
+          <span>LDBAA <span class="brand-accent">ARGELIA ALTA</span></span>
+        </a>
+        <div class="nav-links d-none d-md-flex">
+          <a href="programacion-dashboard.html"><i class="fas fa-home me-2"></i>Dashboard</a>
+          <a href="#" class="active"><i class="fas fa-list-ol me-2"></i>Posiciones</a>
+        </div>
+        <button class="btn-logout-premium" onclick="logout()">
+          <i class="fas fa-sign-out-alt me-2"></i><span>Salir</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="container pb-5">
+      <div class="section-header d-flex flex-wrap justify-content-between align-items-center gap-3">
+        <div>
+          <h2 class="section-title mb-0">🏆 Tabla de Posiciones</h2>
+          <p class="text-white-50 mt-2 mb-0">Estadísticas y clasificación actualizada en tiempo real.</p>
+        </div>
+        <div class="header-actions"></div>
+      </div>
+
+      <!-- Selector de Campeonato -->
+      <div class="table-premium-container mb-4 py-4">
+        <div class="row align-items-center">
+            <div class="col-md-3">
+                <label for="championshipSelect" class="form-label mb-0 fw-bold">CAMPEONATO ACTIVO:</label>
+            </div>
+            <div class="col-md-9">
+                <select class="select-premium w-100" id="championshipSelect" onchange="onChampionshipSelected()">
+                  <option value="">Cargando campeonatos...</option>
+                </select>
+            </div>
+        </div>
+      </div>
+
+      <ul class="nav nav-pills nav-pills-premium justify-content-center" id="categoryTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button class="nav-link active" id="maxima-tab" data-bs-toggle="pill" data-bs-target="#maxima" type="button" role="tab">MÁXIMA</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="primera-tab" data-bs-toggle="pill" data-bs-target="#primera" type="button" role="tab">PRIMERA</button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button class="nav-link" id="femenino-tab" data-bs-toggle="pill" data-bs-target="#femenino" type="button" role="tab">FEMENINO</button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="categoryTabContent">
+        <div class="tab-pane fade show active" id="maxima" role="tabpanel">
+           <div class="d-flex justify-content-end mb-3">
+            <button class="btn-export" onclick="exportarTablaExcel('maxima')">
+              <i class="fas fa-file-excel me-2"></i>Exportar Excel
+            </button>
+          </div>
+          <div class="table-premium-container p-0 overflow-hidden">
+            <div class="table-responsive">
+              <table class="table-premium">
+                <thead>
+                  <tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>
+                </thead>
+                <tbody id="maximaTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="primera" role="tabpanel">
+           <div class="d-flex justify-content-end mb-3">
+            <button class="btn-export" onclick="exportarTablaExcel('primera')">
+              <i class="fas fa-file-excel me-2"></i>Exportar Excel
+            </button>
+          </div>
+          <div class="table-premium-container p-0 overflow-hidden">
+            <div class="table-responsive">
+              <table class="table-premium">
+                <thead>
+                  <tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>
+                </thead>
+                <tbody id="primeraTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="femenino" role="tabpanel">
+           <div class="d-flex justify-content-end mb-3">
+            <button class="btn-export" onclick="exportarTablaExcel('femenino')">
+              <i class="fas fa-file-excel me-2"></i>Exportar Excel
+            </button>
+          </div>
+          <div class="table-premium-container p-0 overflow-hidden">
+            <div class="table-responsive">
+              <table class="table-premium">
+                <thead>
+                  <tr><th>Pos</th><th>Equipo</th><th>PJ</th><th>PG</th><th>PE</th><th>PP</th><th>GF</th><th>GC</th><th>DG</th><th>Pts</th></tr>
+                </thead>
+                <tbody id="femeninoTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap y Firebase -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+        authDomain: "ldbaa-calificaciones.firebaseapp.com",
+        projectId: "ldbaa-calificaciones",
+        storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+        messagingSenderId: "277579489603",
+        appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+      };
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const auth = firebase.auth();
+
+      let currentChampionship = null;
+      let currentCategory = 'maxima';
+
+      auth.onAuthStateChanged((user) => {
+        if (!user || user.email !== 'programacion@gmail.com') {
+          window.location.href = 'login.html';
+          return;
+        }
+        loadChampionships();
+      });
+
+      function loadChampionships() {
+        const championshipSelect = document.getElementById('championshipSelect');
+        championshipSelect.innerHTML = '<option value="">Seleccionar un campeonato...</option>';
+        db.collection('championships').get().then((querySnapshot) => {
+          querySnapshot.forEach((doc) => {
+            const championship = doc.data();
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = championship.name;
+            championshipSelect.appendChild(option);
+          });
+          if (championshipSelect.options.length > 1) {
+            championshipSelect.value = championshipSelect.options[1].value;
+            onChampionshipSelected();
+          }
+        });
+      }
+
+      function onChampionshipSelected() {
+        const championshipId = document.getElementById('championshipSelect').value;
+        if (!championshipId) return;
+        currentChampionship = { id: championshipId };
+        loadTeamsForChampionship(championshipId, currentCategory);
+      }
+
+      async function loadTeamsForChampionship(championshipId, category) {
+        const tableBody = document.getElementById(`${category}TableBody`);
+        tableBody.innerHTML = '<tr><td colspan="10" class="py-4"><div class="spinner-border text-success" role="status"></div><br>Calculando estadísticas...</td></tr>';
+        
+        try {
+          // 1. Obtener equipos
+          const teamsSnap = await db.collection('teams').where('championshipId', '==', championshipId).get();
+          let teamsData = {};
+          
+          const normalizedSelectedCat = category.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+          teamsSnap.forEach(doc => {
+            const team = doc.data();
+            const teamCat = (team.category || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+            
+            if (teamCat === normalizedSelectedCat) {
+              teamsData[team.name] = {
+                name: team.name,
+                logo: team.logo || 'img/logo.png',
+                pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0
+              };
+            }
+          });
+
+          // 2. Obtener fixtures (partidos)
+          const fixturesSnap = await db.collection('fixtures')
+            .where('championshipId', '==', championshipId)
+            .get();
+
+          fixturesSnap.forEach(doc => {
+            const fixture = doc.data();
+            const fixCat = (fixture.category || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+
+            if (fixCat === normalizedSelectedCat) {
+              fixture.data.forEach(m => {
+                if (m.isFinalized && teamsData[m.local] && teamsData[m.visitor]) {
+                  const goalsLocal = (m.playersLocal || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+                  const goalsVisitor = (m.playersVisitor || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+
+                  // Update Local
+                  teamsData[m.local].pj++;
+                  teamsData[m.local].gf += goalsLocal;
+                  teamsData[m.local].gc += goalsVisitor;
+
+                  // Update Visitor
+                  teamsData[m.visitor].pj++;
+                  teamsData[m.visitor].gf += goalsVisitor;
+                  teamsData[m.visitor].gc += goalsLocal;
+
+                  if (goalsLocal > goalsVisitor) {
+                    teamsData[m.local].pg++;
+                    teamsData[m.local].pts += 3;
+                    teamsData[m.visitor].pp++;
+                  } else if (goalsLocal < goalsVisitor) {
+                    teamsData[m.visitor].pg++;
+                    teamsData[m.visitor].pts += 3;
+                    teamsData[m.local].pp++;
+                  } else {
+                    teamsData[m.local].pe++;
+                    teamsData[m.local].pts += 1;
+                    teamsData[m.visitor].pe++;
+                    teamsData[m.visitor].pts += 1;
+                  }
+                }
+              });
+            }
+          });
+
+          // 3. Convertir a array, calcular DG y ordenar
+          let sortedTeams = Object.values(teamsData).map(t => {
+            t.dg = t.gf - t.gc;
+            return t;
+          });
+
+          sortedTeams.sort((a, b) => {
+            if (b.pts !== a.pts) return b.pts - a.pts;
+            if (b.dg !== a.dg) return b.dg - a.dg;
+            return b.gf - a.gf;
+          });
+
+          updateTable(category, sortedTeams);
+
+        } catch (error) {
+          console.error("Error al calcular tabla:", error);
+          tableBody.innerHTML = '<tr><td colspan="10" class="text-danger">Error al cargar estadísticas.</td></tr>';
+        }
+      }
+
+      function updateTable(category, teams) {
+        const tableBody = document.getElementById(`${category}TableBody`);
+        if (teams.length === 0) {
+          tableBody.innerHTML = '<tr><td colspan="10" class="py-4 text-white-50 small italic">No hay equipos registrados o partidos finalizados en esta categoría</td></tr>';
+          return;
+        }
+        tableBody.innerHTML = teams.map((team, index) => `
+          <tr>
+            <td class="fw-bold" style="color: #2ecc71">${index + 1}</td>
+            <td class="text-start ps-4">
+              <div class="d-flex align-items-center">
+                <img src="${team.logo}" alt="Logo" class="me-2" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover; border: 1px solid rgba(255,255,255,0.1)">
+                <span class="text-white fw-bold">${team.name}</span>
+              </div>
+            </td>
+            <td class="text-white-50">${team.pj}</td>
+            <td class="text-white-50">${team.pg}</td>
+            <td class="text-white-50">${team.pe}</td>
+            <td class="text-white-50">${team.pp}</td>
+            <td class="text-white-50">${team.gf}</td>
+            <td class="text-white-50">${team.gc}</td>
+            <td class="text-white fw-bold ${team.dg >= 0 ? 'text-success' : 'text-danger'}">${team.dg}</td>
+            <td class="fw-900 text-white" style="font-size: 1.1rem">${team.pts}</td>
+          </tr>
+        `).join('');
+      }
+
+      function exportarTablaExcel(categoria) {
+        const tabla = document.querySelector(`#${categoria} .table-premium`);
+        const wb = XLSX.utils.table_to_book(tabla, {sheet: "Posiciones"});
+        XLSX.writeFile(wb, `tabla-posiciones-${categoria}.xlsx`);
+      }
+
+      function logout() {
+        auth.signOut().then(() => window.location.href = 'login.html');
+      }
+
+      document.querySelectorAll('#categoryTabs .nav-link').forEach(tab => {
+        tab.addEventListener('click', (e) => {
+          currentCategory = e.target.id.replace('-tab', '');
+          if (currentChampionship) loadTeamsForChampionship(currentChampionship.id, currentCategory);
+        });
+      });
+    </script>
+  </body>
+</html>

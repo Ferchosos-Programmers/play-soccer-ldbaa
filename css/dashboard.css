@@ -1,0 +1,238 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap');
+
+:root {
+    --primary-color: #2ecc71;
+    --primary-dark: #27ae60;
+    --glass-bg: rgba(255, 255, 255, 0.03);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --card-glow: rgba(46, 204, 113, 0.2);
+}
+
+body {
+    font-family: 'Outfit', sans-serif;
+    color: white;
+    background-color: #0a0a0a;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    display: block; /* Important: remove any flex centering from other CSS */
+}
+
+/* Background with premium overlay */
+.main-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image:
+        radial-gradient(
+            circle at 50% 50%,
+            rgba(46, 204, 113, 0.1) 0%,
+            transparent 50%
+        ),
+        linear-gradient(rgba(0, 0, 0, 0.7), #0a0a0a),
+        url("../img/stadium-bg.png");
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+}
+
+.main-bg::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        circle at 50% 0%,
+        rgba(255, 255, 255, 0.05) 0%,
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+.nav-premium {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1.25rem 2.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.brand-accent {
+    color: var(--primary-color);
+    font-weight: 800;
+}
+
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    padding: 3rem 2rem;
+    transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+}
+
+.glass-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.05),
+        transparent
+    );
+    transition: 0.5s;
+}
+
+.glass-card:hover::before {
+    left: 100%;
+}
+
+.glass-card:hover {
+    transform: translateY(-12px) scale(1.02);
+    border-color: var(--primary-color);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.8), 0 0 20px var(--card-glow);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.btn-premium {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    border-radius: 14px;
+    padding: 0.85rem 1.75rem;
+    font-weight: 700;
+    color: white !important;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px -10px rgba(46, 204, 113, 0.5);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    font-size: 0.95rem;
+    letter-spacing: 0.3px;
+}
+
+.btn-premium:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 20px 30px -10px rgba(46, 204, 113, 0.6);
+    filter: brightness(1.1);
+}
+
+.btn-logout {
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.2);
+    color: #e74c3c;
+    border-radius: 12px;
+    padding: 0.6rem 1.4rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+    background: #e74c3c;
+    color: white;
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.4);
+}
+
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 1.5rem;
+}
+
+.btn-secondary-glass {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border);
+    color: white !important;
+    border-radius: 14px;
+    padding: 0.6rem 1.25rem;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.btn-secondary-glass:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Modals */
+.modal-content {
+    background: rgba(15, 15, 15, 0.95) !important;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    color: white;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1.5rem 2rem;
+}
+
+.modal-footer {
+    border-top: none;
+    padding: 1.5rem 2rem;
+}
+
+.glass-input {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    color: white;
+    padding: 0.85rem 1.25rem;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+
+.glass-input:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.1);
+    outline: none;
+}
+
+.form-label {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-left: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .section-title {
+        font-size: 1.8rem;
+    }
+    .nav-premium {
+        padding: 1rem 1.5rem;
+    }
+    .glass-card {
+        padding: 2rem 1.5rem;
+    }
+}
+

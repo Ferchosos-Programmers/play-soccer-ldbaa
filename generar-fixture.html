@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Fixture | LDBAA</title>
+    
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="css/global-theme.css">
+    <link rel="stylesheet" href="css/programacion-dashboard.css">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/global-swal-patch.js"></script>
+
+    <style>
+        :root {
+            --purple-accent: #9b59b6;
+            --purple-glow: rgba(155, 89, 182, 0.3);
+            --gold-accent: #f1c40f;
+        }
+
+        .wizard-container {
+            padding: 120px 20px 60px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .wizard-step {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .wizard-step.active {
+            display: block;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .step-dot.active {
+            background: var(--purple-accent);
+            box-shadow: 0 0 15px var(--purple-accent);
+            transform: scale(1.3);
+        }
+
+        .mode-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            height: 100%;
+            position: relative;
+        }
+
+        .mode-card:hover, .mode-card.selected {
+            background: rgba(155, 89, 182, 0.1);
+            border-color: var(--purple-accent);
+            transform: translateY(-5px);
+        }
+
+        .mode-card.primordial {
+            border-color: var(--gold-accent);
+            box-shadow: 0 0 20px rgba(241, 196, 15, 0.1);
+        }
+
+        .mode-card.primordial::before {
+            content: '⭐ RECOMENDADO';
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gold-accent);
+            color: black;
+            font-size: 0.7rem;
+            font-weight: 800;
+            padding: 2px 12px;
+            border-radius: 10px;
+            z-index: 10;
+        }
+
+        .mode-card.selected i {
+            color: var(--purple-accent);
+            transform: scale(1.1);
+        }
+
+        .mode-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .team-pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 8px 15px;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-next {
+            background: var(--purple-accent);
+            color: white;
+            border: none;
+            padding: 12px 40px;
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-next:hover {
+            background: #8e44ad;
+            box-shadow: 0 0 20px var(--purple-glow);
+            transform: scale(1.05);
+        }
+
+        .btn-prev {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 40px;
+            border-radius: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-prev:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .schedule-day-box {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-day-box.active {
+            border-color: rgba(155, 89, 182, 0.4);
+            background: rgba(155, 89, 182, 0.03);
+        }
+
+        .table-purple th { background: #8e44ad !important; color: white !important; }
+        .row-rest {
+            background: rgba(243, 156, 18, 0.1) !important;
+            border-left: 4px solid #f39c12;
+        }
+        .badge-rest {
+            background: #f39c12;
+            color: black;
+            font-weight: 800;
+        }
+
+        /* Elegancia inspirada en el diseño del usuario */
+        .fixture-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .fixture-header {
+            text-align: center;
+            border-bottom: 2px solid rgba(142, 68, 173, 0.3);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .fixture-header h5 {
+            color: var(--purple-accent);
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+        .fixture-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        .fixture-table td {
+            padding: 12px 15px;
+            background: rgba(255,255,255,0.02);
+            border-top: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .team-cell { width: 40%; text-align: center; font-weight: 600; text-transform: uppercase; }
+        .vs-cell { width: 10%; text-align: center; color: #8e44ad; font-weight: 900; }
+        .score-box { background: rgba(255,255,255,0.05); width: 40px; border: 1px solid rgba(255,255,255,0.2); height: 35px; display: inline-block; }
+        
+        .free-team-footer {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(243, 156, 18, 0.1);
+            border-radius: 10px;
+            text-align: center;
+            border: 1px dashed #f39c12;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-bg"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-premium shadow-sm">
+        <div class="nav-content">
+            <a class="navbar-brand text-white fw-bold d-flex align-items-center" href="programacion-dashboard.html">
+                <img src="img/logo.png" alt="Logo" width="35" height="35" class="me-2">
+                <span>LDBAA <span class="brand-accent">GENERADOR</span></span>
+            </a>
+            <a href="programacion-dashboard.html" class="btn-logout-premium text-decoration-none">
+                <i class="fas fa-arrow-left me-2"></i><span>Volver</span>
+            </a>
+        </div>
+    </nav>
+
+    <div class="wizard-container">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold text-white">Generación de <span class="text-purple">Fixture Oficial</span></h1>
+            <p class="text-white-50">Configura el formato de competencia según el reglamento de la Liga Barrial.</p>
+        </div>
+
+        <div class="step-indicator">
+            <div class="step-dot active" data-step="1"></div>
+            <div class="step-dot" data-step="2"></div>
+            <div class="step-dot" data-step="3"></div>
+            <div class="step-dot" data-step="4"></div>
+        </div>
+
+        <!-- Step 1: Modalidad and Category -->
+        <div class="wizard-step active" id="step1">
+            <div class="glass-panel">
+                <h4 class="text-white mb-4"><i class="fas fa-cog me-2 text-purple"></i> Paso 1: Configuración de Torneo</h4>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label text-white-50">Categoría a Programar</label>
+                        <select class="select-premium" id="catSelect">
+                            <option value="MÁXIMA">MÁXIMA</option>
+                            <option value="PRIMERA">PRIMERA</option>
+                            <option value="FEMENINO">FEMENINO</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-white-50">Campeonato Activo</label>
+                        <select class="select-premium" id="campSelect">
+                            <option value="">Cargando campeonatos...</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-12 mt-5">
+                        <label class="form-label text-white-50 mb-3">Selecciona la Modalidad</label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mode-card primordial selected" onclick="selectMode('ldbaa', this)">
+                                    <i class="fas fa-medal text-warning"></i>
+                                    <h5>Liga LDBAA (Ida y Vuelta)</h5>
+                                    <p class="small text-white-50">Fase regular completa + Liguilla por grupos + Semifinales y Final. Formato oficial de la liga.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mode-card" onclick="selectMode('relampago', this)">
+                                    <i class="fas fa-bolt text-info"></i>
+                                    <h5>Camp. Relámpago (Fast)</h5>
+                                    <p class="small text-white-50">Eliminación directa simple (Muerte súbita). Ideal para torneos rápidos de un día o fin de semana.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-end mt-5">
+                    <button class="btn-next" onclick="goToStep(2)">Siguiente <i class="fas fa-chevron-right ms-2"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Teams Selection -->
+        <div class="wizard-step" id="step2">
+            <div class="glass-panel">
+                <h4 class="text-white mb-4"><i class="fas fa-users me-2 text-purple"></i> Paso 2: Equipos Registrados</h4>
+                <div id="loadingTeams" class="text-center py-5">
+                    <div class="spinner-border text-purple" role="status"></div>
+                    <p class="mt-3 text-white-50">Obteniendo clubes inscritos...</p>
+                </div>
+                <div id="teamsContainer" style="display:none;">
+                    <p class="text-white-50 mb-3">Confirma los equipos que participarán en este fixture:</p>
+                    <div id="teamsList" class="d-flex flex-wrap gap-2 mb-4"></div>
+                    <div class="alert alert-info bg-dark-glass border-purple border-opacity-25 mt-4">
+                        <i class="fas fa-info-circle me-2"></i> Equipos seleccionados: <span id="teamCount" class="fw-bold">0</span>.
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mt-5">
+                    <button class="btn-prev" onclick="goToStep(1)"><i class="fas fa-chevron-left me-2"></i> Anterior</button>
+                    <button class="btn-next" onclick="goToStep(3)">Siguiente <i class="fas fa-chevron-right ms-2"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Scheduling Rules -->
+        <div class="wizard-step" id="step3">
+            <div class="glass-panel">
+                <h4 class="text-white mb-4"><i class="fas fa-calendar-alt me-2 text-purple"></i> Paso 3: Calendario y Horarios</h4>
+                <div class="col-12 text-center py-5">
+                    <p class="text-white-50">Generaremos el esquema lógico de encuentros por <b>Etapas</b> para el campeonato seleccionado.</p>
+                    <p class="small text-muted">Esto incluirá la 1ra Vuelta, 2da Vuelta (revanchas), Liguilla por grupos y fases finales.</p>
+                    <div class="mt-4">
+                        <i class="fas fa-project-diagram fa-4x text-purple opacity-50"></i>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mt-5">
+                    <button class="btn-prev" onclick="goToStep(2)"><i class="fas fa-chevron-left me-2"></i> Anterior</button>
+                    <button class="btn-next" onclick="generatePreview()">Generar Esquema de Encuentros <i class="fas fa-magic ms-2"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 4: Preview -->
+        <div class="wizard-step" id="step4">
+            <div class="glass-panel">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div>
+                        <h4 class="text-white mb-0"><i class="fas fa-sitemap me-2 text-success"></i> Fixture Proyectado</h4>
+                        <span class="text-white-50 small" id="modeSummary"></span>
+                    </div>
+                    <button class="btn btn-success" id="exportBtn"><i class="fas fa-file-excel me-2"></i> Descargar Excel</button>
+                </div>
+                
+                <div class="table-responsive" id="fixturePreview" style="max-height: 500px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px;"></div>
+
+                <div class="d-flex justify-content-between mt-5">
+                    <button class="btn-prev" onclick="goToStep(3)"><i class="fas fa-chevron-left me-2"></i> Ajustar</button>
+                    <button class="btn btn-premium px-5" onclick="finalSubmit()">Confirmar y Guardar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK (v8 Namespaced) -->
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+            authDomain: "ldbaa-calificaciones.firebaseapp.com",
+            projectId: "ldbaa-calificaciones",
+            storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+            messagingSenderId: "277579489603",
+            appId: "1:277579489603:web:01a1cc9ee1c9538163cff6",
+        };
+
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let currentStep = 1;
+        let selectedMode = 'ldbaa';
+        let teams = [];
+        let selectedDays = [];
+        let generatedFixture = [];
+
+        // Cargar campeonatos al iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            loadChampionships();
+        });
+
+        async function loadChampionships() {
+            const select = document.getElementById('campSelect');
+            try {
+                const snapshot = await db.collection('championships').orderBy('createdAt', 'desc').get();
+                select.innerHTML = '';
+                if (snapshot.empty) {
+                    select.innerHTML = '<option value="">No hay campeonatos activos</option>';
+                    return;
+                }
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const option = document.createElement('option');
+                    option.value = doc.id;
+                    option.textContent = data.name + (data.year ? ` ${data.year}` : '');
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error cargando campeonatos:", error);
+                select.innerHTML = '<option value="">Error al cargar</option>';
+            }
+        }
+
+        function selectMode(mode, element) {
+            selectedMode = mode;
+            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+
+        function toggleDay(day, element) {
+            if (selectedDays.includes(day)) {
+                selectedDays = selectedDays.filter(d => d !== day);
+                element.classList.remove('active', 'btn-purple');
+                document.getElementById(`settings-${day}`)?.remove();
+            } else {
+                selectedDays.push(day);
+                element.classList.add('active', 'btn-purple');
+                addDaySettings(day);
+            }
+        }
+
+        function addDaySettings(day) {
+            const container = document.getElementById('daySettings');
+            container.innerHTML = ''; 
+        }
+
+        function goToStep(step) {
+            if (step === 2 && currentStep === 1) loadTeams();
+            document.querySelectorAll('.wizard-step').forEach(s => s.classList.remove('active'));
+            document.getElementById(`step${step}`).classList.add('active');
+            document.querySelectorAll('.step-dot').forEach(d => {
+                d.classList.remove('active');
+                if (parseInt(d.dataset.step) === step) d.classList.add('active');
+            });
+            currentStep = step;
+            window.scrollTo(0,0);
+        }
+
+        async function loadTeams() {
+            const category = document.getElementById('catSelect').value;
+            const teamsList = document.getElementById('teamsList');
+            const loading = document.getElementById('loadingTeams');
+            loading.style.display = 'block';
+            document.getElementById('teamsContainer').style.display = 'none';
+            teamsList.innerHTML = '';
+
+            try {
+                const campId = document.getElementById('campSelect').value;
+                const snapshot = await db.collection('teams').where('championshipId', '==', campId).get();
+                teams = [];
+                
+                const normalize = (str) => str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim() : "";
+                const targetCat = normalize(category);
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    if (normalize(data.category) === targetCat) {
+                        teams.push({ id: doc.id, name: data.name });
+                    }
+                });
+
+                if (teams.length === 0) {
+                    teamsList.innerHTML = '<p class="text-danger">No hay equipos en esta categoría.</p>';
+                } else {
+                    teams.forEach(team => {
+                        teamsList.insertAdjacentHTML('beforeend', `
+                            <div class="team-pill">
+                                <input type="checkbox" checked id="chk-${team.id}" class="form-check-input" value="${team.name}">
+                                <label for="chk-${team.id}" class="text-white">${team.name}</label>
+                            </div>
+                        `);
+                    });
+                }
+                document.getElementById('teamCount').textContent = teams.length;
+                loading.style.display = 'none';
+                document.getElementById('teamsContainer').style.display = 'block';
+            } catch (error) {
+                Swal.fire('Error', 'Fallo de conexión', 'error');
+            }
+        }
+
+        function generatePreview() {
+            const selectedTeams = Array.from(document.querySelectorAll('#teamsList input:checked')).map(i => i.value);
+            if (selectedTeams.length < 2) return Swal.fire('Error', 'Mínimo 2 equipos', 'warning');
+
+            let rounds = [];
+            if (selectedMode === 'ldbaa') {
+                rounds = generateLDBAARounds(selectedTeams);
+                document.getElementById('modeSummary').textContent = "Estructura LDBAA: Regular 1/2 Vuelta + Liguilla + Semis + Final";
+            } else {
+                rounds = generateRelampagoRounds(selectedTeams);
+                document.getElementById('modeSummary').textContent = "Estructura: Eliminación Directa Simple";
+            }
+
+            const fixture = projectOnlyRounds(rounds);
+            renderFixture(fixture);
+            generatedFixture = fixture;
+            goToStep(4);
+        }
+
+        function projectOnlyRounds(rounds) {
+            const schedule = [];
+            rounds.forEach((roundMatches, rIdx) => {
+                roundMatches.forEach(match => {
+                    schedule.push({ 
+                        fecha: `Etapa ${rIdx + 1}`, 
+                        etiqueta: match.tag, 
+                        local: match.local, 
+                        visitor: match.visitor, 
+                        nota: match.nota || "" 
+                    });
+                });
+            });
+            return schedule;
+        }
+
+        function generateLDBAARounds(teamsList) {
+            let n = teamsList.length;
+            let tempTeams = [...teamsList];
+            if (n % 2 !== 0) { tempTeams.push("DESCANSA"); n++; }
+
+            let primeiraVuelta = [];
+            for (let r = 0; r < n - 1; r++) {
+                let matches = [];
+                for (let i = 0; i < n / 2; i++) {
+                    const local = tempTeams[i]; const visitor = tempTeams[n - 1 - i];
+                    matches.push({ 
+                        local, 
+                        visitor, 
+                        tag: (local === "DESCANSA" || visitor === "DESCANSA") ? "DESCANSO" : "1era Vuelta" 
+                    });
+                }
+                primeiraVuelta.push(matches);
+                tempTeams.splice(1, 0, tempTeams.pop());
+            }
+
+            let segundaVuelta = primeiraVuelta.map(round => round.map(m => ({ 
+                local: m.visitor, 
+                visitor: m.local, 
+                tag: m.tag === "DESCANSO" ? "DESCANSO" : "2da Vuelta" 
+            })));
+
+            let liguilla = [];
+            let nClassified = teamsList.length >= 7 ? 4 : (teamsList.length >= 5 ? 3 : 2);
+            let totalClassified = nClassified * 2; 
+
+            if (totalClassified >= 8) {
+                liguilla.push([{ local: "A1", visitor: "A4", tag: "Liguilla A (F1)" }, { local: "A2", visitor: "A3", tag: "Liguilla A (F1)" }]);
+                liguilla.push([{ local: "B1", visitor: "B4", tag: "Liguilla B (F1)" }, { local: "B2", visitor: "B3", tag: "Liguilla B (F1)" }]);
+            } else if (totalClassified >= 6) {
+                liguilla.push([{ local: "A1", visitor: "A3", tag: "Liguilla A (F1)" }, { local: "B1", visitor: "B3", tag: "Liguilla B (F1)" }]);
+            }
+
+            let finales = [
+                [{ local: "1º Grupo A", visitor: "2º Grupo B", tag: "Semifinal 1" }, { local: "1º Grupo B", visitor: "2º Grupo A", tag: "Semifinal 2" }],
+                [{ local: "Ganador Semi 1", visitor: "Ganador Semi 2", tag: "GRAN FINAL", nota: "Final Oficial" }]
+            ];
+
+            return [...primeiraVuelta, ...segundaVuelta, ...liguilla, ...finales];
+        }
+
+        function generateRelampagoRounds(teamsList) {
+            let n = teamsList.length;
+            let rounds = [];
+            let firstRound = [];
+            for(let i=0; i<n; i+=2) firstRound.push({ local: teamsList[i], visitor: teamsList[i+1] || "DESCANSA", tag: "Eliminación" });
+            rounds.push(firstRound.filter(m => m.visitor !== "DESCANSA"));
+            
+            if (n > 4) rounds.push([{local: "G1", visitor: "G2", tag: "Semifinal"}, {local: "G3", visitor: "G4", tag: "Semifinal"}]);
+            rounds.push([{local: "Finalista 1", visitor: "Finalista 2", tag: "GRAN FINAL"}]);
+            return rounds;
+        }
+
+        function renderFixture(data) {
+            const container = document.getElementById('fixturePreview');
+            container.innerHTML = '';
+            
+            const groups = {};
+            data.forEach(p => {
+                if (!groups[p.fecha]) groups[p.fecha] = { matches: [], rest: null, tag: p.etiqueta };
+                if (p.etiqueta === "DESCANSO") {
+                    groups[p.fecha].rest = p.local === 'DESCANSA' ? p.visitor : p.local;
+                } else {
+                    groups[p.fecha].matches.push(p);
+                }
+            });
+
+            let fullHtml = '';
+            for (const [etapa, info] of Object.entries(groups)) {
+                let tableHtml = `<div class="fixture-card">
+                    <div class="fixture-header">
+                        <span class="badge bg-purple mb-2">${info.tag}</span>
+                        <h5>${etapa} Fixture</h5>
+                    </div>
+                    <table class="fixture-table">`;
+                
+                info.matches.forEach(m => {
+                    tableHtml += `<tr>
+                        <td class="team-cell">${m.local}</td>
+                        <td style="width: 50px;"><div class="score-box"></div></td>
+                        <td class="vs-cell">vs</td>
+                        <td style="width: 50px;"><div class="score-box"></div></td>
+                        <td class="team-cell">${m.visitor}</td>
+                    </tr>`;
+                });
+
+                tableHtml += `</table>`;
+                if (info.rest) {
+                    tableHtml += `<div class="free-team-footer">
+                        <i class="fas fa-calendar-day me-2"></i><strong>Fecha Libre:</strong> ${info.rest}
+                    </div>`;
+                }
+                tableHtml += `</div>`;
+                fullHtml += tableHtml;
+            }
+
+            container.innerHTML = fullHtml;
+            
+            const hiddenTable = document.createElement('table');
+            hiddenTable.id = "exportTable";
+            hiddenTable.style.display = "none";
+            let hHtml = `<thead><tr><th>Fase</th><th>Etapa</th><th>Local</th><th>VS</th><th>Visitante</th></tr></thead><tbody>`;
+            data.forEach(p => hHtml += `<tr><td>${p.etiqueta}</td><td>${p.fecha}</td><td>${p.local}</td><td>VS</td><td>${p.visitor}</td></tr>`);
+            hiddenTable.innerHTML = hHtml + "</tbody>";
+            container.appendChild(hiddenTable);
+
+            document.getElementById('exportBtn').onclick = () => {
+                const wb = XLSX.utils.table_to_book(document.getElementById('exportTable'), {sheet: 'Fixture'});
+                XLSX.writeFile(wb, `Fixture_${document.getElementById('catSelect').value}.xlsx`);
+            };
+        }
+
+        async function finalSubmit() {
+            if (!generatedFixture || generatedFixture.length === 0) return Swal.fire('Error', 'No hay fixture generado', 'error');
+
+            const result = await Swal.fire({
+                title: '¿Guardar Fixture?',
+                text: 'El esquema lógico quedará registrado para asignar horarios.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, registrar'
+            });
+
+            if (result.isConfirmed) {
+                Swal.fire({ title: 'Guardando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                
+                try {
+                    const campId = document.getElementById('campSelect').value;
+                    const cat = document.getElementById('catSelect').value;
+                    
+                    await db.collection('fixtures').add({
+                        championshipId: campId,
+                        category: cat,
+                        data: generatedFixture,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        status: 'pending_schedule'
+                    });
+
+                    Swal.fire('¡Éxito!', 'Fixture guardado. Ahora puedes gestionar horarios.', 'success')
+                        .then(() => window.location.href = 'programacion-dashboard.html');
+                } catch (error) {
+                    console.error("Error guardando fixture:", error);
+                    Swal.fire('Error', 'No se pudo guardar el fixture.', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,583 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LigaBet | LDBAA Apuestas Deportivas</title>
+
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome 6 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase SDK (Using v8 as in other files) -->
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+
+    <link rel="icon" href="img/logo.png" />
+    <link rel="stylesheet" href="css/global-theme.css" />
+    <link rel="stylesheet" href="css/ligabet.css" />
+
+    <!-- Meta tags for SEO -->
+    <meta
+      name="description"
+      content="LigaBet - La plataforma oficial de apuestas deportivas de la Liga Barrial Argelia Alta."
+    />
+  </head>
+  <body>
+    <div class="main-bg"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-premium shadow-sm">
+      <div
+        class="container-fluid d-flex justify-content-between align-items-center"
+      >
+        <a
+          class="navbar-brand text-white fw-bold d-flex align-items-center"
+          href="index.html"
+        >
+          <img
+            src="img/logo.png"
+            alt="Logo"
+            width="40"
+            height="40"
+            class="me-3"
+          />
+          <div class="brand-text d-flex flex-column">
+            <span class="fs-5 lh-1">LDBAA</span>
+            <span class="brand-accent small lh-1">ARGELIA ALTA</span>
+          </div>
+        </a>
+        <div class="nav-actions d-flex gap-3 align-items-center">
+          <a href="index.html" class="btn btn-secondary-glass">
+            <i class="fas fa-arrow-left me-2"></i> Volver
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container py-5">
+      <!-- Encabezado -->
+      <div class="text-center mb-5">
+        <h1 class="section-title display-4 fw-bold text-uppercase">
+          LIGA<span class="brand-accent">BET</span>
+        </h1>
+        <p class="text-white-50">
+          Selecciona una jornada para ver los encuentros y adquirir tu ticket.
+        </p>
+      </div>
+
+      <!-- Selector de Fecha/Jornada (Estilo Vocalía) -->
+      <div id="jornadaSelectionView">
+        <div class="glass-panel mb-4">
+          <div class="row align-items-center">
+            <div class="col-md-12">
+              <label class="form-label mb-2 text-white-50 small fw-bold"
+                >CAMPEONATO ACTIVO</label
+              >
+              <select
+                id="campSelect"
+                class="select-premium"
+                onchange="loadJornadas()"
+              >
+                <option value="">Cargando campeonatos...</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="jornadasGrid"
+          class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 card-grid-elite"
+        >
+          <!-- Tarjetas de Jornadas dinámicas -->
+          <div class="col-12 text-center py-5">
+            <div class="spinner-border text-success"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vista de Partidos de la Jornada -->
+      <div id="matchListView" class="d-none">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <button
+            class="btn btn-secondary-glass"
+            onclick="showJornadaSelection()"
+          >
+            <i class="fas fa-arrow-left me-2"></i> Volver
+          </button>
+          <h2 id="selectedJornadaTitle" class="fw-bold text-uppercase mb-0">
+            JORNADA 1
+          </h2>
+          <div style="width: 100px"></div>
+        </div>
+
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div id="matchesContainer" class="row row-cols-1 row-cols-md-2 g-4">
+              <!-- Partidos cargados aquí -->
+            </div>
+          </div>
+
+          <div class="col-lg-4">
+            <!-- Panel de Acción (Compra o Validación) -->
+            <div class="card-glass-container sticky-top" style="top: 100px">
+              <div id="buyPanel">
+                <h3
+                  class="h5 fw-bold mb-3 border-bottom border-white border-opacity-10 pb-2 text-center text-uppercase"
+                >
+                  ¿Quieres participar?
+                </h3>
+                <p class="text-white-50 small text-center mb-4">
+                  Adquiere tu código por WhatsApp para registrar tus pronósticos
+                  de esta jornada.
+                </p>
+                <button
+                  class="btn-whatsapp w-100 py-3 mb-3"
+                  onclick="buyTicketWhatsApp()"
+                >
+                  <i class="fab fa-whatsapp me-2"></i> COMPRAR TICKET POR $1
+                </button>
+                <button
+                  class="btn btn-outline-light w-100 py-2 border-opacity-25 small"
+                  onclick="showInputCode()"
+                >
+                  YA TENGO UN CÓDIGO
+                </button>
+              </div>
+
+              <div id="validatePanel" class="d-none">
+                <h3 class="h5 fw-bold mb-3 text-center text-uppercase">
+                  INGRESA TU CÓDIGO
+                </h3>
+                <input
+                  type="text"
+                  id="ticketInput"
+                  class="glass-input text-center fs-4 py-3 mb-3"
+                  placeholder="ABCD-1234"
+                />
+                <button
+                  class="btn-premium w-100 justify-content-center py-3"
+                  onclick="validateTicket()"
+                >
+                  VALIDAR Y JUGAR
+                </button>
+                <button
+                  class="btn btn-link text-white-50 w-100 mt-2 small text-decoration-none"
+                  onclick="showBuyPanel()"
+                >
+                  Cancelar
+                </button>
+              </div>
+
+              <div
+                id="activeTicketPanel"
+                class="d-none animate__animated animate__fadeIn"
+              >
+                <div
+                  class="text-center p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25"
+                >
+                  <i class="fas fa-ticket-alt text-success fs-3 mb-2"></i>
+                  <h4 class="h6 fw-bold text-success mb-1">CÓDIGO ACTIVO</h4>
+                  <p id="activeCodeLabel" class="mb-0 fw-bold">ABCD-1234</p>
+                </div>
+                <button
+                  class="btn-premium w-100 justify-content-center py-3 mt-4"
+                  onclick="registerBets()"
+                >
+                  REGISTRAR PRONÓSTICOS
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Firebase Config
+      const firebaseConfig = {
+        apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+        authDomain: "ldbaa-calificaciones.firebaseapp.com",
+        projectId: "ldbaa-calificaciones",
+        storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+        messagingSenderId: "277579489603",
+        appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6",
+      };
+
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      let fixturesMap = new Map();
+      let currentJornada = null;
+      let activeTicket = null;
+      let predictions = {};
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadChampionships();
+      });
+
+      async function loadChampionships() {
+        const select = document.getElementById("campSelect");
+        try {
+          const snapshot = await db
+            .collection("championships")
+            .orderBy("createdAt", "desc")
+            .get();
+          select.innerHTML = "";
+          if (snapshot.empty) {
+            select.innerHTML = '<option value="">No hay campeonatos</option>';
+            return;
+          }
+          snapshot.forEach((doc) => {
+            const opt = document.createElement("option");
+            opt.value = doc.id;
+            opt.textContent = doc.data().name;
+            select.appendChild(opt);
+          });
+          if (select.options.length > 0) {
+            select.value = select.options[0].value;
+            loadJornadas();
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      async function loadJornadas() {
+        const campId = document.getElementById("campSelect").value;
+        const grid = document.getElementById("jornadasGrid");
+        grid.innerHTML =
+          '<div class="col-12 text-center py-5"><div class="spinner-border text-success"></div></div>';
+
+        fixturesMap.clear();
+        try {
+          // Cargamos jornadas cerradas para comparar
+          const closedSnap = await db
+            .collection("ligabet_rounds_status")
+            .where("closed", "==", true)
+            .get();
+          const closedRounds = closedSnap.docs.map((doc) => doc.id); // ID será el número de jornada
+
+          const snapshot = await db
+            .collection("fixtures")
+            .where("championshipId", "==", campId)
+            .get();
+          let jornadasSet = new Set();
+          let counts = {};
+
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            fixturesMap.set(doc.id, data);
+            data.data.forEach((m) => {
+              // Solo jornadas con fecha y hora real asignada en el fixture
+              const isProgrammed =
+                m.fechaRealAsignadaText &&
+                m.fechaRealAsignadaText !== "Por Definir" &&
+                m.horaRealAsignada &&
+                m.horaRealAsignada !== "--:--";
+              if (
+                !m.isRest &&
+                m.local !== "DESCANSA" &&
+                m.visitor !== "DESCANSA" &&
+                isProgrammed
+              ) {
+                const jNum = parseInt(m.jornada) || 1;
+                jornadasSet.add(jNum);
+                counts[jNum] = (counts[jNum] || 0) + 1;
+              }
+            });
+          });
+
+          const sortedJornadas = Array.from(jornadasSet).sort((a, b) => a - b);
+          grid.innerHTML = "";
+
+          if (sortedJornadas.length === 0) {
+            grid.innerHTML =
+              '<div class="col-12 text-center py-5 text-white-50"><i class="fas fa-calendar-times mb-3 opacity-25" style="font-size:3rem"></i><h5 class="text-white-50">No hay jornadas programadas oficialmente aún.</h5></div>';
+            return;
+          }
+
+          sortedJornadas.forEach((j) => {
+            const isClosed = closedRounds.includes(j.toString());
+            grid.insertAdjacentHTML(
+              "beforeend",
+              `
+                <div class="col">
+                    <div class="jornada-card-elite ${isClosed ? "opacity-50" : ""}" onclick="${isClosed ? `Swal.fire('Cerrada', 'Las apuestas para esta jornada ya han concluido.', 'info')` : `selectJornada(${j})`}">
+                        <i class="fas ${isClosed ? "fa-lock text-danger" : "fa-calendar-check text-success"}"></i>
+                        <h5>Jornada ${j}</h5>
+                        <span class="match-count">${isClosed ? "RESULTADOS PUBLICADOS" : `${counts[j]} PARTIDOS DISPONIBLES`}</span>
+                    </div>
+                </div>
+            `,
+            );
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function selectJornada(j) {
+        currentJornada = j;
+        document.getElementById("selectedJornadaTitle").textContent =
+          `JORNADA ${j}`;
+        document.getElementById("jornadaSelectionView").classList.add("d-none");
+        document.getElementById("matchListView").classList.remove("d-none");
+        renderMatches();
+      }
+
+      function showJornadaSelection() {
+        document
+          .getElementById("jornadaSelectionView")
+          .classList.remove("d-none");
+        document.getElementById("matchListView").classList.add("d-none");
+        // Reset panels
+        showBuyPanel();
+        activeTicket = null;
+        predictions = {};
+      }
+
+      async function renderMatches() {
+        const container = document.getElementById("matchesContainer");
+        container.innerHTML =
+          '<div class="col-12 text-center py-5"><div class="spinner-border text-success"></div></div>';
+
+        // Cargar mapa de logos de equipos
+        const campId = document.getElementById("campSelect").value;
+        const teamsSnapshot = await db
+          .collection("teams")
+          .where("championshipId", "==", campId)
+          .get();
+        const logosMap = {};
+        teamsSnapshot.forEach((doc) => {
+          logosMap[doc.data().name] = doc.data().logo || "img/logo.png";
+        });
+
+        let matches = [];
+        fixturesMap.forEach((meta) => {
+          meta.data.forEach((m) => {
+            const jNum = parseInt(m.fecha.replace(/\D/g, "")) || 1;
+            if (
+              jNum === currentJornada &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA"
+            ) {
+              matches.push({ ...m, category: meta.category });
+            }
+          });
+        });
+
+        if (matches.length === 0) {
+          container.innerHTML =
+            '<div class="col-12 text-center py-5 text-white-50">No se encontraron partidos.</div>';
+          return;
+        }
+
+        container.innerHTML = "";
+        matches.forEach((m, i) => {
+          const localLogo = logosMap[m.local] || "img/logo.png";
+          const visitorName = m.visitor || m.visitante;
+          const visitorLogo = logosMap[visitorName] || "img/logo.png";
+
+          container.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="col">
+               <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 match-bet-card" data-match-id="${i + 1}" style="cursor: default;">
+                <div class="mb-3 text-center">
+                    <span class="badge bg-primary-glass mb-4 text-uppercase" style="font-size:0.5rem; letter-spacing:2px; opacity:0.7">${m.category}</span>
+                    <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                        <div style="flex:1">
+                            <img src="${localLogo}" alt="Logo Local" class="mb-2" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5);">
+                            <div class="text-white fw-800" style="font-size:0.75rem; text-transform:uppercase; line-height:1.2">${m.local}</div>
+                        </div>
+                        <div class="text-primary-glow fw-900" style="font-size:0.6rem; opacity:0.5">VS</div>
+                        <div style="flex:1">
+                            <img src="${visitorLogo}" alt="Logo Visitante" class="mb-2" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5);">
+                            <div class="text-white fw-800" style="font-size:0.75rem; text-transform:uppercase; line-height:1.2">${visitorName}</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="pt-3 border-top border-secondary border-opacity-25 text-center">
+                    <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
+                        <span class="text-white-50" style="font-size:0.85rem">
+                            <i class="far fa-calendar-alt me-1 text-primary-glow" style="font-size:1rem; color: #2ecc71;"></i> ${m.fechaRealAsignadaText || "Por Definir"}
+                        </span>
+                        <span class="mx-1 opacity-10">|</span>
+                        <span class="text-white-50" style="font-size:0.85rem">
+                            <i class="far fa-clock me-1 text-primary-glow" style="font-size:1rem; color: #2ecc71;"></i> ${m.horaRealAsignada || "--:--"}
+                        </span>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-3 betting-controls d-none">
+                        <button class="bet-btn flex-grow-1" onclick="selectBet(${i + 1}, 'L')">L</button>
+                        <button class="bet-btn flex-grow-1" onclick="selectBet(${i + 1}, 'E')">E</button>
+                        <button class="bet-btn flex-grow-1" onclick="selectBet(${i + 1}, 'V')">V</button>
+                    </div>
+                </div>
+               </div>
+            </div>
+          `,
+          );
+        });
+      }
+
+      function buyTicketWhatsApp() {
+        const phone = "593989555936";
+        const msg = encodeURIComponent(
+          `Hola, quiero participar en LigaBet para la Jornada ${currentJornada}. Mi nombre es: `,
+        );
+        window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+      }
+
+      function showInputCode() {
+        document.getElementById("buyPanel").classList.add("d-none");
+        document.getElementById("validatePanel").classList.remove("d-none");
+      }
+
+      function showBuyPanel() {
+        document.getElementById("buyPanel").classList.remove("d-none");
+        document.getElementById("validatePanel").classList.add("d-none");
+        document.getElementById("activeTicketPanel").classList.add("d-none");
+      }
+
+      async function validateTicket() {
+        const code = document
+          .getElementById("ticketInput")
+          .value.trim()
+          .toUpperCase();
+        if (!code) return Swal.fire("Error", "Ingresa tu código", "warning");
+
+        Swal.fire({ title: "Validando...", didOpen: () => Swal.showLoading() });
+
+        try {
+          const q = await db
+            .collection("ligabet_tickets")
+            .where("codigo", "==", code)
+            .get();
+
+          if (q.empty)
+            return Swal.fire("Error", "El código no existe.", "error");
+
+          const doc = q.docs[0];
+          const data = doc.data();
+
+          if (!data.pagado)
+            return Swal.fire(
+              "Pendiente",
+              "Tu pago no ha sido confirmado aún por el administrador.",
+              "info",
+            );
+          if (data.usado)
+            return Swal.fire(
+              "Usado",
+              "Este código ya registró sus pronósticos.",
+              "warning",
+            );
+
+          if (data.round && data.round !== currentJornada) {
+            return Swal.fire(
+              "Error de Jornada",
+              `Este billete fue comprado para la Jornada ${data.round}. Solo es válido para esa fecha.`,
+              "error",
+            );
+          }
+
+          activeTicket = { id: doc.id, ...data };
+
+          // Activar interfaz de apuestas
+          document
+            .querySelectorAll(".betting-controls")
+            .forEach((c) => c.classList.remove("d-none"));
+          document.getElementById("validatePanel").classList.add("d-none");
+          document
+            .getElementById("activeTicketPanel")
+            .classList.remove("d-none");
+          document.getElementById("activeCodeLabel").textContent = code;
+
+          Swal.fire(
+            "¡Éxito!",
+            "Código validado. ¡Marca tus 5 pronósticos!",
+            "success",
+          );
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function selectBet(matchId, pick) {
+        const card = document.querySelector(`[data-match-id="${matchId}"]`);
+        card
+          .querySelectorAll(".bet-btn")
+          .forEach((b) => b.classList.remove("active"));
+        event.target.classList.add("active");
+        predictions[matchId] = pick;
+      }
+
+      async function registerBets() {
+        const totalMatches =
+          document.querySelectorAll(".match-bet-card").length;
+        const totalNeeded = Math.min(totalMatches, 5); // Por ahora pedimos 5 o todos si hay menos
+
+        if (Object.keys(predictions).length < 5 && totalMatches >= 5) {
+          return Swal.fire(
+            "Incompleto",
+            "Debes completar al menos 5 pronósticos.",
+            "warning",
+          );
+        }
+
+        const confirm = await Swal.fire({
+          title: "¿Confirmar Pronósticos?",
+          text: "Tus picks se guardarán de forma definitiva.",
+          icon: "question",
+          showCancelButton: true,
+        });
+
+        if (confirm.isConfirmed) {
+          try {
+            await db
+              .collection("ligabet_tickets")
+              .doc(activeTicket.id)
+              .update({
+                usado: true,
+                fechaUso: new Date(),
+                pronosticoArray: Object.values(predictions),
+              });
+            Swal.fire(
+              "¡Registrado!",
+              "Tus pronósticos han sido guardados con éxito. ¡Suerte!",
+              "success",
+            ).then(() => {
+              showJornadaSelection();
+            });
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tabla de Goleadores | Liga Barrial LDBAA</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+
+    <link rel="icon" href="img/logo.png" />
+    <link rel="stylesheet" href="css/global-theme.css" />
+
+    <!-- Reuse Positions CSS or similar -->
+    <link rel="stylesheet" href="css/tabla-posiciones.css" />
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/global-swal-patch.js"></script>
+
+    <style>
+      .section-header {
+        margin-top: 40px;
+        margin-bottom: 30px;
+      }
+      .btn-export {
+        background: rgba(46, 204, 113, 0.1);
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        color: #2ecc71;
+        font-weight: 700;
+        padding: 8px 15px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+      }
+      .btn-export:hover {
+        background: #2ecc71;
+        color: #000;
+      }
+      .goal-badge {
+        background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+        color: #fff;
+        padding: 5px 12px;
+        border-radius: 8px;
+        font-weight: 900;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+      }
+      .player-row:hover {
+        background: rgba(255, 255, 255, 0.02) !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-bg"></div>
+
+    <nav class="nav-premium shadow-sm">
+      <div class="nav-content">
+        <a href="dashboard.html" class="nav-logo">
+          <img src="img/logo.png" alt="Logo" />
+          <span>LDBAA <span class="brand-accent">ARGELIA ALTA</span></span>
+        </a>
+        <div class="nav-links d-none d-md-flex">
+          <a href="programacion-dashboard.html"
+            ><i class="fas fa-home me-2"></i>Dashboard</a
+          >
+          <a href="tabla-posiciones.html"
+            ><i class="fas fa-list-ol me-2"></i>Posiciones</a
+          >
+          <a href="#" class="active"
+            ><i class="fas fa-futbol me-2"></i>Goleadores</a
+          >
+        </div>
+        <button class="btn-logout-premium" onclick="logout()">
+          <i class="fas fa-sign-out-alt me-2"></i><span>Salir</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="container pb-5">
+      <div
+        class="section-header d-flex flex-wrap justify-content-between align-items-center gap-3"
+      >
+        <div>
+          <h2 class="section-title mb-0">⚽ Máximos Goleadores</h2>
+          <p class="text-white-50 mt-2 mb-0">
+            Liderato de goleo individual actualizado por categoría.
+          </p>
+        </div>
+      </div>
+
+      <!-- Selector de Campeonato -->
+      <div class="table-premium-container mb-4 py-4">
+        <div class="row align-items-center">
+          <div class="col-md-3">
+            <label for="championshipSelect" class="form-label mb-0 fw-bold"
+              >CAMPEONATO ACTIVO:</label
+            >
+          </div>
+          <div class="col-md-9">
+            <select
+              class="select-premium w-100"
+              id="championshipSelect"
+              onchange="onChampionshipSelected()"
+            >
+              <option value="">Cargando campeonatos...</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <ul
+        class="nav nav-pills nav-pills-premium justify-content-center"
+        id="categoryTabs"
+        role="tablist"
+      >
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="maxima-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#maxima"
+            type="button"
+            role="tab"
+          >
+            MÁXIMA
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="primera-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#primera"
+            type="button"
+            role="tab"
+          >
+            PRIMERA
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="femenino-tab"
+            data-bs-toggle="pill"
+            data-bs-target="#femenino"
+            type="button"
+            role="tab"
+          >
+            FEMENINO
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content mt-4" id="categoryTabContent">
+        <div class="tab-pane fade show active" id="maxima" role="tabpanel">
+          <div class="table-premium-container p-0 overflow-hidden">
+            <div class="table-responsive">
+              <table class="table-premium">
+                <thead>
+                  <tr>
+                    <th style="width: 80px">Pos</th>
+                    <th class="text-start ps-4">Jugador</th>
+                    <th class="text-start ps-4">Equipo</th>
+                    <th style="width: 150px">Goles</th>
+                  </tr>
+                </thead>
+                <tbody id="maximaTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="primera" role="tabpanel">
+          <div class="table-premium-container p-0 overflow-hidden">
+            <div class="table-responsive">
+              <table class="table-premium">
+                <thead>
+                  <tr>
+                    <th style="width: 80px">Pos</th>
+                    <th class="text-start ps-4">Jugador</th>
+                    <th class="text-start ps-4">Equipo</th>
+                    <th style="width: 150px">Goles</th>
+                  </tr>
+                </thead>
+                <tbody id="primeraTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="tab-pane fade" id="femenino" role="tabpanel">
+          <div class="table-premium-container p-0 overflow-hidden">
+            <div class="table-responsive">
+              <table class="table-premium">
+                <thead>
+                  <tr>
+                    <th style="width: 80px">Pos</th>
+                    <th class="text-start ps-4">Jugador</th>
+                    <th class="text-start ps-4">Equipo</th>
+                    <th style="width: 150px">Goles</th>
+                  </tr>
+                </thead>
+                <tbody id="femeninoTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap y Firebase -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+        authDomain: "ldbaa-calificaciones.firebaseapp.com",
+        projectId: "ldbaa-calificaciones",
+        storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+        messagingSenderId: "277579489603",
+        appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6",
+      };
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const auth = firebase.auth();
+
+      let currentChampionshipId = null;
+      let currentCategory = "maxima";
+
+      auth.onAuthStateChanged((user) => {
+        if (!user || user.email !== "programacion@gmail.com") {
+          window.location.href = "login.html";
+          return;
+        }
+        loadChampionships();
+      });
+
+      function loadChampionships() {
+        const select = document.getElementById("championshipSelect");
+        select.innerHTML =
+          '<option value="">Seleccionar un campeonato...</option>';
+        db.collection("championships")
+          .get()
+          .then((snap) => {
+            snap.forEach((doc) => {
+              const opt = document.createElement("option");
+              opt.value = doc.id;
+              opt.textContent = doc.data().name;
+              select.appendChild(opt);
+            });
+            if (select.options.length > 1) {
+              select.selectedIndex = 1;
+              onChampionshipSelected();
+            }
+          });
+      }
+
+      function onChampionshipSelected() {
+        currentChampionshipId =
+          document.getElementById("championshipSelect").value;
+        if (currentChampionshipId)
+          loadScorers(currentChampionshipId, currentCategory);
+      }
+
+      async function loadScorers(championshipId, category) {
+        const tableBody = document.getElementById(`${category}TableBody`);
+        tableBody.innerHTML =
+          '<tr><td colspan="4" class="py-5"><div class="spinner-border text-success"></div><br>Analizando goles...</td></tr>';
+
+        try {
+          // 1. Map Teams to logos
+          const teamsSnap = await db
+            .collection("teams")
+            .where("championshipId", "==", championshipId)
+            .get();
+          const teamsMap = {};
+          teamsSnap.forEach((doc) => {
+            const team = doc.data();
+            teamsMap[team.name] = team.logo || "img/logo.png";
+          });
+
+          // 2. Fetch all fixtures
+          const fixturesSnap = await db
+            .collection("fixtures")
+            .where("championshipId", "==", championshipId)
+            .get();
+
+          let scorers = {}; // key: player_name | team_name
+          const normalizedSelectedCat = category
+            .normalize("NFD")
+            .replace(/[̀-ͯ]/g, "")
+            .toLowerCase();
+
+          fixturesSnap.forEach((doc) => {
+            const fixture = doc.data();
+            const fixCat = (fixture.category || "")
+              .normalize("NFD")
+              .replace(/[̀-ͯ]/g, "")
+              .toLowerCase();
+
+            if (fixCat === normalizedSelectedCat) {
+              fixture.data.forEach((m) => {
+                if (m.isFinalized) {
+                  // Process Local
+                  (m.playersLocal || []).forEach((p) => {
+                    const goals = parseInt(p.goles) || 0;
+                    if (goals > 0) {
+                      const key = `${p.name.trim().toUpperCase()}|${m.local}`;
+                      if (!scorers[key]) {
+                        scorers[key] = {
+                          name: p.name.trim().toUpperCase(),
+                          team: m.local,
+                          goals: 0,
+                        };
+                      }
+                      scorers[key].goals += goals;
+                    }
+                  });
+                  // Process Visitor
+                  (m.playersVisitor || []).forEach((p) => {
+                    const goals = parseInt(p.goles) || 0;
+                    if (goals > 0) {
+                      const key = `${p.name.trim().toUpperCase()}|${m.visitor}`;
+                      if (!scorers[key]) {
+                        scorers[key] = {
+                          name: p.name.trim().toUpperCase(),
+                          team: m.visitor,
+                          goals: 0,
+                        };
+                      }
+                      scorers[key].goals += goals;
+                    }
+                  });
+                }
+              });
+            }
+          });
+
+          // 3. Sort
+          let sortedScorers = Object.values(scorers).sort(
+            (a, b) => b.goals - a.goals,
+          );
+
+          // 4. Render
+          if (sortedScorers.length === 0) {
+            tableBody.innerHTML =
+              '<tr><td colspan="4" class="py-5 text-white-50 italic">No hay goles registrados en esta categoría.</td></tr>';
+            return;
+          }
+
+          tableBody.innerHTML = sortedScorers
+            .map(
+              (s, idx) => `
+            <tr class="player-row">
+              <td class="fw-bold fs-5" style="color: #2ecc71">#${idx + 1}</td>
+              <td class="text-start ps-4">
+                <div class="fw-bold text-white fs-6">${s.name}</div>
+              </td>
+              <td class="text-start ps-4">
+                <div class="d-flex align-items-center">
+                  <img src="${teamsMap[s.team] || "img/logo.png"}" alt="Team" class="me-2" style="width: 25px; height: 25px; border-radius: 50%; object-fit: cover">
+                  <span class="text-white-50 small fw-bold">${s.team}</span>
+                </div>
+              </td>
+              <td>
+                <span class="goal-badge">${s.goals}</span>
+              </td>
+            </tr>
+          `,
+            )
+            .join("");
+        } catch (e) {
+          console.error(e);
+          tableBody.innerHTML =
+            '<tr><td colspan="4" class="text-danger">Error al cargar goleadores.</td></tr>';
+        }
+      }
+
+      function logout() {
+        auth.signOut().then(() => (window.location.href = "login.html"));
+      }
+
+      document.querySelectorAll("#categoryTabs .nav-link").forEach((tab) => {
+        tab.addEventListener("click", (e) => {
+          currentCategory = e.target.id.replace("-tab", "");
+          if (currentChampionshipId)
+            loadScorers(currentChampionshipId, currentCategory);
+        });
+      });
+    </script>
+  </body>
+</html>

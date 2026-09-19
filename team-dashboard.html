@@ -1,0 +1,2706 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Panel de Equipo | LDBAA</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/global-swal-patch.js"></script>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+
+    <link rel="icon" href="img/logo.png" />
+    <link rel="stylesheet" href="css/global-theme.css" />
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+      :root {
+        --primary: #2ecc71;
+        --primary-glow: rgba(46, 204, 113, 0.4);
+        --accent: #f1c40f;
+        --danger: #e74c3c;
+        --info: #3498db;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+      }
+
+      select option {
+        background-color: #111111 !important;
+        color: #ffffff !important;
+      }
+
+      body {
+        font-family: "Times New Roman", Times, serif;
+        background-color: #0a0a0a;
+        color: white;
+        overflow-x: hidden;
+      }
+
+      /* Premium Background */
+      .main-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+          radial-gradient(
+            circle at 20% 30%,
+            rgba(46, 204, 113, 0.08) 0%,
+            transparent 40%
+          ),
+          radial-gradient(
+            circle at 80% 70%,
+            rgba(52, 152, 219, 0.08) 0%,
+            transparent 40%
+          ),
+          linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.95)),
+          url("img/stadium-bg.png");
+        background-size: cover;
+        background-position: center;
+        z-index: -1;
+      }
+
+      /* Enhanced Navigation */
+      .nav-premium {
+        background: rgba(10, 10, 10, 0.7);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border-bottom: 1px solid var(--glass-border);
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .brand-text span {
+        letter-spacing: 1px;
+      }
+
+      /* Premium Glass Card */
+      .glass-card {
+        background: var(--glass-bg);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border);
+        border-radius: 30px;
+        padding: 2.5rem;
+        transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .glass-card:hover {
+        transform: translateY(-8px);
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+      }
+
+      .glass-card::after {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(
+          circle at center,
+          rgba(255, 255, 255, 0.03) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      /* Stat Icon */
+      .stat-icon {
+        width: 70px;
+        height: 70px;
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
+      }
+
+      .stat-icon::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: currentColor;
+        opacity: 0.1;
+      }
+
+      /* Sidebar Navigation */
+      .sidebar-item {
+        padding: 1rem 1.5rem;
+        border-radius: 18px;
+        color: rgba(255, 255, 255, 0.5);
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1px solid transparent;
+      }
+
+      .sidebar-item i {
+        margin-right: 1.2rem;
+        font-size: 1.3rem;
+        transition: transform 0.3s ease;
+      }
+
+      .sidebar-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        transform: translateX(8px);
+      }
+
+      .sidebar-item.active {
+        background: linear-gradient(
+          90deg,
+          rgba(46, 204, 113, 0.15),
+          transparent
+        );
+        color: var(--primary);
+        border-left: 4px solid var(--primary);
+        padding-left: 2rem;
+      }
+
+      .sidebar-item.active i {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 8px var(--primary-glow));
+      }
+
+      /* Table Premium Styles */
+      .table-premium {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 12px;
+        color: white !important;
+        --bs-table-color: white !important;
+        --bs-table-bg: transparent !important;
+        --bs-table-border-color: transparent !important;
+      }
+
+      .table-premium thead th {
+        border: none !important;
+        color: rgba(255, 255, 255, 0.4) !important;
+        font-weight: 800;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        padding: 0.5rem 1.5rem !important;
+        background: transparent !important;
+      }
+
+      .table-premium tbody tr {
+        background: rgba(255, 255, 255, 0.03) !important;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        border-radius: 20px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .table-premium tbody tr:hover {
+        background: rgba(255, 255, 255, 0.08) !important;
+        transform: translateY(-3px) scale(1.005);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+      }
+
+      .table-premium td {
+        padding: 1.5rem !important;
+        border: none !important;
+        vertical-align: middle;
+        font-size: 1rem;
+        color: white !important;
+        background: transparent !important;
+      }
+
+      .table-premium td:first-child {
+        border-radius: 20px 0 0 20px !important;
+      }
+      .table-premium td:last-child {
+        border-radius: 0 20px 20px 0 !important;
+      }
+
+      /* Badge Premium */
+      .badge-premium {
+        padding: 0.5rem 1.2rem;
+        border-radius: 50px;
+        font-size: 0.65rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .bg-active {
+        background: rgba(231, 76, 60, 0.1);
+        color: var(--danger);
+        border: 1px solid rgba(231, 76, 60, 0.2);
+      }
+      .bg-paid {
+        background: rgba(46, 204, 113, 0.1);
+        color: var(--primary);
+        border: 1px solid rgba(46, 204, 113, 0.2);
+      }
+
+      /* Upload Button */
+      .btn-upload {
+        background: linear-gradient(135deg, var(--primary) 0%, #219150 100%);
+        color: black;
+        border: none;
+        border-radius: 18px;
+        padding: 1.2rem 2rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 25px rgba(46, 204, 113, 0.3);
+      }
+
+      .btn-upload:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(46, 204, 113, 0.5);
+        filter: brightness(1.1);
+      }
+
+      /* Custom Form Controls */
+      .bg-dark-glass {
+        background: rgba(0, 0, 0, 0.4) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+      }
+
+      .bg-dark-glass:focus {
+        border-color: var(--primary) !important;
+        background: rgba(0, 0, 0, 0.6) !important;
+        box-shadow: 0 0 20px rgba(46, 204, 113, 0.2) !important;
+      }
+
+      /* Animations */
+      .f-in {
+        animation: fadeIn 0.8s ease-out forwards;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Section Transitions */
+      .content-section {
+        animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .btn-logout-premium {
+        background: rgba(231, 76, 60, 0.1);
+        border: 1px solid rgba(231, 76, 60, 0.3);
+        color: #e74c3c;
+        padding: 0.6rem 1.5rem;
+        border-radius: 15px;
+        font-weight: 700;
+        transition: all 0.3s ease;
+      }
+
+      .btn-logout-premium:hover {
+        background: #e74c3c;
+        color: white;
+        box-shadow: 0 10px 20px rgba(231, 76, 60, 0.3);
+      }
+
+      #teamLogo {
+        filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.1));
+        transition: all 0.5s ease;
+      }
+
+      .glass-card:hover #teamLogo {
+        filter: drop-shadow(0 0 20px var(--primary-glow));
+        transform: scale(1.05);
+      }
+
+      /* Digital Receipt & PDF Templates */
+      .receipt-paper {
+        background: linear-gradient(145deg, #1e1e1e, #141414);
+        color: #e0e0e0;
+        padding: 40px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+        font-family: "Times New Roman", Times, serif;
+      }
+      .receipt-brand-logo {
+        width: 80px;
+        height: 80px;
+        object-fit: contain;
+      }
+      .receipt-table {
+        width: 100%;
+        margin: 25px 0;
+        border-collapse: separate;
+        border-spacing: 0 4px;
+      }
+      .receipt-table th {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 12px;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: #c9a227;
+        border-bottom: 2px solid rgba(201, 162, 39, 0.3);
+      }
+      .receipt-table td {
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.02);
+        font-size: 0.85rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        font-size: 0.85rem;
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+      }
+      .total-row.grand-total {
+        border: none;
+        background: rgba(201, 162, 39, 0.1);
+        padding: 15px;
+        border-radius: 12px;
+        margin-top: 10px;
+        font-weight: 800;
+        font-size: 1.3rem;
+        color: #c9a227;
+      }
+      .badge-authorized {
+        background: rgba(46, 204, 113, 0.1);
+        color: #2ecc71;
+        border: 1px solid rgba(46, 204, 113, 0.3);
+        padding: 4px 12px;
+        border-radius: 50px;
+        font-size: 0.6rem;
+        font-weight: 800;
+        letter-spacing: 1px;
+      }
+      .receipt-watermark {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-25deg);
+        font-size: 5rem;
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.02);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      #pdf-render-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        opacity: 0;
+        pointer-events: none;
+        z-index: -9999;
+      }
+      #carta-pase-pdf-template {
+        width: 210mm;
+        height: 296mm;
+        padding: 15mm 25mm;
+        background: white !important;
+        color: #1a1a1a !important;
+        font-family: 'Times New Roman', Times, serif;
+        box-sizing: border-box;
+        overflow: hidden;
+        position: relative;
+      }
+      .pdf-header-container {
+        border-bottom: 2px solid #2ecc71;
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+      }
+      .pdf-logo-box {
+        width: 70px;
+        margin-right: 20px;
+      }
+      .pdf-logo-box img {
+        width: 100%;
+        display: block;
+      }
+      .pdf-header-text {
+        flex: 1;
+      }
+      .pdf-header-text h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 900;
+        letter-spacing: 1px;
+        color: #2c3e50;
+      }
+      .pdf-header-text p {
+        margin: 1px 0;
+        font-size: 10px;
+        color: #7f8c8d;
+        text-transform: uppercase;
+      }
+      .pdf-main-title {
+        text-align: center;
+        font-size: 24px;
+        font-weight: bold;
+        margin: 15px 0;
+        letter-spacing: 5px;
+        color: #1a1a1a;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+      }
+      .pdf-date-row {
+        text-align: right;
+        margin-bottom: 25px;
+        font-size: 13px;
+      }
+      .pdf-content-body {
+        font-size: 14px;
+        line-height: 1.8;
+        text-align: justify;
+      }
+      .pdf-field-line {
+        border-bottom: 1px solid #333;
+        display: inline-block;
+        padding: 0 8px;
+        font-weight: bold;
+        color: #000;
+      }
+      .pdf-signature-grid {
+        margin-top: 40px;
+        display: flex;
+        justify-content: space-between;
+        text-align: center;
+      }
+      .pdf-sig-item {
+        width: 30%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .pdf-sig-line-box {
+        width: 100%;
+        border-top: 1px solid #000;
+        padding-top: 5px;
+        font-size: 11px;
+        font-weight: bold;
+        margin-top: 35px;
+      }
+      .pdf-seq-box {
+        position: absolute;
+        top: 20mm;
+        right: 25mm;
+        border-bottom: 2px solid #2ecc71;
+        padding: 2px 10px;
+        font-family: 'Times New Roman', Times, serif;
+        font-weight: bold;
+        color: #333;
+        font-size: 16px;
+      }
+      .pdf-register-section {
+        margin-top: 25px;
+        border: 1px solid #ddd;
+        padding: 12px 25px;
+        border-radius: 10px;
+        background: #fafafa;
+      }
+      .pdf-register-title {
+        text-align: center;
+        font-size: 15px;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        color: #2c3e50;
+        border-bottom: 2px solid #2ecc71;
+        display: inline-block;
+        padding-bottom: 3px;
+      }
+      .pdf-final-signature {
+        margin-top: 55px;
+        width: 250px;
+      }
+      .pdf-footer-info {
+        margin-top: 30px;
+        text-align: center;
+        border-top: 1px solid #eee;
+        padding-top: 8px;
+        font-size: 10px;
+        color: #95a5a6;
+      }
+      .pdf-line {
+        display: inline-block;
+        border-bottom: 1px solid #000;
+        height: 14px;
+        margin-bottom: -2px;
+      }
+      
+      /* Notifications Styles */
+      .glass-toast {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        background: rgba(10, 10, 10, 0.85);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        width: 320px;
+        z-index: 1050;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+        transform: translateY(150%);
+        transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .glass-toast.show {
+        transform: translateY(0);
+      }
+      .toast-close {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: none;
+        border: none;
+        color: rgba(255,255,255,0.5);
+        cursor: pointer;
+        transition: color 0.3s;
+      }
+      .toast-close:hover {
+        color: white;
+      }
+      .toast-title {
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: white;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+      }
+      .notification-item {
+        padding: 12px;
+        background: rgba(255,255,255,0.03);
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 3px solid #e74c3c;
+        font-size: 0.85rem;
+      }
+      .floating-btn-premium-danger {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.05));
+        border: 1px solid rgba(231, 76, 60, 0.3);
+        color: #e74c3c;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 1040;
+        backdrop-filter: blur(10px);
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 32px rgba(231, 76, 60, 0.2);
+      }
+      .floating-btn-premium-danger:hover {
+        transform: translateY(-5px);
+        background: rgba(231, 76, 60, 0.2);
+        color: #fff;
+        box-shadow: 0 12px 40px rgba(231, 76, 60, 0.4);
+      }
+      .badge-count {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        background: #e74c3c;
+        color: white;
+        font-size: 12px;
+        font-weight: bold;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid #0a0a0a;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="main-bg"></div>
+
+    <!-- Toast de Notificaciones -->
+    <div id="notificationsToast" class="glass-toast">
+      <button class="toast-close" onclick="document.getElementById('notificationsToast').classList.remove('show')">
+        <i class="fas fa-times"></i>
+      </button>
+      <div class="toast-title">
+        <i class="fas fa-exclamation-circle me-2" style="color: #e74c3c;"></i>Notificaciones
+      </div>
+      <div id="notificationsToastBody"></div>
+    </div>
+
+    <!-- Botón flotante de notificaciones -->
+    <button id="notificationsBtn" class="floating-btn-premium-danger" style="display: none;" onclick="showNotificationsModal()">
+      <i class="fas fa-bell"></i>
+      <span class="badge-count" id="notificationsBadge">0</span>
+    </button>
+
+    <nav class="nav-premium">
+      <div
+        class="container-fluid d-flex justify-content-between align-items-center px-4"
+      >
+        <div class="d-flex align-items-center">
+          <img
+            src="img/logo.png"
+            alt="Logo"
+            width="45"
+            height="45"
+            class="me-3"
+          />
+          <div>
+            <h5 class="mb-0 text-white fw-bold" id="teamTitle">
+              PANEL DE EQUIPO
+            </h5>
+            <span class="text-white-50 small" id="teamCategory"
+              >LDBAA - Argelia Alta</span
+            >
+          </div>
+        </div>
+        <button class="btn-logout-premium" onclick="logout()">
+          <i class="fas fa-power-off me-2"></i> Salir
+        </button>
+      </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+      <div class="row px-3">
+        <!-- Sidebar -->
+        <div class="col-lg-3 mb-4">
+          <div class="glass-card">
+            <div class="text-center mb-4">
+              <img
+                src="img/logo.png"
+                id="teamLogo"
+                alt="Team Logo"
+                class="rounded-circle p-2 bg-white shadow-sm mb-3"
+                width="100"
+                height="100"
+                style="object-fit: contain"
+              />
+              <h4 class="text-white fw-bold mb-0" id="teamName">
+                Nombre Equipo
+              </h4>
+            </div>
+
+            <div class="mt-4">
+              <div
+                class="sidebar-item active"
+                onclick="showSection('dashboard')"
+              >
+                <i class="fas fa-chart-line"></i> Dashboard
+              </div>
+              <div class="sidebar-item" onclick="showSection('facturas')">
+                <i class="fas fa-file-invoice-dollar"></i> Facturas
+              </div>
+              <div class="sidebar-item" onclick="showSection('cartas')">
+                <i class="fas fa-envelope-open-text"></i> Cartas Pases
+              </div>
+              <div class="sidebar-item" onclick="showSection('sanciones')">
+                <i class="fas fa-gavel"></i> Sanciones / Multas
+              </div>
+              <div class="sidebar-item" onclick="showSection('documentos')">
+                <i class="fas fa-folder-open"></i> Subir Documentación
+              </div>
+              <div class="sidebar-item" onclick="showSection('formatos')">
+                <i class="fas fa-file-pdf"></i> Formatos del Campeonato
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+          <!-- Dashboard Overview -->
+          <div id="section-dashboard" class="content-section">
+            <!-- Warning Banner: Tarjetas -->
+            <div id="cardWarningBanner" class="mb-4" style="display: none;">
+              <div class="glass-card border border-warning border-opacity-25 p-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                  <div class="stat-icon-mini text-warning me-3" style="background: rgba(255, 204, 0, 0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                    <i class="fas fa-exclamation-triangle text-warning"></i>
+                  </div>
+                  <div>
+                    <h6 class="text-white fw-bold mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Advertencia de Acumulación</h6>
+                    <p class="text-white-50 mb-0 small" id="cardWarningText">Tienes jugadores a una tarjeta amarilla de ser suspendidos.</p>
+                  </div>
+                </div>
+                <button class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold" onclick="showSection('sanciones')" style="font-size: 0.75rem;">
+                  Ver Control
+                </button>
+              </div>
+            </div>
+
+            <div class="row mb-5 g-4">
+              <div class="col-md-4">
+                <div class="glass-card p-4 h-100 d-flex align-items-center">
+                  <div class="stat-icon-mini text-info me-4">
+                    <i class="fas fa-file-invoice"></i>
+                  </div>
+                  <div>
+                    <h6
+                      class="text-white-50 text-uppercase small fw-bold mb-1"
+                      style="letter-spacing: 1px"
+                    >
+                      Facturas
+                    </h6>
+                    <h2
+                      class="text-white fw-bold mb-0"
+                      id="stat-invoices"
+                      style="font-size: 2.5rem"
+                    >
+                      0
+                    </h2>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="glass-card p-4 h-100 d-flex align-items-center">
+                  <div class="stat-icon-mini text-danger me-4">
+                    <i class="fas fa-gavel"></i>
+                  </div>
+                  <div>
+                    <h6
+                      class="text-white-50 text-uppercase small fw-bold mb-1"
+                      style="letter-spacing: 1px"
+                    >
+                      Sanciones
+                    </h6>
+                    <h2
+                      class="text-white fw-bold mb-0"
+                      id="stat-sanctions"
+                      style="font-size: 2.5rem"
+                    >
+                      0
+                    </h2>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="glass-card p-4 h-100 d-flex align-items-center">
+                  <div class="stat-icon-mini text-success me-4">
+                    <i class="fas fa-envelope-open"></i>
+                  </div>
+                  <div>
+                    <h6
+                      class="text-white-50 text-uppercase small fw-bold mb-1"
+                      style="letter-spacing: 1px"
+                    >
+                      Cartas Pases
+                    </h6>
+                    <h2
+                      class="text-white fw-bold mb-0"
+                      id="stat-passes"
+                      style="font-size: 2.5rem"
+                    >
+                      0
+                    </h2>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <h5 class="text-white fw-bold mb-4">Última Actividad</h5>
+              <div class="table-responsive">
+                <table class="table table-premium">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Concepto</th>
+                      <th>Monto</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="lastActivityTable">
+                    <!-- Dynamic -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Facturas Section -->
+          <div id="section-facturas" class="content-section d-none">
+            <div class="glass-card">
+              <div
+                class="d-flex justify-content-between align-items-start mb-4 flex-column flex-md-row gap-2"
+              >
+                <div>
+                  <h5 class="text-white fw-bold mb-1">Historial de Facturas</h5>
+                  <p class="text-white-50 small mb-0">Aquí aparecerán automáticamente todas las facturas generadas por tus pagos: cartas pases, partidos (derecho de cancha, arbitraje, cementina), multas y cobros adicionales. Cada factura incluye el detalle completo del gasto para tu control financiero.</p>
+                </div>
+                <i
+                  class="fas fa-file-invoice-dollar fa-2x text-primary opacity-50 mt-1"
+                ></i>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-premium" id="invoicesTable">
+                  <thead>
+                    <tr>
+                      <th># Factura</th>
+                      <th>Fecha</th>
+                      <th>Concepto</th>
+                      <th>Categoría</th>
+                      <th>Monto Total</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody id="invoicesList"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cartas Pases Section -->
+          <div id="section-cartas" class="content-section d-none">
+            <div class="glass-card mb-4">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="text-white fw-bold mb-0">Adquirir Cartas Pases</h5>
+                <button class="btn btn-save-invoice px-4 py-2" style="width: auto; background: var(--primary); border: 0; border-radius: 12px; font-weight: bold; color: white;" onclick="solicitarCartasPasesModal()">
+                  <i class="fas fa-shopping-cart me-2"></i> Solicitar Cartas Pases
+                </button>
+              </div>
+              <p class="text-white-50 small mb-0">Desde este apartado puedes solicitar nuevos lotes de cartas pases en blanco al tesorero de la liga para futuras transferencias de jugadores.</p>
+            </div>
+
+            <div class="glass-card">
+              <h5 class="text-white fw-bold mb-4">Mis Solicitudes y Cartas Adquiridas</h5>
+              <div class="table-responsive">
+                <table class="table table-premium">
+                  <thead>
+                    <tr>
+                      <th>Fecha Solicitud</th>
+                      <th>Cantidad</th>
+                      <th>Monto Total</th>
+                      <th>Secuencia Asignada</th>
+                      <th>Estado</th>
+                      <th>Acción / Descarga</th>
+                    </tr>
+                  </thead>
+                  <tbody id="passesList"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sanciones Section -->
+          <div id="section-sanciones" class="content-section d-none">
+            <div class="glass-card">
+              <h5 class="text-white fw-bold mb-4">Sanciones y Multas</h5>
+              <div class="table-responsive">
+                <table class="table table-premium">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Jugador / Concepto</th>
+                      <th>Tipo</th>
+                      <th>Monto</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sanctionsList"></tbody>
+                </table>
+              </div>
+            </div>
+
+
+          </div>
+
+          <!-- Documentación Section -->
+          <div id="section-documentos" class="content-section d-none">
+            <div class="glass-card">
+              <h5 class="text-white fw-bold mb-4">
+                Enviar Documentación a Calificaciones
+              </h5>
+              <form id="docUploadForm">
+                <div class="mb-4">
+                  <label class="form-label text-white-50"
+                    >TIPO DE DOCUMENTO</label
+                  >
+                  <select
+                    class="form-select bg-dark-glass text-white border-0 py-3"
+                    id="docType"
+                    required
+                    style="
+                      background: rgba(255, 255, 255, 0.05);
+                      border-radius: 15px;
+                    "
+                  >
+                    <option value="">Selecciona el tipo</option>
+                    <option value="inscripcion">Ficha de Inscripción</option>
+                    <option value="transferencia">
+                      Documento de Transferencia
+                    </option>
+                    <option value="cedula">Copia de Cédula / Partida</option>
+                    <option value="otro">Otro Documento Relevante</option>
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label class="form-label text-white-50"
+                    >ARCHIVO (PDF o Imagen)</label
+                  >
+                  <input
+                    type="file"
+                    class="form-control bg-dark-glass text-white border-0 py-3"
+                    id="docFile"
+                    required
+                    style="
+                      background: rgba(255, 255, 255, 0.05);
+                      border-radius: 15px;
+                    "
+                  />
+                </div>
+                <div class="mb-4">
+                  <label class="form-label text-white-50"
+                    >NOTAS ADICIONALES</label
+                  >
+                  <textarea
+                    class="form-control bg-dark-glass text-white border-0 py-3"
+                    id="docNotes"
+                    rows="3"
+                    style="
+                      background: rgba(255, 255, 255, 0.05);
+                      border-radius: 15px;
+                    "
+                    placeholder="Explica brevemente el contenido del archivo..."
+                  ></textarea>
+                </div>
+                <button type="submit" class="btn-upload w-100 py-3">
+                  <i class="fas fa-upload me-2"></i> SUBIR Y ENVIAR A
+                  CALIFICACIONES
+                </button>
+              </form>
+
+              <hr class="my-5 border-white border-opacity-10" />
+
+              <h6 class="text-white fw-bold mb-3">Envíos Recientes</h6>
+              <div class="list-group" id="recentUploads">
+                <!-- Dynamic -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Formatos del Campeonato Section -->
+          <div id="section-formatos" class="content-section d-none">
+            <div class="glass-card">
+              <h5 class="text-white fw-bold mb-1">Formatos de Documentos del Campeonato</h5>
+              <p class="text-white-50 small mb-4">Descarga o visualiza los formatos oficiales asignados por el administrador para este campeonato.</p>
+              
+              <div class="table-responsive">
+                <table class="table table-premium">
+                  <thead>
+                    <tr>
+                      <th class="py-3">Nombre del Formato</th>
+                      <th class="py-3">Tipo</th>
+                      <th class="py-3 text-center">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="championshipFormatsList">
+                    <!-- Dinámico -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modals de Visualización -->
+    <div class="modal fade" id="receiptModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 bg-transparent">
+          <div class="modal-body p-0">
+            <div
+              class="receipt-paper"
+              id="printableReceipt"
+              style="
+                background: linear-gradient(145deg, #1e1e1e, #141414);
+                padding: 50px;
+                border-radius: 20px;
+              "
+            >
+              <div class="receipt-watermark">OFICIAL</div>
+
+              <div
+                class="row mb-4 align-items-center border-bottom pb-4 border-white border-opacity-10"
+              >
+                <div class="col-7">
+                  <div class="d-flex align-items-center mb-3">
+                    <img
+                      src="img/logo.png"
+                      class="receipt-brand-logo me-3"
+                      style="width: 80px"
+                    />
+                    <div>
+                      <h4
+                        class="fw-900 mb-0"
+                        style="letter-spacing: -1px; color: #fff"
+                      >
+                        LIGA DEPORTIVA BARRIAL
+                      </h4>
+                      <h3 class="fw-400 mb-0 italic" style="color: #c9a227">
+                        ARGELIA ALTA
+                      </h3>
+                    </div>
+                  </div>
+                  <div
+                    class="small text-white-50"
+                    style="font-size: 0.75rem; line-height: 1.6"
+                  >
+                    <p class="mb-1">
+                      <i class="fas fa-building me-2 text-primary"></i>
+                      <strong>Matriz:</strong> Molleturo E10-70 y Cuyuja. Quito
+                      - Ecuador
+                    </p>
+                    <p class="mb-1">
+                      <i class="fas fa-envelope me-2 text-primary"></i>
+                      <strong>Correo:</strong> calificaciones.argelia@gmail.com
+                    </p>
+                    <p class="mb-0">
+                      <i class="fas fa-check-circle me-2 text-success"></i>
+                      <strong>Obligado a Llevar Contabilidad:</strong> SI
+                    </p>
+                  </div>
+                </div>
+                <div class="col-5">
+                  <div
+                    class="p-4 rounded-4 bg-dark bg-opacity-50 border border-white border-opacity-10 text-end"
+                  >
+                    <span class="badge-authorized mb-3 d-inline-block"
+                      >DOCUMENTO OFICIAL DE TESORERÍA</span
+                    >
+                    <div class="mb-3">
+                      <label
+                        class="d-block small text-white-50 text-uppercase fw-800"
+                        style="font-size: 0.6rem"
+                        >RUC: 1714583745001</label
+                      >
+                      <h4
+                        id="rec_number"
+                        class="fw-900 mb-0 mt-1 text-white"
+                        style="font-family: monospace; letter-spacing: 2px"
+                      >
+                        001-901-000000000
+                      </h4>
+                      <small class="text-white-50"
+                        >FACTURA ELECTRÓNICA Nº</small
+                      >
+                    </div>
+                    <div class="small fw-700 text-white-50 mb-1">
+                      FECHA AUTORIZACIÓN:
+                      <span class="fw-400 text-white">2026-04-15 17:41</span>
+                    </div>
+                    <div class="small fw-700 text-white-50 mb-1">
+                      AMBIENTE:
+                      <span class="fw-800 text-primary">PRODUCCIÓN</span>
+                    </div>
+                    <div class="small fw-700 text-white-50">
+                      EMISIÓN: <span class="fw-800 text-success">NORMAL</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="p-4 rounded-4 mb-4 border border-white border-opacity-5"
+                style="
+                  background: rgba(255, 255, 255, 0.02);
+                  font-size: 0.85rem;
+                "
+              >
+                <div class="row g-3">
+                  <div class="col-8">
+                    <label
+                      class="text-white-50 small text-uppercase tracking-widest d-block mb-1"
+                      >Beneficiario / Club</label
+                    >
+                    <span
+                      id="rec_client"
+                      class="text-uppercase fw-900 fs-5 text-white"
+                      >EQUIPO</span
+                    >
+                    <span
+                      id="rec_cat"
+                      class="ms-2 badge bg-primary bg-opacity-10 text-primary fw-800"
+                      >CATEGORIA</span
+                    >
+                  </div>
+                  <div class="col-4 text-end">
+                    <label
+                      class="text-white-50 small text-uppercase tracking-widest d-block mb-1"
+                      >Fecha de Emisión</label
+                    >
+                    <span id="rec_date" class="fw-800 text-white"
+                      >00/00/0000</span
+                    >
+                  </div>
+                  <div class="col-6">
+                    <label
+                      class="text-white-50 small text-uppercase tracking-widest d-block mb-1"
+                      >Clave de Acceso</label
+                    >
+                    <span
+                      class="text-white d-block small"
+                      style="
+                        font-family: monospace;
+                        letter-spacing: 1px;
+                        color: #c9a227 !important;
+                      "
+                      >1504202601171458374500120019010000004671234567811</span
+                    >
+                  </div>
+                  <div class="col-6 text-end">
+                    <label
+                      class="text-white-50 small text-uppercase tracking-widest d-block mb-1"
+                      >Identificación / RUC</label
+                    >
+                    <span class="text-white fw-800">999999999001</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="receipt-table mb-0 w-100">
+                  <thead>
+                    <tr
+                      class="text-uppercase"
+                      style="
+                        color: #c9a227;
+                        border-bottom: 2px solid rgba(201, 162, 39, 0.3);
+                      "
+                    >
+                      <th class="text-start py-3">Código</th>
+                      <th class="text-start py-3">Descripción del Ítem</th>
+                      <th class="text-center py-3">Cant.</th>
+                      <th class="text-end py-3">P. Unitario</th>
+                      <th class="text-end py-3">Descuento</th>
+                      <th class="text-end py-3">Total</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rec_items_body">
+                    <!-- Dinámico -->
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="row g-4 mt-3">
+                <div class="col-7">
+                  <div
+                    class="p-4 rounded-4 border border-white border-opacity-5 h-100"
+                    style="background: rgba(255, 255, 255, 0.01)"
+                  >
+                    <strong
+                      class="small text-primary text-uppercase d-block mb-2 border-bottom border-white border-opacity-10 pb-2"
+                      >Información del Cobro</strong
+                    >
+                    <div class="row g-2 small">
+                      <div class="col-6 text-white-50">Forma de Pago:</div>
+                      <div class="col-6 text-white">
+                        Sin Utilización Del Sistema Financiero
+                      </div>
+                      <div class="col-6 text-white-50">Observaciones:</div>
+                      <div class="col-6 text-white italic">
+                        Cobro procesado exitosamente.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-5">
+                  <div
+                    class="receipt-totals text-white p-3 rounded-4"
+                    style="background: rgba(255, 255, 255, 0.02)"
+                  >
+                    <div class="total-row d-flex justify-content-between mb-2">
+                      <span class="text-white-50">Subtotal 0%</span
+                      ><span id="rec_subtotal_0" class="fw-800">$0.00</span>
+                    </div>
+                    <div class="total-row d-flex justify-content-between mb-2">
+                      <span class="text-white-50">Subtotal 15%</span
+                      ><span class="fw-400 opacity-25">$0.00</span>
+                    </div>
+                    <div class="total-row d-flex justify-content-between mb-3">
+                      <span class="text-white-50">IVA 15%</span
+                      ><span class="fw-400 opacity-25">$0.00</span>
+                    </div>
+                    <div
+                      class="total-row grand-total p-4 rounded-4 text-center"
+                      style="background: transparent; border: none"
+                    >
+                      <div
+                        style="
+                          border-radius: 15px;
+                          padding: 15px 20px;
+                          background: linear-gradient(
+                            135deg,
+                            rgba(201, 162, 39, 0.15),
+                            rgba(201, 162, 39, 0.05)
+                          );
+                          color: #ffd700;
+                          width: 220px;
+                          margin: auto;
+                        "
+                      >
+                        <div
+                          class="small fw-bold text-uppercase"
+                          style="
+                            letter-spacing: 3px;
+                            font-size: 0.8rem;
+                            opacity: 0.9;
+                            margin-bottom: 10px;
+                            color: #fff;
+                          "
+                        >
+                          TOTAL A PAGAR
+                        </div>
+
+                        <div
+                          id="rec_total"
+                          style="
+                            font-size: 1.2rem;
+                            font-weight: 900;
+                            line-height: 1;
+                          "
+                        >
+                          $16.50
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="mt-5 text-center text-white-50"
+                style="font-size: 0.7rem"
+              >
+                <p class="mb-1">
+                  Este documento es una representación digital del cobro
+                  gestionado en LDBAA.
+                </p>
+                <p class="fw-bold text-primary mb-0">
+                  GRACIAS POR SU GESTIÓN - SISTEMA ELITE FINANZAS
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center border-0 mt-3">
+            <button
+              class="btn btn-outline-light rounded-pill px-4 me-2"
+              onclick="downloadInvoiceImage()"
+            >
+              <i class="fas fa-image me-2"></i> Descargar Imagen (PNG)
+            </button>
+            <button
+              class="btn btn-light rounded-pill px-4"
+              data-bs-dismiss="modal"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Hidden PDF Template Container -->
+    <div id="pdf-render-container">
+        <div id="carta-pase-pdf-template">
+            <div class="pdf-seq-box">Nº <span class="pdf-seq-val">0000</span></div>
+            <div class="pdf-header-container">
+                <div class="pdf-logo-box">
+                    <img src="img/logo.png">
+                </div>
+                <div class="pdf-header-text">
+                    <h2>LIGA DEPORTIVA BARRIAL "ARGELIA ALTA"</h2>
+                    <p>FUNDADA EL 9 DE JULIO DE 1996</p>
+                    <p>FILIAL A LA ASOCIACIÓN DE LIGAS DE MICROFÚTBOL DE QUITO</p>
+                    <p>ACUERDO MINISTERIAL 0049</p>
+                </div>
+            </div>
+
+            <h1 class="pdf-main-title">CARTA PASE</h1>
+
+            <div class="pdf-date-row">
+                Quito, <span class="pdf-line" style="width: 40px;"></span> de <span class="pdf-line" style="width: 120px;"></span> del 20<span class="pdf-line" style="width: 30px;"></span>
+            </div>
+
+            <div class="pdf-content-body">
+                <p>
+                    Yo <span class="pdf-line" style="width: 320px;"></span> 
+                    con Nro. de cedula <span class="pdf-line" style="width: 160px;"></span>, me 
+                    encuentro registrado(a) en el Club " <span class="pdf-line" style="width: 250px;"></span> " 
+                    perteneciente a la Liga Deportiva Barrial Argelia Alta, en virtud de que es mi voluntad seguir 
+                    participando en el Deporte Barrial solicito a usted señor <span class="pdf-line" style="width: 250px;"></span> 
+                    con C.C. <span class="pdf-line" style="width: 160px;"></span> presidente del Club " <span class="pdf-line" style="width: 250px;"></span> " 
+                    me conceda el PASE a préstamo <span class="pdf-line" style="width: 40px;"></span>, libre <span class="pdf-line" style="width: 40px;"></span> o compra definitiva <span class="pdf-line" style="width: 40px;"></span>
+                </p>
+
+                <p style="margin-top: 20px;">
+                    El mencionado deportista puede hacer uso del presente documento para los fines requeridos en el deporte barrial.
+                </p>
+
+                <div class="pdf-signature-grid">
+                    <div class="pdf-sig-item">
+                        <div class="pdf-sig-line-box">Presidente del Club</div>
+                    </div>
+                    <div class="pdf-sig-item">
+                        <div class="pdf-sig-line-box">Jugador</div>
+                    </div>
+                    <div class="pdf-sig-item">
+                        <div class="pdf-sig-line-box">Presidente del Club</div>
+                    </div>
+                </div>
+
+                <div class="pdf-register-section">
+                    <div style="text-align: center;"><span class="pdf-register-title">Registro del Pase</span></div>
+                    <p style="margin-top: 10px;">
+                        Certifico el registro del pase del deportista <span class="pdf-line" style="width: 380px;"></span>, 
+                        dejando constancia en nuestro archivo, el interesado participará o actuará desde la presente fecha en donde en el Club 
+                        " <span class="pdf-line" style="width: 300px;"></span> "
+                    </p>
+                    <p style="margin-top: 10px;">
+                        Fecha de Registro: <span class="pdf-line" style="width: 300px;"></span>
+                    </p>
+                </div>
+
+                <div class="pdf-final-signature">
+                    <strong style="font-size: 15px;">Sr. Javier Miño</strong><br>
+                    <span style="font-size: 12px;">Presidente L.B.A.A.</span><br>
+                    <span style="font-size: 11px; color: #7f8c8d;">Gestión 2025 - 2029</span>
+                </div>
+            </div>
+
+            <div class="pdf-footer-info">
+                Dir: Argelia Alta calle Cuyuja y Majúa altos de la casa barrial. / Telf.: 0984613518<br>
+                <strong>QUITO - ECUADOR</strong>
+            </div>
+        </div>
+    </div>
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+        authDomain: "ldbaa-calificaciones.firebaseapp.com",
+        projectId: "ldbaa-calificaciones",
+        storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+        messagingSenderId: "277579489603",
+        appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6",
+      };
+
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+      const auth = firebase.auth();
+
+      let currentTeam = null;
+
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) {
+          window.location.href = "login.html";
+          return;
+        }
+
+        // Buscar equipo por email
+        const teamSnap = await db
+          .collection("teams")
+          .where("email", "==", user.email)
+          .get();
+        if (teamSnap.empty) {
+          // No es un equipo, tal vez sea admin o sanciones
+          if (user.email === "admin@gmail.com")
+            window.location.href = "dashboard.html";
+          else if (user.email === "sanciones@gmail.com")
+            window.location.href = "sanciones.html";
+          else {
+            Swal.fire("Error", "No tienes acceso como equipo.", "error").then(
+              () => auth.signOut(),
+            );
+          }
+          return;
+        }
+
+        currentTeam = teamSnap.docs[0].data();
+        currentTeam.id = teamSnap.docs[0].id;
+
+        setupUI();
+        loadData();
+      });
+
+      function setupUI() {
+        document.getElementById("teamName").textContent = currentTeam.name;
+        document.getElementById("teamTitle").textContent =
+          `PANEL: ${currentTeam.name}`;
+        document.getElementById("teamCategory").textContent =
+          `Categoría: ${currentTeam.category} | LDBAA`;
+        if (currentTeam.logo)
+          document.getElementById("teamLogo").src = currentTeam.logo;
+      }
+
+      function showSection(section) {
+        document
+          .querySelectorAll(".content-section")
+          .forEach((s) => s.classList.add("d-none"));
+        document
+          .getElementById(`section-${section}`)
+          .classList.remove("d-none");
+
+        document
+          .querySelectorAll(".sidebar-item")
+          .forEach((i) => i.classList.remove("active"));
+        const activeItem = Array.from(
+          document.querySelectorAll(".sidebar-item"),
+        ).find((i) => i.textContent.toLowerCase().includes(section));
+        if (activeItem) activeItem.classList.add("active");
+      }
+
+      function getInvoiceConcept(inv) {
+        if (inv.concept) return inv.concept;
+        if (inv.source === "cartas_pases") {
+          const qty = inv.quantity || 1;
+          return `Cartas Pases (${qty} uds. × $1.00)`;
+        }
+        if (inv.opponent) return `Cobro de Partido vs ${inv.opponent}`;
+        if (inv.extras && inv.extras.length > 0) return inv.extras[0].desc;
+        return "Servicios de Liga";
+      }
+
+      function getInvoiceSourceBadge(inv) {
+        if (inv.source === "cartas_pases") {
+          return `<span class="badge rounded-pill" style="background: rgba(155, 89, 182, 0.15); color: #9b59b6; border: 1px solid rgba(155, 89, 182, 0.3); font-size: 10px; padding: 4px 10px;"><i class="fas fa-id-card me-1"></i> CARTAS PASES</span>`;
+        }
+        if (inv.source === "cobro_general") {
+          return `<span class="badge rounded-pill" style="background: rgba(243, 156, 18, 0.15); color: #f39c12; border: 1px solid rgba(243, 156, 18, 0.3); font-size: 10px; padding: 4px 10px;"><i class="fas fa-receipt me-1"></i> COBRO ADICIONAL</span>`;
+        }
+        if (inv.opponent) {
+          return `<span class="badge rounded-pill" style="background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); font-size: 10px; padding: 4px 10px;"><i class="fas fa-futbol me-1"></i> PARTIDO</span>`;
+        }
+        return `<span class="badge rounded-pill bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-20" style="font-size: 10px; padding: 4px 10px;">VARIOS</span>`;
+      }
+
+      async function loadData() {
+        try {
+          // 1. Invoices
+          const invSnapRaw = await db
+            .collection("invoices")
+            .where("team", "==", currentTeam.name)
+            .orderBy("timestamp", "desc")
+            .get();
+            
+          const invDocs = invSnapRaw.docs.filter((doc) => {
+            const data = doc.data();
+            // Filtrar por categoría para evitar mezclar clubes del mismo nombre en distinta categoría
+            return !data.category || data.category === currentTeam.category;
+          });
+
+          document.getElementById("stat-invoices").textContent = invDocs.length;
+          const invList = document.getElementById("invoicesList");
+          invList.innerHTML = "";
+
+          if (invDocs.length === 0) {
+            invList.insertAdjacentHTML(
+              "beforeend",
+              `
+              <tr>
+                <td colspan="6" class="py-5">
+                  <div class="text-center">
+                    <div class="mb-3">
+                      <i class="fas fa-file-invoice-dollar fa-3x text-white-25 opacity-50"></i>
+                    </div>
+                    <div class="text-white-50 fw-semibold mb-1">Aún no hay facturas generadas</div>
+                    <div class="text-white-50 small" style="opacity: .7;">
+                      Tus facturas aparecerán aquí automáticamente cuando realices un pago (cartas pases, partidos, etc.)
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            `,
+            );
+          }
+
+          invDocs.forEach((doc) => {
+            const inv = doc.data();
+            const date = inv.timestamp
+              ? inv.timestamp.toDate().toLocaleDateString()
+              : "N/A";
+            const concept = getInvoiceConcept(inv);
+            const sourceBadge = getInvoiceSourceBadge(inv);
+            const totalVal = parseFloat(inv.total || 0);
+            invList.insertAdjacentHTML(
+              "beforeend",
+              `
+              <tr class="align-middle border-bottom border-white border-opacity-5">
+                <td class="fw-bold font-monospace text-warning" style="font-size: 13px;">${inv.invoiceId || '---'}</td>
+                <td class="text-white-50 small">${date}</td>
+                <td>
+                  <div class="d-flex flex-column gap-1">
+                    <div class="text-white fw-semibold" style="font-size: 13px;">${concept}</div>
+                    <div>${sourceBadge}</div>
+                  </div>
+                </td>
+                <td><span class="badge-premium bg-paid">${inv.category}</span></td>
+                <td class="fw-bold text-success">$ ${totalVal.toFixed(2)}</td>
+                <td><button class="btn btn-sm btn-outline-light rounded-3 border-opacity-25" onclick="viewInvoice('${doc.id}')" title="Ver detalle"><i class="fas fa-eye me-1"></i>Ver</button></td>
+              </tr>
+            `,
+            );
+          });
+
+          // 2. Cartas Pases (Desde la colección de compras de Cartas Pases de Tesorería)
+          const passSnapRaw = await db
+            .collection("cartas_pases")
+            .where("teamId", "==", currentTeam.id)
+            .get();
+            
+          let passDocs = [];
+          passSnapRaw.forEach((doc) => { passDocs.push({id: doc.id, ...doc.data()}) });
+          passDocs.sort((a, b) => {
+            const tA = a.createdAt ? a.createdAt.toMillis() : 0;
+            const tB = b.createdAt ? b.createdAt.toMillis() : 0;
+            return tB - tA;
+          });
+ 
+          // Solo contamos las aprobadas para la estadística superior
+          const approvedCount = passDocs.filter((d) => d.status === "completed" || d.status === "Aprobado").length;
+          document.getElementById("stat-passes").textContent = approvedCount;
+ 
+          const passList = document.getElementById("passesList");
+          passList.innerHTML = "";
+          passDocs.forEach((cp) => {
+            const date = cp.createdAt
+              ? cp.createdAt.toDate().toLocaleDateString()
+              : "N/A";
+            
+            const isApproved = cp.status === "completed" || cp.status === "Aprobado";
+            const isPending = cp.status === "pending" || cp.status === "Pendiente";
+            
+            let badge = '';
+            if (isApproved) {
+                badge = '<span class="badge-premium bg-paid">APROBADO</span>';
+            } else if (isPending) {
+                badge = '<span class="badge-premium bg-active" style="color: #f39c12; border-color: rgba(243, 156, 18, 0.3); background: rgba(243, 156, 18, 0.1);">PENDIENTE DE VALIDACIÓN</span>';
+            } else {
+                badge = '<span class="badge-premium bg-unpaid" style="color: #e74c3c; border-color: rgba(231, 76, 60, 0.3); background: rgba(231, 76, 60, 0.1);">RECHAZADO</span>';
+            }
+
+            const totalValueFormatted = cp.totalValue ? `$ ${parseFloat(cp.totalValue).toFixed(2)}` : `$ ${(cp.quantity * 1.00).toFixed(2)}`;
+            let prefix = '001';
+            if (isApproved && cp.invoiceId) {
+              const parts = cp.invoiceId.split('-');
+              if (parts.length > 0 && parts[0].length === 3) {
+                prefix = parts[0];
+              }
+            }
+            const start = String(cp.startSeq || cp.seqNum || 1).padStart(3, '0');
+            const end = String(cp.endSeq || cp.seqNum || 1).padStart(3, '0');
+            const isBatch = cp.isBatch || (cp.startSeq && cp.endSeq && cp.startSeq !== cp.endSeq);
+            const seqRange = isApproved ? (isBatch ? `Nº ${prefix}-${start} - ${prefix}-${end}` : `Nº ${prefix}-${start}`) : 'Sin Asignar';
+            const invoiceInfo = isApproved && cp.invoiceId
+              ? `<div class="small text-white-50 mt-1"><i class="fas fa-file-invoice me-1"></i> Factura: <span class="text-warning font-monospace">${cp.invoiceId}</span></div>`
+              : '';
+ 
+            passList.insertAdjacentHTML(
+              "beforeend",
+              `
+              <tr>
+                <td>${date}</td>
+                <td class="fw-bold">${cp.quantity}</td>
+                <td class="fw-bold text-success">${totalValueFormatted}${invoiceInfo}</td>
+                <td><span class="font-monospace text-warning">${seqRange}</span></td>
+                <td>${badge}</td>
+                <td>
+                  ${isApproved ? `<button class="btn btn-sm btn-outline-success" onclick="viewCP('${cp.id}')"><i class="fas fa-file-pdf me-1"></i> Descargar PDF</button>` : `<span class="text-white-50 small">Espera validación</span>`}
+                </td>
+              </tr>
+            `,
+            );
+          });
+
+          // 3. Sanciones
+          // Primero cargamos los jugadores para poder filtrar y mapear nombres de forma robusta
+          const playersSnap = await db
+            .collection("players")
+            .where("teamId", "==", currentTeam.id)
+            .get();
+          const playersMap = {};
+          playersSnap.forEach((d) => {
+            const data = d.data();
+            const pName = data.name || `${data.nombres || ""} ${data.apellidos || ""}`.trim();
+            playersMap[d.id] = pName || "Jugador";
+          });
+
+          // Consultar sanciones por campeonato para obtener tanto individuales como de equipo
+          let sancSnap;
+          if (currentTeam.championshipId) {
+            sancSnap = await db
+              .collection("sanciones")
+              .where("campeonatoId", "==", currentTeam.championshipId)
+              .get();
+          } else {
+            sancSnap = await db.collection("sanciones").get();
+          }
+
+          // Filtrar y ordenar en memoria
+          const filteredSancDocs = [];
+          sancSnap.forEach((doc) => {
+            const s = doc.data();
+            // Incluir si es multa al equipo OR si es jugador de este equipo
+            if (s.teamId === currentTeam.id || (s.jugadorId && playersMap[s.jugadorId])) {
+              filteredSancDocs.push({ id: doc.id, ...s });
+            }
+          });
+
+          // Ordenar por fecha de forma segura (fecha o createdAt)
+          filteredSancDocs.sort((a, b) => {
+            const dateA = a.fecha ? (a.fecha.toDate ? a.fecha.toDate() : new Date(a.fecha)) : (a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0));
+            const dateB = b.fecha ? (b.fecha.toDate ? b.fecha.toDate() : new Date(b.fecha)) : (b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0));
+            return dateB - dateA;
+          });
+
+          const activeSanc = filteredSancDocs.filter(
+            (d) => d.estado === "activa",
+          ).length;
+          document.getElementById("stat-sanctions").textContent = activeSanc;
+          
+          const sancList = document.getElementById("sanctionsList");
+          sancList.innerHTML = "";
+
+          filteredSancDocs.forEach((s) => {
+            const dateObj = s.fecha ? (s.fecha.toDate ? s.fecha.toDate() : new Date(s.fecha)) : (s.createdAt ? (s.createdAt.toDate ? s.createdAt.toDate() : new Date(s.createdAt)) : null);
+            const date = dateObj ? dateObj.toLocaleDateString() : "N/A";
+            const playerName = playersMap[s.jugadorId] || "MULTA EQUIPO";
+            const statusClass = s.estado === "activa" ? "bg-active" : "bg-paid";
+            sancList.insertAdjacentHTML(
+              "beforeend",
+              `
+              <tr>
+                <td>${date}</td>
+                <td>${playerName}</td>
+                <td><span class="text-uppercase small">${s.tipo.replace(/_/g, " ")}</span></td>
+                <td class="fw-bold">$ ${parseFloat(s.valor).toFixed(2)}</td>
+                <td><span class="badge-premium ${statusClass}">${s.estado}</span></td>
+              </tr>
+            `,
+            );
+          });
+
+          // Calcular advertencia de acumulación de tarjetas
+          const playerSanctionsMap = {};
+          filteredSancDocs.forEach((s) => {
+            if (s.jugadorId) {
+              if (!playerSanctionsMap[s.jugadorId]) {
+                playerSanctionsMap[s.jugadorId] = [];
+              }
+              playerSanctionsMap[s.jugadorId].push(s);
+            }
+          });
+
+          let playersOnVerge = [];
+
+          playersSnap.docs.forEach((doc) => {
+            const p = doc.data();
+            const pId = doc.id;
+            const pName = p.name || `${p.nombres || ""} ${p.apellidos || ""}`.trim() || "Jugador";
+            const dorsal = p.numeroJugador || "-";
+
+            const pSanciones = playerSanctionsMap[pId] || [];
+
+            let yellowCount = 0;
+            pSanciones.forEach((s) => {
+              if (s.tipo === "amarilla" && s.estado === "activa") {
+                yellowCount++;
+              }
+            });
+
+            if (yellowCount === 3) {
+              playersOnVerge.push(`${pName.toUpperCase()} (#${dorsal})`);
+            }
+          });
+
+          // Control de Advertencia de Acumulación (Banner y Pop-up)
+          const banner = document.getElementById("cardWarningBanner");
+          const warningText = document.getElementById("cardWarningText");
+          if (banner && warningText) {
+            if (playersOnVerge.length > 0) {
+              banner.style.display = "block";
+              warningText.innerHTML = `Tienes jugadores a una tarjeta amarilla de ser suspendidos: <span class="text-warning fw-bold">${playersOnVerge.join(", ")}</span>.`;
+              
+              // Mostrar alerta SweetAlert2 una sola vez al cargar la sesión
+              if (!window.hasShownYellowWarning) {
+                window.hasShownYellowWarning = true;
+                setTimeout(() => {
+                  Swal.fire({
+                    title: "ADVERTENCIA DE ACUMULACIÓN",
+                    html: `
+                      <div class="text-start small text-white-50">
+                        <p class="text-white">Los siguientes jugadores de tu equipo tienen <strong>3 tarjetas amarillas acumuladas</strong> y están a una amonestación de recibir 1 partido de suspensión:</p>
+                        <ul class="text-warning fw-bold mb-0">
+                          ${playersOnVerge.map(p => `<li>${p}</li>`).join('')}
+                        </ul>
+                      </div>
+                    `,
+                    icon: "warning",
+                    background: "#111",
+                    confirmButtonText: "ENTENDIDO",
+                    confirmButtonColor: "#f1c40f",
+                    customClass: {
+                      popup: 'rounded-4 border border-warning border-opacity-10'
+                    }
+                  });
+                }, 800);
+              }
+            } else {
+              banner.style.display = "none";
+            }
+          }
+
+          // 4. Last Activity
+          const allActivity = [
+            ...invDocs.map((d) => ({
+              type: "INV",
+              date: d.data().timestamp,
+              concept: "Factura " + d.data().invoiceId,
+              val: d.data().total,
+              status: "Pagado",
+            })),
+            ...filteredSancDocs.map((s) => {
+              const dateObj = s.fecha ? (s.fecha.toDate ? s.fecha.toDate() : new Date(s.fecha)) : (s.createdAt ? (s.createdAt.toDate ? s.createdAt.toDate() : new Date(s.createdAt)) : null);
+              return {
+                type: "SANC",
+                date: dateObj ? firebase.firestore.Timestamp.fromDate(dateObj) : null,
+                concept: "Sanción: " + (playersMap[s.jugadorId] || "Equipo"),
+                val: s.valor,
+                status: s.estado,
+              };
+            }),
+          ]
+            .filter((act) => act.date)
+            .sort((a, b) => b.date.toDate() - a.date.toDate())
+            .slice(0, 5);
+
+          const lastTable = document.getElementById("lastActivityTable");
+          lastTable.innerHTML = "";
+          allActivity.forEach((act) => {
+            lastTable.insertAdjacentHTML(
+              "beforeend",
+              `
+              <tr>
+                <td>${act.date ? act.date.toDate().toLocaleDateString() : "N/A"}</td>
+                <td>${act.concept}</td>
+                <td class="fw-bold">$ ${parseFloat(act.val).toFixed(2)}</td>
+                <td><span class="badge-premium ${act.status === "Pagado" || act.status === "cobrada" ? "bg-paid" : "bg-active"}">${act.status}</span></td>
+              </tr>
+            `,
+            );
+          });
+
+          // 5. Recent Uploads
+          loadRecentUploads();
+          
+          // 6. Formatos del Campeonato
+          loadChampionshipFormats();
+          
+          // 7. Notifications (Denied Documents)
+          setupNotifications();
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function loadChampionshipFormats() {
+        const list = document.getElementById("championshipFormatsList");
+        if (!list) return;
+        
+        list.innerHTML = '<tr><td colspan="3" class="text-center py-3"><div class="spinner-border text-success" role="status"></div></td></tr>';
+        
+        db.collection("teamFiles")
+          .where("teamId", "==", currentTeam.id)
+          .where("fileType", "==", "FORMATO")
+          .get()
+          .then((querySnapshot) => {
+            list.innerHTML = "";
+            if (querySnapshot.empty) {
+              list.innerHTML = '<tr><td colspan="3" class="text-center text-white-50 py-3">No tienes formatos asignados o disponibles.</td></tr>';
+              return;
+            }
+            
+            querySnapshot.forEach((doc) => {
+              const file = doc.data();
+              const tr = document.createElement("tr");
+              tr.className = "align-middle border-bottom border-white border-opacity-5";
+              tr.innerHTML = `
+                <td class="text-white fw-semibold" style="font-size: 13px;">${file.fileName.replace(/\.pdf$/i, "")}</td>
+                <td><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-20" style="font-size: 10px; padding: 4px 10px;">PDF</span></td>
+                <td class="text-center">
+                  <button class="btn btn-sm btn-outline-light rounded-3 border-opacity-25 me-2" onclick="openBase64InNewTab('${file.fileBase64}')">
+                    <i class="fas fa-eye me-1"></i> Ver
+                  </button>
+                  <button class="btn btn-sm btn-outline-success rounded-3 border-opacity-25" onclick="downloadBase64PDF('${file.fileName}', '${file.fileBase64}')">
+                    <i class="fas fa-download me-1"></i> Descargar
+                  </button>
+                </td>
+              `;
+              list.appendChild(tr);
+            });
+          })
+          .catch((err) => {
+            console.error(err);
+            list.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-3">Error al cargar los formatos.</td></tr>';
+          });
+      }
+
+      function downloadBase64PDF(fileName, base64Data) {
+        try {
+          const link = document.createElement("a");
+          link.download = fileName;
+          link.href = base64Data;
+          link.click();
+        } catch (e) {
+          console.error(e);
+          Swal.fire("Error", "No se pudo iniciar la descarga.", "error");
+        }
+      }
+      
+      let unreadNotifications = [];
+
+      function setupNotifications() {
+        db.collection("team_documentation")
+          .where("teamId", "==", currentTeam.id)
+          .where("status", "in", ["Aprobado", "Denegado"])
+          .onSnapshot((snapshot) => {
+            unreadNotifications = [];
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              if (data.notified === false) {
+                unreadNotifications.push({ id: doc.id, ...data });
+              }
+            });
+            
+            const btn = document.getElementById("notificationsBtn");
+            const badge = document.getElementById("notificationsBadge");
+            const toast = document.getElementById("notificationsToast");
+            const toastBody = document.getElementById("notificationsToastBody");
+            
+            if (unreadNotifications.length > 0) {
+              btn.style.display = "flex";
+              badge.textContent = unreadNotifications.length;
+              
+              // Premium Dynamic Theming based on mixed statuses
+              const hasDenied = unreadNotifications.some(n => n.status === 'Denegado');
+              if (hasDenied) {
+                btn.style.background = "linear-gradient(135deg, rgba(231, 76, 60, 0.25), rgba(231, 76, 60, 0.05))";
+                btn.style.borderColor = "rgba(231, 76, 60, 0.4)";
+                btn.style.color = "#e74c3c";
+                btn.style.boxShadow = "0 8px 32px rgba(231, 76, 60, 0.25)";
+              } else {
+                btn.style.background = "linear-gradient(135deg, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.05))";
+                btn.style.borderColor = "rgba(46, 204, 113, 0.4)";
+                btn.style.color = "#2ecc71";
+                btn.style.boxShadow = "0 8px 32px rgba(46, 204, 113, 0.25)";
+              }
+              
+              toastBody.innerHTML = unreadNotifications.map(n => {
+                const isApproved = n.status === 'Aprobado';
+                const color = isApproved ? '#2ecc71' : '#e74c3c';
+                const statusText = isApproved ? 'APROBADO' : 'DENEGADO';
+                const desc = isApproved 
+                  ? 'Tu documento ha sido aprobado y calificado con éxito.'
+                  : 'Se ha rechazado tu documento por la Comisión.';
+                  
+                return `
+                  <div class="notification-item" style="border-left: 3px solid ${color};">
+                    <div class="d-flex justify-content-between mb-1">
+                      <strong class="text-white text-uppercase" style="font-size: 0.75rem;">${n.type} ${statusText}</strong>
+                      <span class="text-white-50" style="font-size: 0.7rem;">${n.fechaAprobacion ? n.fechaAprobacion.toDate().toLocaleDateString() : ''}</span>
+                    </div>
+                    <div class="text-white-50 small mb-2" style="line-height: 1.2;">${desc.toUpperCase()}</div>
+                    <button class="btn btn-sm btn-outline-${isApproved ? 'success' : 'danger'} w-100 mt-1 rounded-pill text-uppercase fw-bold" onclick="viewMyDoc('${n.id}')">Ver Detalle</button>
+                  </div>
+                `;
+              }).join('');
+              
+              toast.classList.add('show');
+            } else {
+              btn.style.display = "none";
+              toast.classList.remove('show');
+            }
+          });
+      }
+
+      function showNotificationsModal() {
+        if (unreadNotifications.length === 0) return;
+        
+        let htmlContent = unreadNotifications.map(n => {
+          const isApproved = n.status === 'Aprobado';
+          const isTransfer = n.type === 'transferencia';
+          const isInscripcion = n.type === 'inscripcion';
+          
+          let cardBorderClass = isApproved ? 'border-success border-opacity-25' : 'border-danger border-opacity-25';
+          let badgeClass = isApproved ? 'bg-success' : 'bg-danger';
+          let badgeText = isApproved 
+            ? (isInscripcion ? 'CARNET APROBADO' : 'DOCUMENTO APROBADO')
+            : (isInscripcion ? 'CARNET RECHAZADO' : 'DOCUMENTO RECHAZADO');
+            
+          let detailHTML = '';
+          if (isApproved) {
+            if (isTransfer) {
+              detailHTML = `
+                <div class="bg-black bg-opacity-25 p-3 rounded-3 mb-3 border-start border-3 border-success text-white small">
+                  <div class="mb-1"><strong>Nº CARTA PASE:</strong> ${(n.numeroCartaPase || '-').toUpperCase()}</div>
+                  <div><strong>JUGADOR:</strong> ${(n.playerName || '-').toUpperCase()}</div>
+                </div>
+              `;
+            } else if (isInscripcion) {
+              detailHTML = `
+                <div class="bg-black bg-opacity-25 p-3 rounded-3 mb-3 border-start border-3 border-success text-white-50 small">
+                  TU FICHA DE INSCRIPCIÓN HA SIDO CALIFICADA Y APROBADA CON ÉXITO. EL JUGADOR YA SE ENCUENTRA TOTALMENTE HABILITADO.
+                </div>
+              `;
+            } else {
+              detailHTML = `
+                <div class="bg-black bg-opacity-25 p-3 rounded-3 mb-3 border-start border-3 border-success text-white-50 small">
+                  EL DOCUMENTO HA SIDO CALIFICADO Y ARCHIVADO CORRECTAMENTE POR LA COMISIÓN.
+                </div>
+              `;
+            }
+          } else {
+            detailHTML = `
+              <div class="bg-black bg-opacity-25 p-3 rounded-3 mb-3 border-start border-3 border-danger">
+                <label class="text-white-50 small text-uppercase mb-1 fw-bold">Motivo del Rechazo:</label>
+                <p class="text-white mb-0 fst-italic">"${(n.motivo || 'NO ESPECIFICADO').toUpperCase()}"</p>
+              </div>
+            `;
+          }
+          
+          let btnEntendidoClass = isApproved ? 'btn-success' : 'btn-danger';
+          
+          return `
+            <div class="p-3 mb-3 bg-dark bg-opacity-50 border ${cardBorderClass} rounded-4 text-start">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="badge ${badgeClass} text-uppercase font-monospace">${badgeText}</span>
+                <span class="text-white-50 small">${n.fechaAprobacion ? n.fechaAprobacion.toDate().toLocaleString() : ''}</span>
+              </div>
+              <h6 class="text-white fw-bold text-uppercase mb-2">TIPO: ${n.type}</h6>
+              ${detailHTML}
+              <div class="d-flex justify-content-between align-items-center">
+                <button class="btn btn-sm btn-outline-light rounded-pill px-3" onclick="viewMyDoc('${n.id}')"><i class="fas fa-eye me-1"></i> VER DETALLE</button>
+                <button class="btn btn-sm ${btnEntendidoClass} rounded-pill px-3 text-uppercase fw-bold" onclick="markAsRead('${n.id}')"><i class="fas fa-check me-1"></i> ENTENDIDO</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+        
+        const hasDenied = unreadNotifications.some(n => n.status === 'Denegado');
+        const modalTitleIcon = hasDenied 
+          ? '<i class="fas fa-exclamation-triangle me-2 text-danger animate__animated animate__pulse animate__infinite"></i>' 
+          : '<i class="fas fa-bell me-2 text-success"></i>';
+        const modalTitleText = hasDenied ? 'NOTIFICACIONES PENDIENTES' : 'NOTIFICACIONES NUEVAS';
+        
+        Swal.fire({
+          title: `<h4 class="text-white fw-bold mb-0">${modalTitleIcon} ${modalTitleText}</h4>`,
+          html: htmlContent,
+          background: '#1a1a1a',
+          showConfirmButton: false,
+          showCloseButton: true,
+          width: '600px',
+          customClass: {
+            popup: 'rounded-4 border border-white border-opacity-10'
+          }
+        });
+      }
+
+      async function markAsRead(docId) {
+        try {
+          await db.collection("team_documentation").doc(docId).update({
+            notified: true
+          });
+          Swal.close();
+          
+          // Tiny delay to check if there are more unread notifications to keep the modal open nicely
+          setTimeout(() => {
+            if (unreadNotifications.length > 0) {
+              showNotificationsModal();
+            }
+          }, 150);
+        } catch (error) {
+          console.error("Error marking as read", error);
+        }
+      }
+
+      async function loadRecentUploads() {
+        const upSnap = await db
+          .collection("team_documentation")
+          .where("teamId", "==", currentTeam.id)
+          .orderBy("timestamp", "desc")
+          .limit(5)
+          .get();
+        const upList = document.getElementById("recentUploads");
+        upList.innerHTML = "";
+        if (upSnap.empty) {
+          upList.innerHTML =
+            "<p class='text-white-50 text-center py-3'>No hay documentos enviados aún.</p>";
+          return;
+        }
+        upSnap.forEach((doc) => {
+          const d = doc.data();
+          const date = d.timestamp
+            ? d.timestamp.toDate().toLocaleString()
+            : "N/A";
+          
+          const isApproved = d.status === "Aprobado";
+          const isDenied = d.status === "Denegado";
+          
+          let badge = '';
+          if (isApproved) {
+              badge = '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 small fw-bold">APROBADO</span>';
+          } else if (isDenied) {
+              badge = '<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-1 small fw-bold">DENEGADO</span>';
+          } else {
+              badge = '<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-1 small fw-bold">PENDIENTE</span>';
+          }
+
+          upList.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="list-group-item bg-dark-glass text-white border-white border-opacity-10 mb-2 rounded-4 p-3 animate__animated animate__fadeIn">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-bold text-uppercase small text-primary">${d.type}</span>
+                ${badge}
+              </div>
+              <div class="d-flex justify-content-between align-items-end">
+                <p class="mb-0 small text-white-80 opacity-75">${d.notes || "Sin notas."}</p>
+                <span class="text-white-50 small font-monospace" style="font-size: 0.75rem;">${date}</span>
+              </div>
+            </div>
+          `,
+          );
+        });
+      }
+
+      // Dynamic transfer fields toggle
+      // Documentation Upload
+      document.getElementById("docUploadForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const type = document.getElementById("docType").value;
+        const file = document.getElementById("docFile").files[0];
+        const rawNotes = document.getElementById("docNotes").value;
+        const notes = rawNotes.toUpperCase();
+
+        if (!file) return;
+
+        Swal.fire({
+          title: "SUBIENDO...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+          try {
+            await db.collection("team_documentation").add({
+              teamId: currentTeam.id,
+              teamName: currentTeam.name,
+              type: type,
+              file: ev.target.result, // Base64
+              fileName: file.name,
+              notes: notes,
+              numeroCartaPase: "",
+              playerName: "",
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+            Swal.fire(
+              "¡ENVIADO!",
+              "El documento ha sido enviado a la Comisión de Calificaciones.",
+              "success",
+            );
+            document.getElementById("docUploadForm").reset();
+            loadRecentUploads();
+          } catch (err) {
+            Swal.fire("ERROR", "No se pudo subir el archivo.", "error");
+          }
+        };
+        reader.readAsDataURL(file);
+      };
+
+      async function viewInvoice(id) {
+        Swal.fire({
+          title: "Cargando Factura...",
+          didOpen: () => Swal.showLoading(),
+          allowOutsideClick: false
+        });
+        let timeoutId;
+        try {
+          const timeoutPromise = new Promise((_, rej) => {
+            timeoutId = setTimeout(() => rej(new Error('Tiempo de espera agotado. Revisa tu conexión.')), 10000);
+          });
+
+          const fetchPromise = (async () => {
+            let doc = await db.collection("invoices").doc(id).get();
+            if (doc.exists) return doc.data();
+            const querySnap = await db.collection("invoices").where("invoiceId", "==", id).get();
+            if (!querySnap.empty) return querySnap.docs[0].data();
+            throw new Error('Factura no encontrada');
+          })();
+
+          const data = await Promise.race([fetchPromise, timeoutPromise]);
+          clearTimeout(timeoutId);
+
+          const setEl = (eid, val) => { const el = document.getElementById(eid); if (el) el.textContent = val; };
+
+          setEl("rec_number", data.invoiceId || "N/A");
+          setEl("rec_client", data.team || "N/A");
+          setEl("rec_cat", data.category || "N/A");
+
+          try {
+            const ts = data.timestamp;
+            let d;
+            if (ts && typeof ts.toDate === 'function') d = ts.toDate();
+            else if (ts) d = new Date(ts);
+            else d = new Date();
+            setEl("rec_date", isNaN(d.getTime()) ? "N/A" : d.toLocaleDateString());
+          } catch (e) { setEl("rec_date", "N/A"); }
+
+          const totalVal = parseFloat(data.total || 0);
+          setEl("rec_total", `$ ${totalVal.toFixed(2)}`);
+          setEl("rec_subtotal_0", `$ ${totalVal.toFixed(2)}`);
+
+          const items = [];
+          try {
+            if (parseFloat(data.can || 0) > 0) items.push({ concept: "Derecho de Cancha", qty: 1, unit: data.can, total: parseFloat(data.can) });
+            if (parseFloat(data.arb || 0) > 0) items.push({ concept: "Vocalía / Arbitraje", qty: 1, unit: data.arb, total: parseFloat(data.arb) });
+            if (parseFloat(data.cem || 0) > 0) items.push({ concept: "Cementina", qty: 1, unit: data.cem, total: parseFloat(data.cem) });
+
+            const formatCardPlayerList = (players) => {
+              if (!players) return "";
+              let arr = [];
+              if (Array.isArray(players)) arr = players;
+              else if (typeof players === "object") arr = [players];
+              else if (typeof players === "string") {
+                try {
+                  const parsed = JSON.parse(players);
+                  arr = Array.isArray(parsed) ? parsed : [parsed];
+                } catch (e) { arr = [players]; }
+              } else arr = [players];
+              if (arr.length === 0) return "";
+
+              const nums = [];
+              arr.forEach((p) => {
+                if (p === null || p === undefined) return;
+                let numVal = "";
+                let nameVal = "";
+                if (typeof p === "object") {
+                  numVal = p.num || p.dorsal || p.numeroJugador || p.numero || p.number || "";
+                  nameVal = p.name || p.nombre || p.jugador || "";
+                } else if (typeof p === "string") {
+                  const trimmed = p.trim();
+                  if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
+                    try {
+                      const parsed = JSON.parse(trimmed);
+                      numVal = parsed.num || parsed.dorsal || parsed.numeroJugador || parsed.numero || "";
+                      nameVal = parsed.name || parsed.nombre || parsed.jugador || "";
+                    } catch (e) { nameVal = trimmed; }
+                  } else nameVal = trimmed;
+                } else numVal = String(p);
+
+                numVal = String(numVal).trim();
+                nameVal = String(nameVal).trim();
+                if (numVal && !numVal.startsWith("{")) {
+                  nums.push(numVal.startsWith("#") ? numVal : `#${numVal}`);
+                } else if (nameVal && !nameVal.startsWith("{")) {
+                  nums.push(nameVal.startsWith("#") ? nameVal : (nameVal.match(/^\d+$/) ? `#${nameVal}` : nameVal));
+                }
+              });
+              if (nums.length === 0) return "";
+              return ` (Jug: ${nums.join(", ")})`;
+            };
+
+            if (data.ta && parseInt(data.ta.count || 0) > 0) {
+              const qty = parseInt(data.ta.count || 0);
+              const unit = parseFloat(data.ta.val !== undefined ? data.ta.val : 0.5);
+              const taPn = formatCardPlayerList(data.ta.players);
+              const title = qty === 1 ? `Tarjeta Amarilla${taPn}` : `Tarjetas Amarillas${taPn ? taPn : ` (${qty})`}`;
+              items.push({ concept: title, qty: qty, unit: unit, total: qty * unit });
+            }
+            if (data.tr && parseInt(data.tr.count || 0) > 0) {
+              const qty = parseInt(data.tr.count || 0);
+              const unit = parseFloat(data.tr.val !== undefined ? data.tr.val : 1.0);
+              const trPn = formatCardPlayerList(data.tr.players);
+              const title = qty === 1 ? `Tarjeta Roja${trPn}` : `Tarjetas Rojas${trPn ? trPn : ` (${qty})`}`;
+              items.push({ concept: title, qty: qty, unit: unit, total: qty * unit });
+            }
+            if (data.extras && Array.isArray(data.extras) && data.extras.length > 0) {
+              data.extras.forEach((ex) => {
+                try {
+                  const v = parseFloat(ex.val || 0);
+                  if (v > 0) {
+                    let desc = (ex.desc || "Extra").trim();
+                    if (/^AMARILLA(\s*\(\s*\))?$/i.test(desc) || /^TARJETA\s+AMARILLA/i.test(desc)) {
+                      if (data.ta && parseInt(data.ta.count || 0) > 0) return;
+                    }
+                    if (/^ROJA(\s*\(\s*\))?$/i.test(desc) || /^TARJETA\s+ROJA/i.test(desc)) {
+                      if (data.tr && parseInt(data.tr.count || 0) > 0) return;
+                    }
+                    desc = desc
+                      .replace(/no_veedor/gi, "No Asistencia de Veedor")
+                      .replace(/amarilla_banca/gi, "Tarjeta Amarilla (Banca)")
+                      .replace(/roja_banca/gi, "Tarjeta Roja (Banca)")
+                      .replace(/\(\s*\)/g, "")
+                      .replace(/\(a\)\)/g, "(a)")
+                      .trim();
+                    items.push({ concept: desc, qty: 1, unit: v, total: v });
+                  }
+                } catch (e) {}
+              });
+            }
+          } catch (ierr) { console.error(ierr); }
+
+          const itemsBody = document.getElementById("rec_items_body");
+          if (itemsBody) {
+            itemsBody.innerHTML = "";
+            items.forEach((item, idx) => {
+              const code = `P${(idx + 1).toString().padStart(8, "0")}`;
+              itemsBody.insertAdjacentHTML(
+                "beforeend",
+                `
+              <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                <td class="py-3 ps-3" style="color: #c9a227; font-weight: bold;">${code}</td>
+                <td class="py-3 text-white fw-bold">${item.concept}</td>
+                <td class="py-3 text-center text-white-50">${item.qty}</td>
+                <td class="py-3 text-end text-white-50">$ ${parseFloat(item.unit || 0).toFixed(2)}</td>
+                <td class="py-3 text-end text-white-50">$ 0.00</td>
+                <td class="py-3 text-end pe-3 text-white fw-bold">$ ${parseFloat(item.total || 0).toFixed(2)}</td>
+              </tr>
+            `,
+              );
+            });
+          }
+
+          try { Swal.close(); } catch (x) {}
+          const modalEl = document.getElementById("receiptModal");
+          if (modalEl) {
+            try {
+              const existing = bootstrap.Modal.getInstance(modalEl);
+              if (existing) existing.dispose();
+              document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+            } catch (e) {}
+            try { document.body.classList.remove('modal-open'); } catch (e) {}
+            try { modalEl.classList.remove('fade'); } catch(e){}
+            try { modalEl.classList.remove('show'); } catch(e){}
+            try { modalEl.style.display = 'none'; } catch(e){}
+            setTimeout(() => {
+              try { modalEl.classList.add('fade'); } catch(e){}
+              const bsModal = new bootstrap.Modal(modalEl);
+              bsModal.show();
+            }, 30);
+          }
+        } catch (err) {
+          console.error(err);
+          if (timeoutId) clearTimeout(timeoutId);
+          try { Swal.close(); } catch (x) {}
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: (err && err.message) ? err.message : 'No se pudo cargar la factura',
+            confirmButtonText: 'Entendido'
+          });
+        }
+      }
+
+      function downloadInvoiceImage() {
+        const element = document.getElementById("printableReceipt");
+        html2canvas(element, { backgroundColor: "#141414", scale: 2 }).then(
+          (canvas) => {
+            const link = document.createElement("a");
+            const num = document.getElementById("rec_number").textContent;
+            link.download = `Factura_${num}.png`;
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+          },
+        );
+      }
+
+      async function generateAndDownloadCPPDF(teamName, quantity, startSeq, filename, prefix) {
+          const pdfContainer = document.createElement('div');
+          pdfContainer.style.margin = '0';
+          pdfContainer.style.padding = '0';
+          const originalTemplate = document.getElementById('carta-pase-pdf-template');
+          if (!originalTemplate) {
+            throw new Error('Plantilla PDF no encontrada');
+          }
+
+          let currentSeqNum = startSeq;
+          for (let i = 0; i < quantity; i++) {
+              const seqStr = `${prefix}-${String(currentSeqNum).padStart(3, '0')}`;
+              currentSeqNum++;
+
+              const page = originalTemplate.cloneNode(true);
+              page.style.display = 'block';
+              page.querySelector('.pdf-seq-val').textContent = seqStr;
+
+              pdfContainer.appendChild(page);
+
+              if (i < quantity - 1) {
+                  const pageBreak = document.createElement('div');
+                  pageBreak.className = 'html2pdf__page-break';
+                  pdfContainer.appendChild(pageBreak);
+              }
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 800));
+
+          const opt = {
+              margin:       0,
+              filename:     filename,
+              image:        { type: 'jpeg', quality: 0.98 },
+              html2canvas:  {
+                  scale: 3,
+                  useCORS: true,
+                  letterRendering: true,
+                  logging: false
+              },
+              jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+              pagebreak:    { mode: ['avoid-all', 'css'] }
+          };
+
+          await html2pdf().set(opt).from(pdfContainer).save();
+      }
+
+      async function viewCP(id) {
+        Swal.fire({
+          title: "Generando Carta Pase...",
+          html: "Preparando archivo PDF con secuencia asignada...",
+          didOpen: () => Swal.showLoading(),
+        });
+        try {
+          const doc = await db.collection("cartas_pases").doc(id).get();
+          if (!doc.exists)
+            return Swal.fire("Error", "Registro no encontrado", "error");
+
+          const data = doc.data();
+          const quantity = data.quantity || 1;
+          const startSeq = data.startSeq || data.seqNum || 1;
+          const endSeq = data.endSeq || startSeq;
+          const teamName = data.teamName || "Equipo";
+
+          let prefix = '001';
+          if (data.invoiceId) {
+            const parts = data.invoiceId.split('-');
+            if (parts.length > 0 && parts[0].length === 3) {
+              prefix = parts[0];
+            }
+          }
+
+          const filename = `Cartas_Pases_${teamName.replace(/\s+/g, '_')}_${prefix}-${String(startSeq).padStart(3, '0')}_a_${prefix}-${String(endSeq).padStart(3, '0')}.pdf`;
+
+          await generateAndDownloadCPPDF(teamName, quantity, startSeq, filename, prefix);
+          Swal.close();
+        } catch (err) {
+          console.error(err);
+          Swal.fire("Error", "No se pudo generar el PDF", "error");
+        }
+      }
+
+      let activeDocFile = null;
+
+      function openBase64InNewTab(base64Data) {
+        if (!base64Data) return;
+        try {
+          if (!base64Data.startsWith('data:')) {
+            window.open(base64Data, '_blank');
+            return;
+          }
+          const arr = base64Data.split(',');
+          const mime = arr[0].match(/:(.*?);/)[1];
+          const bstr = atob(arr[1]);
+          let n = bstr.length;
+          const u8arr = new Uint8Array(n);
+          while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+          }
+          const file = new Blob([u8arr], { type: mime });
+          const fileURL = URL.createObjectURL(file);
+          window.open(fileURL, '_blank');
+        } catch (e) {
+          console.error(e);
+          const win = window.open();
+          if (win) {
+            win.document.write('<iframe src="' + base64Data + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+          }
+        }
+      }
+
+      async function viewMyDoc(id) {
+        Swal.fire({ title: 'CARGANDO...', didOpen: () => Swal.showLoading() });
+        try {
+          const doc = await db.collection("team_documentation").doc(id).get();
+          if (!doc.exists) return Swal.fire('ERROR', 'DOCUMENTO NO ENCONTRADO', 'error');
+          const d = doc.data();
+          activeDocFile = d.file;
+          const isApproved = d.status === 'Aprobado';
+          const isDenied = d.status === 'Denegado';
+          const numCarta = d.numeroCartaPase || '-';
+          const valCarta = d.valor ? '$' + parseFloat(d.valor).toFixed(2) : '-';
+          
+          const badgeHTML = isApproved ? '<span class="badge bg-success">APROBADO</span>' : isDenied ? '<span class="badge bg-danger">DENEGADO</span>' : '<span class="badge bg-warning text-dark">PENDIENTE</span>';
+          
+          Swal.fire({
+            title: '<h4 class="text-white fw-bold mb-0">DETALLES DEL DOCUMENTO</h4>',
+            html: `
+              <div class="text-start p-3 bg-dark bg-opacity-50 border border-white border-opacity-10 rounded-4 mt-3">
+                <div class="row mb-3">
+                  <div class="col-6">
+                    <label class="text-white-50 small text-uppercase fw-bold">ESTADO</label>
+                    <div class="mt-1">${badgeHTML}</div>
+                  </div>
+                  <div class="col-6 text-end">
+                    <label class="text-white-50 small text-uppercase fw-bold">FECHA DE ENVÍO</label>
+                    <div class="text-white fw-bold">${d.timestamp ? d.timestamp.toDate().toLocaleDateString() : 'N/A'}</div>
+                  </div>
+                </div>
+                ${isApproved ? `
+                <div class="row mb-3">
+                  <div class="col-6">
+                    <label class="text-white-50 small text-uppercase fw-bold">Nº CARTA PASE</label>
+                    <div class="text-primary fw-bold fs-5">${numCarta.toUpperCase()}</div>
+                  </div>
+                  <div class="col-6 text-end">
+                    <label class="text-white-50 small text-uppercase fw-bold">VALOR</label>
+                    <div class="text-success fw-bold fs-5">${valCarta}</div>
+                  </div>
+                </div>` : ''}
+                ${isDenied && d.motivo ? `
+                <div class="mb-3 p-3 bg-danger bg-opacity-10 rounded-3 border border-danger border-opacity-25">
+                  <label class="text-danger small text-uppercase fw-bold"><i class="fas fa-exclamation-circle me-1"></i>MOTIVO DE RECHAZO</label>
+                  <div class="text-white mt-1">${d.motivo.toUpperCase()}</div>
+                </div>` : ''}
+
+                <div class="mb-3 mt-3">
+                  <label class="text-white-50 small text-uppercase fw-bold">NOTAS DE ENVÍO</label>
+                  <p class="text-white small mb-0">${(d.notes || 'NINGUNA').toUpperCase()}</p>
+                </div>
+                <div class="text-center mt-4">
+                  <button class="btn btn-outline-info rounded-pill px-4 text-uppercase fw-bold" onclick="openBase64InNewTab(activeDocFile)"><i class="fas fa-external-link-alt me-2"></i> Ver Documento Original</button>
+                </div>
+              </div>
+            `,
+            background: '#1a1a1a',
+            showConfirmButton: true,
+            confirmButtonText: 'CERRAR',
+            confirmButtonColor: '#2ecc71'
+          });
+        } catch (e) {
+          Swal.fire('ERROR', 'NO SE PUDIERON CARGAR LOS DETALLES', 'error');
+        }
+      }
+
+      function logout() {
+        Swal.fire({
+          title: "¿Cerrar sesión?",
+          text: "¿Estás seguro?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#2ecc71",
+          confirmButtonText: "Sí, salir",
+        }).then((result) => {
+          if (result.isConfirmed) auth.signOut();
+        });
+      }
+
+      // Proceso de Solicitud de Cartas Pases con Pago QR
+      window.solicitarCartasPasesModal = async function() {
+        const { value: quantity } = await Swal.fire({
+          title: 'Solicitar Cartas Pases',
+          text: '¿Cuántas cartas pases deseas solicitar? (Valor unitario: $1.00)',
+          input: 'number',
+          inputAttributes: {
+            min: 1,
+            step: 1,
+            value: 5,
+            class: 'form-control bg-dark text-white border-secondary'
+          },
+          showCancelButton: true,
+          confirmButtonText: 'Siguiente',
+          cancelButtonText: 'Cancelar',
+          background: '#1a1a1a',
+          customClass: {
+            popup: 'rounded-4 border border-white border-opacity-10',
+            confirmButton: 'btn btn-success px-4 py-2',
+            cancelButton: 'btn btn-outline-light px-4 py-2'
+          },
+          preConfirm: (val) => {
+            if (!val || val < 1) {
+              Swal.showValidationMessage('Por favor ingresa una cantidad válida.');
+              return false;
+            }
+            return parseInt(val);
+          }
+        });
+
+        if (!quantity) return;
+
+        const totalValue = quantity * 1.00;
+
+        // Mostrar detalles de transferencia, cuenta bancaria, código QR de pago, y pedir comprobante
+        const { value: fileData } = await Swal.fire({
+          title: '<span style="color: #2ecc71;"><i class="fas fa-qrcode me-2"></i>Pagar Solicitud</span>',
+          html: `
+            <div class="text-start p-2" style="font-size: 0.95rem; color: #fff;">
+              <p class="mb-3">Has solicitado <strong>${quantity}</strong> cartas pases. El total a pagar es:</p>
+              <div class="p-3 mb-3 rounded text-center" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.3);">
+                <span class="small text-white-50 text-uppercase d-block mb-1">Total a Transferir</span>
+                <span class="fs-3 fw-bold text-success">$ ${totalValue.toFixed(2)}</span>
+              </div>
+              <div class="p-3 mb-3 rounded" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+                <p class="mb-1 fw-bold text-warning small"><i class="fas fa-university me-2"></i>Datos de Cuenta:</p>
+                <p class="mb-1 small"><b>Banco:</b> Banco Pichincha</p>
+                <p class="mb-1 small"><b>Tipo de Cuenta:</b> Cuenta de Ahorro Transaccional</p>
+                <p class="mb-1 small"><b>Nº Cuenta:</b> 2215760735</p>
+                <p class="mb-0 small"><b>Titular:</b> Jessica Silvana Quishpe Chicaiza</p>
+              </div>
+              <div class="text-center mb-3">
+                <p class="mb-2 small text-white-50"><i class="fas fa-qrcode text-success me-1"></i> Escanea este código QR desde tu app bancaria o DeUna:</p>
+                <img src="img/qr-pago-deuna.png" alt="Código QR de Pago DeUna" class="img-fluid rounded border border-white border-opacity-10 p-2 bg-white shadow" style="max-height: 200px;" onerror="this.src='img/qr-pago.png'">
+                <p class="small text-white-50 mt-1 mb-0 fw-bold">Jessica Silvana Quishpe Chicaiza</p>
+              </div>
+              <label class="form-label text-white-50 small mt-2">Sube el comprobante de pago (Imagen o PDF):</label>
+            </div>
+          `,
+          input: 'file',
+          inputAttributes: {
+            accept: 'image/*,application/pdf',
+            required: 'required',
+            class: 'form-control text-white bg-dark border-secondary'
+          },
+          customClass: {
+            popup: 'swal-premium',
+            confirmButton: 'btn btn-success px-4 py-2 rounded-3',
+            cancelButton: 'btn btn-outline-light px-4 py-2 rounded-3',
+            input: 'form-control bg-dark text-white border-secondary'
+          },
+          showCancelButton: true,
+          confirmButtonText: '<i class="fas fa-paper-plane me-2"></i>Enviar Solicitud',
+          cancelButtonText: 'Cancelar',
+          allowOutsideClick: false,
+          allowEscapeKey: false,
+          preConfirm: (file) => {
+            if (!file) {
+              Swal.showValidationMessage('Debe seleccionar un archivo de comprobante de pago.');
+              return false;
+            }
+            return file;
+          }
+        });
+
+        if (fileData) {
+          const reader = new FileReader();
+          reader.onload = async function (e) {
+            try {
+              Swal.fire({
+                title: 'Enviando Solicitud...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+              });
+
+              // Registrar solicitud de cartas pases en la colección 'cartas_pases' como 'pending'
+              await db.collection("cartas_pases").add({
+                teamId: currentTeam.id,
+                teamName: currentTeam.name,
+                quantity: quantity,
+                value: 1.00,
+                totalValue: totalValue,
+                status: 'pending',
+                comprobante: e.target.result, // Base64 del comprobante de pago
+                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                isBatch: true
+              });
+
+              // Además, registrar en team_documentation para que sea visible en auditorías si es necesario
+              await db.collection("team_documentation").add({
+                teamId: currentTeam.id,
+                teamName: currentTeam.name,
+                type: 'pago_cartas_pases',
+                file: e.target.result,
+                status: 'Pendiente',
+                notes: `Pago por solicitud de ${quantity} cartas pases. Total: $${totalValue.toFixed(2)}`,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              });
+
+              Swal.fire({
+                icon: 'success',
+                title: 'Solicitud Enviada',
+                html: '<div class="text-start"><p class="mb-2">Tu solicitud y comprobante de pago han sido enviados correctamente.</p><p class="mb-0 small text-white-50"><i class="fas fa-info-circle me-1 text-primary"></i> Una vez que el tesorero valide el pago, se generará tu factura <b>automáticamente</b> y aparecerá en el apartado de <b>Facturas</b> del panel con el detalle completo del gasto.</p></div>',
+                confirmButtonText: 'Entendido'
+              }).then(() => {
+                loadData();
+              });
+            } catch (err) {
+              console.error(err);
+              Swal.fire('Error', 'No se pudo registrar la solicitud de cartas pases.', 'error');
+            }
+          };
+          reader.readAsDataURL(fileData);
+        }
+      };
+    </script>
+  </body>
+</html>

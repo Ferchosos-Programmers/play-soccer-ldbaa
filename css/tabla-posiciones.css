@@ -1,0 +1,147 @@
+/* Tabla de Posiciones Premium Styles */
+
+.table-premium-container {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 30px;
+    margin-bottom: 40px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+}
+
+.table-premium {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin-top: -8px;
+}
+
+.table-premium thead th {
+    background: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 1.5px;
+    padding: 20px 15px;
+    border: none;
+    text-align: center;
+}
+
+.table-premium thead th:first-child {
+    border-radius: 12px 0 0 12px;
+}
+
+.table-premium thead th:last-child {
+    border-radius: 0 12px 12px 0;
+}
+
+.table-premium tbody tr {
+    transition: all 0.3s ease;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.table-premium tbody tr:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: scale(1.01);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.table-premium tbody td {
+    padding: 18px 15px;
+    color: rgba(255, 255, 255, 0.8);
+    border: none;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.table-premium tbody tr td:first-child {
+    border-radius: 12px 0 0 12px;
+    color: #2ecc71;
+    font-weight: 900;
+}
+
+.table-premium tbody tr td:last-child {
+    border-radius: 0 12px 12px 0;
+    font-weight: 800;
+    color: #fff;
+}
+
+/* Category Tabs Premium */
+.nav-pills-premium {
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.nav-pills-premium .nav-link {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 12px 25px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.nav-pills-premium .nav-link.active {
+    background: #2ecc71 !important;
+    color: #000 !important;
+    border-color: #2ecc71;
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);
+}
+
+.nav-pills-premium .nav-link:hover:not(.active) {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+}
+
+/* Header Action Buttons */
+.header-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-header-premium {
+    border-radius: 15px;
+    padding: 12px 20px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+/* Back Button specifically */
+.btn-back-premium {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 15px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    transition: all 0.3s ease;
+}
+
+.btn-back-premium:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    transform: translateX(-5px);
+}
+
+/* Responsive adjustment */
+@media (max-width: 768px) {
+    .table-premium-container {
+        padding: 15px;
+    }
+    .table-premium thead th, .table-premium tbody td {
+        padding: 12px 8px;
+        font-size: 0.9rem;
+    }
+}

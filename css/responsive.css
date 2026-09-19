@@ -1,0 +1,120 @@
+/* Reglas base para responsividad */
+:root {
+    --container-padding: 20px;
+}
+
+/* Reglas generales para todos los dispositivos */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Media queries para diferentes tamaños de pantalla */
+@media screen and (max-width: 1200px) {
+    .container {
+        max-width: 95%;
+        padding: 0 var(--container-padding);
+    }
+}
+
+@media screen and (max-width: 992px) {
+    :root {
+        --container-padding: 15px;
+    }
+    
+    .row {
+        flex-wrap: wrap;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    :root {
+        --container-padding: 10px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3 {
+        font-size: 1.3rem;
+    }
+    
+    p {
+        font-size: 1rem;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    :root {
+        --container-padding: 8px;
+    }
+    
+    .btn {
+        width: 100%;
+        margin: -0.9px 0;
+    }
+    
+    .form-group {
+        margin-bottom: 15px;
+    }
+    
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Clases utilitarias para flexbox responsivo */
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.flex-item {
+    flex: 1 1 300px;
+}
+
+/* Ajustes para formularios responsivos */
+.form-control {
+    width: 100%;
+    max-width: 100%;
+}
+
+/* Ajustes para tablas responsivas */
+.table-responsive {
+    width: 100%;
+    margin-bottom: 1rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ajustes para navegación responsiva */
+.nav-responsive {
+    width: 100%;
+    padding: 10px var(--container-padding);
+}
+
+/* Ajustes para modales responsivos */
+.modal-dialog {
+    margin: 10px;
+    max-width: calc(100% - 20px);
+}
+
+@media screen and (min-width: 576px) {
+    .modal-dialog {
+        margin: 1.75rem auto;
+        max-width: 500px;
+    }
+} 

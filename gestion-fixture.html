@@ -1,0 +1,1300 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sincronización Premium | LDBAA</title>
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+    />
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <link rel="stylesheet" href="css/global-theme.css" />
+    <link rel="stylesheet" href="css/programacion-dashboard.css" />
+
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/global-swal-patch.js"></script>
+
+    <!-- Librerías de Exportación -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+      :root {
+        --primary-color: #2ecc71;
+        --primary-glow: rgba(46, 204, 113, 0.3);
+        --gold-accent: #f1c40f;
+      }
+
+      .wizard-container {
+        padding: 40px 20px 60px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .section-header {
+        margin-bottom: 40px;
+        text-align: left;
+      }
+
+      .section-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        margin-bottom: 10px;
+        letter-spacing: -1px;
+      }
+
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 24px;
+        padding: 30px;
+        margin-bottom: 30px;
+        animation: fadeIn 0.5s ease;
+      }
+
+      .step-indicator {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 30px;
+      }
+
+      .step-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+      }
+
+      .step-dot.active {
+        background: var(--primary-color);
+        box-shadow: 0 0 15px var(--primary-glow);
+        transform: scale(1.2);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(15px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Match Card */
+      .fixture-card {
+        background: rgba(255, 255, 255, 0.02) !important;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.06) !important;
+        border-radius: 20px !important;
+        padding: 24px !important;
+        margin-bottom: 24px !important;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .fixture-card:hover {
+        border-color: rgba(46, 204, 113, 0.3) !important;
+        background: rgba(255, 255, 255, 0.04) !important;
+        transform: translateY(-5px);
+      }
+
+      .fixture-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary-color);
+        opacity: 0.5;
+      }
+
+      .fixture-header {
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding-bottom: 15px;
+        margin-bottom: 20px;
+      }
+
+      .badge-cat {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        font-size: 0.6rem;
+        font-weight: 900;
+        padding: 4px 10px;
+        border-radius: 6px;
+        color: #000;
+        text-transform: uppercase;
+        z-index: 10;
+      }
+      .cat-maxima {
+        background: #2ecc71;
+      }
+      .cat-primera {
+        background: #3498db;
+      }
+      .cat-femenino {
+        background: #e74c3c;
+      }
+
+      .match-grid-elite {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .team-box-elite {
+        text-align: center;
+      }
+
+      .team-name-elite {
+        font-weight: 800;
+        font-size: 1rem;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .input-score-elite {
+        width: 65px;
+        height: 50px;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        color: var(--primary-color);
+        font-size: 1.6rem;
+        font-weight: 900;
+        text-align: center;
+        outline: none;
+        transition: 0.3s;
+      }
+      .input-score-elite:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 15px var(--primary-glow);
+        background: rgba(46, 204, 113, 0.05);
+      }
+
+      .vs-center-elite {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .badge-schedule {
+        background: rgba(46, 204, 113, 0.1);
+        border: 1px solid rgba(46, 204, 113, 0.2);
+        color: var(--primary-color);
+        padding: 5px 14px;
+        border-radius: 100px;
+        font-size: 0.7rem;
+        font-weight: 800;
+      }
+
+      .footer-mesa-elite {
+        margin-top: 15px;
+        padding-top: 12px;
+        border-top: 1px solid rgba(255, 255, 255, 0.03);
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.4);
+        font-weight: 700;
+      }
+      .footer-mesa-elite strong {
+        color: var(--primary-color);
+      }
+
+      .btn-schedule-premium {
+        background: var(--primary-color);
+        color: #000;
+        border: none;
+        padding: 12px 25px;
+        border-radius: 14px;
+        font-weight: 800;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+      }
+      .btn-schedule-premium:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px var(--primary-glow);
+        background: #27ae60;
+      }
+
+      .save-floating {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        background: var(--primary-color);
+        color: #000;
+        border: none;
+        padding: 15px 35px;
+        border-radius: 100px;
+        font-weight: 900;
+        box-shadow: 0 15px 35px var(--primary-glow);
+        transition: all 0.3s ease;
+        z-index: 1000;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .save-floating:hover {
+        transform: translateY(-5px) scale(1.05);
+        background: #27ae60;
+      }
+
+      .jornada-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 25px;
+        margin-top: 30px;
+      }
+
+      .jornada-card {
+        background: var(--secondary-bg);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--card-border);
+        border-radius: 24px;
+        padding: 40px 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .jornada-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+          circle at top right,
+          var(--primary-glow),
+          transparent
+        );
+        opacity: 0;
+        transition: 0.4s;
+      }
+
+      .jornada-card:hover {
+        border-color: var(--primary-color);
+        transform: translateY(-12px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+      }
+
+      .jornada-card:hover::after {
+        opacity: 1;
+      }
+
+      .jornada-card i {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        display: block;
+        filter: drop-shadow(0 0 10px var(--primary-glow));
+      }
+
+      .jornada-card h5 {
+        color: #fff;
+        font-weight: 800;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        font-size: 1.1rem;
+      }
+
+      .jornada-card .match-count {
+        font-size: 0.75rem;
+        color: var(--primary-color);
+        margin-top: 10px;
+        display: inline-block;
+        padding: 4px 12px;
+        background: rgba(46, 204, 113, 0.1);
+        border-radius: 100px;
+        font-weight: 700;
+      }
+
+      .date-shuttle {
+        display: none !important;
+      }
+
+      #loadingOverlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #0a0a0a;
+        z-index: 5000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .text-primary-glow {
+        color: var(--primary-color);
+        text-shadow: 0 0 10px var(--primary-glow);
+      }
+      .match-controls-elite {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 15px;
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      .control-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .control-item label {
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.3);
+        font-weight: 800;
+        letter-spacing: 0.5px;
+      }
+
+      .input-premium-sm {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        color: #fff;
+        padding: 5px 10px;
+        font-size: 0.75rem;
+        width: 100%;
+        outline: none;
+        transition: 0.3s;
+      }
+
+      .input-premium-sm:focus {
+        border-color: var(--primary-color);
+        background: rgba(46, 204, 113, 0.05);
+      }
+
+      .text-primary-glow {
+        color: var(--primary-color);
+        text-shadow: 0 0 10px var(--primary-glow);
+      }
+
+      .btn-back-jornadas {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        color: #fff;
+        padding: 12px 25px;
+        border-radius: 15px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+      }
+      .btn-back-jornadas:hover {
+        background: var(--primary-color);
+        color: #000;
+        transform: translateX(-8px);
+        box-shadow: 0 0 20px var(--primary-glow);
+      }
+
+      /* Tabla Elite Modern */
+      .table-elite {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 8px; /* Espaciado entre filas */
+        margin-top: 20px;
+      }
+      .table-elite thead th {
+        background: rgba(0, 0, 0, 0.4);
+        color: var(--primary-color);
+        padding: 18px 15px;
+        font-weight: 900;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+        border: none;
+        border-bottom: 2px solid var(--primary-glow);
+      }
+      .table-elite tbody tr {
+        background: rgba(255, 255, 255, 0.02);
+        backdrop-filter: blur(15px);
+        transition: 0.3s;
+        border-radius: 12px;
+      }
+      .table-elite tbody tr:hover {
+        background: rgba(46, 204, 113, 0.05);
+        box-shadow: 0 0 20px rgba(46, 204, 113, 0.1);
+      }
+      .table-elite td {
+        padding: 12px 15px;
+        border: none;
+        color: #fff;
+        vertical-align: middle;
+      }
+      .table-elite td:first-child { border-radius: 12px 0 0 12px; }
+      .table-elite td:last-child { border-radius: 0 12px 12px 0; }
+      
+      .input-elite-sm {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 12px;
+        font-size: 0.8rem;
+        width: 100%;
+        transition: 0.3s;
+      }
+      .input-elite-sm:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        background: rgba(0, 0, 0, 0.5);
+        box-shadow: 0 0 10px var(--primary-glow);
+      }
+      .input-elite-score {
+          width: 50px;
+          text-align: center;
+          font-weight: 900;
+          color: var(--primary-color);
+          border-color: rgba(46, 204, 113, 0.3);
+      }
+      .team-name-elite-table {
+          font-size: 0.9rem;
+          font-weight: 700;
+          color: #fff;
+          letter-spacing: 0.5px;
+      }
+      
+      .btn-export-excel {
+          background: #27ae60;
+          color: white;
+          border: none;
+          padding: 10px 18px;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 0.8rem;
+          transition: 0.3s;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+      }
+      .btn-export-excel:hover {
+          background: #2ecc71;
+          box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+          transform: translateY(-3px);
+      }
+      .btn-export-image {
+          background: #2980b9;
+          color: white;
+          border: none;
+          padding: 10px 18px;
+          border-radius: 10px;
+          font-weight: 700;
+          font-size: 0.8rem;
+          transition: 0.3s;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+      }
+      .btn-export-image:hover {
+          background: #3498db;
+          box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
+          transform: translateY(-3px);
+      }
+      .btn-save-jornada-elite {
+          background: var(--primary-color);
+          color: black;
+          border: none;
+          padding: 10px 22px;
+          border-radius: 10px;
+          font-weight: 800;
+          font-size: 0.85rem;
+          transition: 0.3s;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          text-transform: uppercase;
+      }
+      .btn-save-jornada-elite:hover {
+          background: white;
+          box-shadow: 0 0 25px var(--primary-glow);
+          transform: scale(1.05);
+      }
+
+      .d-none {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="loadingOverlay">
+      <div class="spinner-grow text-purple-accent"></div>
+    </div>
+    <div class="main-bg"></div>
+
+    <nav class="nav-premium shadow-sm">
+      <div class="nav-content">
+        <a href="dashboard.html" class="nav-logo">
+          <img src="img/logo.png" alt="Logo" />
+          <span>LDBAA <span class="brand-accent">ARGELIA ALTA</span></span>
+        </a>
+        <div class="nav-links d-none d-md-flex">
+          <a href="programacion-dashboard.html"
+            ><i class="fas fa-home me-2"></i>Dashboard</a
+          >
+          <a href="#" class="active"
+            ><i class="fas fa-sync-alt me-2"></i>Sincronización</a
+          >
+        </div>
+        <button
+          class="btn-logout-premium"
+          onclick="location.href = 'programacion-dashboard.html'"
+        >
+          <i class="fas fa-arrow-left me-2"></i><span>Volver</span>
+        </button>
+      </div>
+    </nav>
+
+    <div class="wizard-container">
+      <!-- Section Header -->
+      <div class="section-header">
+        <h2 class="section-title">
+          🔄 Gestión de <span class="text-primary-glow">Sincronización</span>
+        </h2>
+        <p class="text-white-50">
+          Distribuye automáticamente los encuentros y registra marcadores
+          oficiales de todas las categorías.
+        </p>
+      </div>
+
+      <div class="step-indicator" id="navDots"></div>
+
+      <div class="glass-panel">
+        <div class="row g-4 align-items-center">
+          <div class="col-md-5">
+            <label class="form-label mb-2">CAMPEONATO ACTIVO</label>
+            <select
+              id="campSelect"
+              class="select-premium"
+              onchange="resetAndLoad()"
+            >
+              <option value="">Cargando campeonatos...</option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label text-center mb-2 d-block"
+              >CATEGORÍAS EN PROCESO</label
+            >
+            <div class="d-flex justify-content-center gap-2">
+              <span
+                class="badge-secondary-glass"
+                style="border-color: #2ecc71; color: #2ecc71"
+                >MÁXIMA</span
+              >
+              <span
+                class="badge-secondary-glass"
+                style="border-color: #3498db; color: #3498db"
+                >PRIMERA</span
+              >
+              <span
+                class="badge-secondary-glass"
+                style="border-color: #e74c3c; color: #e74c3c"
+                >FEMENINO</span
+              >
+            </div>
+          </div>
+          <div class="col-md-3">
+            <!-- Gestión automática: Los encuentros se cargan directamente del fixture guardado -->
+          </div>
+        </div>
+
+        <div id="jornadasContainer">
+          <div class="jornada-grid" id="jornadaCards"></div>
+        </div>
+      </div>
+
+      <div id="fixturesList">
+        <div class="text-center py-5 opacity-20">
+          <i class="fas fa-layer-group fa-5x mb-4 text-purple"></i>
+          <h5 class="text-white">
+            Selecciona un campeonato para habilitar la gestión unificada.
+          </h5>
+        </div>
+      </div>
+    </div>
+
+
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+        authDomain: "ldbaa-calificaciones.firebaseapp.com",
+        projectId: "ldbaa-calificaciones",
+        storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+        messagingSenderId: "277579489603",
+        appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6",
+      };
+      if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      let fixturesMap = new Map();
+      let currentJornada = null;
+
+      window.addEventListener("DOMContentLoaded", async () => {
+        await loadChampionships();
+        setTimeout(() => {
+          const overlay = document.getElementById("loadingOverlay");
+          if (overlay) overlay.style.display = "none";
+        }, 600);
+      });
+
+      async function loadChampionships() {
+        const select = document.getElementById("campSelect");
+        try {
+          const snapshot = await db
+            .collection("championships")
+            .orderBy("createdAt", "desc")
+            .get();
+          select.innerHTML = "";
+          if (snapshot.empty) {
+            select.innerHTML = '<option value="">No hay campeonatos</option>';
+            return;
+          }
+          snapshot.forEach((doc) => {
+            const opt = document.createElement("option");
+            opt.value = doc.id;
+            opt.textContent = doc.data().name;
+            select.appendChild(opt);
+          });
+
+          // Seleccionar automáticamente el primero si hay opciones
+          if (select.options.length > 0) {
+            select.value = select.options[0].value;
+            resetAndLoad();
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      }
+
+      function resetAndLoad() {
+        currentJornada = null;
+        loadFixtures();
+      }
+
+      async function loadFixtures() {
+        const campId = document.getElementById("campSelect").value;
+        if (!campId) return;
+
+        const container = document.getElementById("fixturesList");
+        container.innerHTML =
+          '<div class="text-center py-5"><div class="spinner-border text-purple" role="status"></div></div>';
+        fixturesMap.clear();
+
+        try {
+          // Buscamos todos los documentos de fixture del campeonato (dinámico)
+          const snapshot = await db
+            .collection("fixtures")
+            .where("championshipId", "==", campId)
+            .get();
+
+          if (snapshot.empty) {
+            renderNavigation();
+            return;
+          }
+
+          // Agrupamos el último documento por cada categoría encontrada
+          const latestVersions = {};
+          snapshot.forEach((doc) => {
+            const data = doc.data();
+            const cat = data.category;
+            if (
+              !latestVersions[cat] ||
+              data.createdAt.toMillis() >
+                latestVersions[cat].createdAt.toMillis()
+            ) {
+              latestVersions[cat] = { id: doc.id, ...data };
+            }
+          });
+
+          // 2. Extraer maxJ del bloque Élite (Máxima/Primera) como referencia de temporada
+          let eliteMaxJ = 0;
+          Object.values(latestVersions).forEach((fix) => {
+            if (fix.category === "MÁXIMA" || fix.category === "PRIMERA") {
+              fix.data.forEach((m) => {
+                const j = parseInt(m.fecha.replace(/\D/g, "")) || 1;
+                if (j > eliteMaxJ) eliteMaxJ = j;
+              });
+            }
+          });
+
+          // Si por alguna razón no hay élite, usamos el global
+          const targetMaxJ = eliteMaxJ || globalMaxJ;
+
+          // 3. Aplicar mapeo inteligente
+          Object.values(latestVersions).forEach((fix) => {
+            const cat = fix.category;
+            let catMaxJ = 0;
+            fix.data.forEach((m) => {
+              const j = parseInt(m.fecha.replace(/\D/g, "")) || 1;
+              if (j > catMaxJ) catMaxJ = j;
+            });
+
+            if (cat === "MÁXIMA" || cat === "PRIMERA") {
+              // ÉLITE: Mapeo directo 1 a 1 para asegurar que jueguen juntas siempre
+              fix.data.forEach((m) => {
+                m.jornada = parseInt(m.fecha.replace(/\D/g, "")) || 1;
+              });
+            } else if (catMaxJ > 0 && catMaxJ < targetMaxJ) {
+              // CATEGORÍAS CORTAS: Estirar para que la última jornada coincida con targetMaxJ
+              const step = (targetMaxJ - 1) / (catMaxJ - 1 || 1);
+              fix.data.forEach((m) => {
+                const oldJ = parseInt(m.fecha.replace(/\D/g, "")) || 1;
+                m.jornada = Math.round(1 + (oldJ - 1) * step);
+              });
+            } else {
+              fix.data.forEach((m) => {
+                m.jornada = parseInt(m.fecha.replace(/\D/g, "")) || 1;
+              });
+            }
+
+            fixturesMap.set(fix.id, {
+              category: fix.category,
+              data: fix.data,
+            });
+          });
+
+          renderNavigation();
+          const saveBtn = document.getElementById("saveBtn");
+          if (saveBtn) saveBtn.style.display = "block";
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function renderNavigation() {
+        const grid = document.getElementById("jornadaCards");
+        const fixturesList = document.getElementById("fixturesList");
+        const jornadasContainer = document.getElementById("jornadasContainer");
+
+        if (currentJornada === null) {
+          // VISTA DE CUADRICULA DE JORNADAS
+          jornadasContainer.classList.remove("d-none");
+          fixturesList.innerHTML = "";
+
+          let maxJ = 0;
+          let jornadaMatchesCount = {};
+
+          fixturesMap.forEach((meta) => {
+            meta.data.forEach((x) => {
+              if (x.jornada > maxJ) maxJ = x.jornada;
+              if (!jornadaMatchesCount[x.jornada])
+                jornadaMatchesCount[x.jornada] = 0;
+              if (
+                !x.isRest &&
+                x.local !== "DESCANSA" &&
+                x.visitor !== "DESCANSA"
+              ) {
+                jornadaMatchesCount[x.jornada]++;
+              }
+            });
+          });
+
+          grid.innerHTML = "";
+          for (let j = 1; j <= maxJ; j++) {
+            const count = jornadaMatchesCount[j] || 0;
+            grid.insertAdjacentHTML(
+              "beforeend",
+              `
+                        <div class="jornada-card" onclick="selectJornada(${j})">
+                            <i class="fas fa-calendar-alt"></i>
+                            <h5>Jornada ${j}</h5>
+                            <span class="match-count">${count} encuentros</span>
+                        </div>
+                    `,
+            );
+          }
+        } else {
+          // VISTA DE PARTIDOS DE UNA JORNADA
+          jornadasContainer.classList.add("d-none");
+          renderMatches();
+        }
+      }
+
+      function selectJornada(j) {
+        currentJornada = j;
+        renderNavigation();
+      }
+
+      function backToJornadas() {
+        currentJornada = null;
+        renderNavigation();
+      }
+
+      function cleanScoresCurrentJornada() {
+        Swal.fire({
+          title: "¿Limpiar todos los marcadores?",
+          text: `Se resetearán los marcadores de todos los partidos de la Jornada ${currentJornada} para que comiencen en blanco (sin jugar).`,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, limpiar marcadores",
+          cancelButtonText: "Cancelar",
+          confirmButtonColor: "#e74c3c",
+          background: "#121212",
+          color: "#ffffff",
+        }).then((res) => {
+          if (res.isConfirmed) {
+            fixturesMap.forEach((meta) => {
+              meta.data.forEach((m) => {
+                if (m.jornada === currentJornada) {
+                  m.golesLocal = null;
+                  m.golesVisitor = null;
+                  m.isFinalized = false;
+                  delete m.liveStatus;
+                  delete m.playersLocal;
+                  delete m.playersVisitor;
+                  delete m.vocalReport;
+                  delete m.refereeReport;
+                  delete m.vedorReport;
+                }
+              });
+            });
+            renderMatches();
+            Swal.fire({
+              title: "Marcadores Limpiados",
+              text: "Todos los partidos de esta jornada ahora están sin marcador. Recuerda presionar 'Guardar' para oficializar.",
+              icon: "success",
+              confirmButtonColor: "#2ecc71",
+              background: "#121212",
+              color: "#ffffff",
+            });
+          }
+        });
+      }
+
+      function autoScheduleMixed() {
+        let all = [];
+        fixturesMap.forEach((meta, fixId) => {
+          const list = meta.data.filter(
+            (m) =>
+              m.jornada === currentJornada &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA",
+          );
+          list.forEach((m) => {
+            m._cat = meta.category;
+            m._fixId = fixId;
+            // Limpieza TOTAL para evitar basura visual y marcadores residuales
+            m.fechaRealAsignadaText = "";
+            m.horaRealAsignada = "";
+            m.vocalAsignado = "";
+            m.veedorAsignado = "";
+            // Los partidos nuevos por jugar SIEMPRE arrancan sin marcador
+            m.golesLocal = null;
+            m.golesVisitor = null;
+            m.isFinalized = false;
+            delete m.liveStatus;
+            delete m.playersLocal;
+            delete m.playersVisitor;
+            delete m.vocalReport;
+            delete m.refereeReport;
+            delete m.vedorReport;
+            all.push(m);
+          });
+        });
+
+        if (all.length === 0)
+          return Swal.fire("Aviso", "No hay partidos en esta jornada.", "info");
+
+        // 1. Mezcla Fair-Play
+        for (let i = all.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [all[i], all[j]] = [all[j], all[i]];
+        }
+
+        const duration = 100;
+        const slotsConf = [
+          { day: "Viernes", times: ["18:20", "20:00"] },
+          { day: "Sábado", start: "08:00", end: "21:00" },
+          { day: "Domingo", start: "08:00", end: "19:00" },
+        ];
+
+        let dayBuckets = { Viernes: [], Sábado: [], Domingo: [] };
+        let p = 0;
+
+        // Viernes fijo
+        slotsConf[0].times.forEach((t) => {
+          if (p < all.length) {
+            all[p].fechaRealAsignadaText = "Viernes";
+            all[p].horaRealAsignada = t;
+            dayBuckets["Viernes"].push(all[p]);
+            p++;
+          }
+        });
+
+        // Sábado y Domingo dinámico
+        [slotsConf[1], slotsConf[2]].forEach((conf) => {
+          let [h, m] = conf.start.split(":").map(Number);
+          const limMin = parseInt(conf.end.split(":")[0]) * 60 + parseInt(conf.end.split(":")[1]);
+
+          while (p < all.length) {
+            if (h * 60 + m + duration > limMin) break;
+
+            all[p].fechaRealAsignadaText = conf.day;
+            all[p].horaRealAsignada = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+            dayBuckets[conf.day].push(all[p]);
+
+            m += duration;
+            while (m >= 60) { h++; m -= 60; }
+            p++;
+          }
+        });
+
+        // 3. Mesa con Proximidad Máxima
+        Object.keys(dayBuckets).forEach((day) => {
+          const matches = dayBuckets[day];
+          const count = matches.length;
+          if (count < 2) return;
+
+          let i = 0;
+          if (count % 2 !== 0 && count >= 3) {
+            const m1 = matches[0]; const m2 = matches[1]; const m3 = matches[2];
+            m2.vocalAsignado = m1.local; m2.veedorAsignado = m1.visitor;
+            m3.vocalAsignado = m2.local; m3.veedorAsignado = m2.visitor;
+            m1.vocalAsignado = m3.local; m1.veedorAsignado = m3.visitor;
+            i = 3;
+          }
+          for (; i < count; i += 2) {
+            const mA = matches[i]; const mB = matches[i + 1];
+            if (mA && mB) {
+              mA.vocalAsignado = mB.local; mA.veedorAsignado = mB.visitor;
+              mB.vocalAsignado = mA.local; mB.veedorAsignado = mA.visitor;
+            } else if (mA) {
+              const prev = matches[i-1];
+              mA.vocalAsignado = prev.local; mA.veedorAsignado = prev.visitor;
+            }
+          }
+        });
+
+        renderMatches();
+        Swal.fire({
+          title: "¡Listo!",
+          text: "Programación generada al 100% y sin marcadores.",
+          icon: "success",
+          confirmButtonColor: "#2ecc71"
+        });
+      }
+
+      function renderMatches() {
+        const container = document.getElementById("fixturesList");
+        container.innerHTML = `
+          <div id="capture-header">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                <div class="d-flex gap-2 align-items-center">
+                  <button class="btn-back-jornadas" onclick="backToJornadas()">
+                      <i class="fas fa-chevron-left"></i>
+                  </button>
+                  <h4 class="text-white mb-0 text-uppercase fw-900 text-primary-glow" style="letter-spacing:2px">JORNADA ${currentJornada}</h4>
+                </div>
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                  <button class="btn-export-excel" onclick="exportToExcel()">
+                    <i class="fas fa-file-excel"></i> Excel
+                  </button>
+                  <button class="btn-export-image" onclick="exportToImage()">
+                    <i class="fas fa-camera"></i> Imagen
+                  </button>
+                  <button class="btn btn-outline-warning rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="cleanScoresCurrentJornada()" title="Poner en blanco los marcadores">
+                    <i class="fas fa-eraser me-1"></i> Limpiar Marcadores
+                  </button>
+                  <button class="btn-schedule-premium" onclick="autoScheduleMixed()">
+                      <i class="fas fa-bolt"></i> Programar
+                  </button>
+                  <button class="btn-save-jornada-elite" onclick="saveAllSchedules()">
+                      <i class="fas fa-save"></i> Guardar
+                  </button>
+                </div>
+            </div>
+          </div>
+          <div id="render-target-elite">
+        `;
+
+        let matches = [];
+        fixturesMap.forEach((meta, fixId) => {
+          meta.data
+            .filter(
+              (m) =>
+                m.jornada === currentJornada &&
+                !m.isRest &&
+                m.local !== "DESCANSA" &&
+                m.visitor !== "DESCANSA",
+            )
+            .forEach((m) => {
+              m._cat = meta.category;
+              m._fixId = fixId;
+              matches.push(m);
+            });
+        });
+
+        const dayRank = { Viernes: 1, Sábado: 2, Domingo: 3, undefined: 4 };
+        matches.sort((a, b) => {
+          if (
+            dayRank[a.fechaRealAsignadaText] !==
+            dayRank[b.fechaRealAsignadaText]
+          )
+            return (
+              dayRank[a.fechaRealAsignadaText] -
+              dayRank[b.fechaRealAsignadaText]
+            );
+          return (a.horaRealAsignada || "99:99").localeCompare(
+            b.horaRealAsignada || "99:99",
+          );
+        });
+
+        if (matches.length === 0) {
+          container.innerHTML +=
+            '<div class="text-center py-5 opacity-20"><h5 class="text-white">No hay partidos programados para esta jornada aún.</h5></div>';
+        } else {
+          let tableHtml = `
+            <div class="table-responsive">
+              <table class="table-elite">
+                <thead>
+                  <tr>
+                    <th style="width: 150px">Día</th>
+                    <th style="width: 120px">Hora</th>
+                    <th style="width: 120px">Categoría</th>
+                    <th>Encuentro / Resultados</th>
+                    <th style="width: 350px">Mesa (Vocal / Veedor)</th>
+                  </tr>
+                </thead>
+                <tbody>
+          `;
+
+          matches.forEach((m) => {
+            const safeLocal = (m.local || "").replace(/'/g, "\\'");
+            const safeVisitor = (m.visitor || "").replace(/'/g, "\\'");
+            const safeFecha = (m.fecha || "").replace(/'/g, "\\'");
+            const valGL = m.golesLocal !== undefined && m.golesLocal !== null ? m.golesLocal : "";
+            const valGV = m.golesVisitor !== undefined && m.golesVisitor !== null ? m.golesVisitor : "";
+
+            tableHtml += `
+              <tr>
+                <td>
+                  <select class="input-elite-sm" onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'fechaRealAsignadaText', this.value)">
+                    <option value="">Pendiente</option>
+                    <option value="Viernes" ${m.fechaRealAsignadaText === "Viernes" ? "selected" : ""}>Viernes</option>
+                    <option value="Sábado" ${m.fechaRealAsignadaText === "Sábado" ? "selected" : ""}>Sábado</option>
+                    <option value="Domingo" ${m.fechaRealAsignadaText === "Domingo" ? "selected" : ""}>Domingo</option>
+                  </select>
+                </td>
+                <td>
+                  <input type="time" class="input-elite-sm" value="${m.horaRealAsignada || ""}" 
+                    onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'horaRealAsignada', this.value)">
+                </td>
+                <td><span class="badge-category-mini">${m._cat}</span></td>
+                <td>
+                  <div class="d-flex align-items-center justify-content-center gap-3">
+                    <div class="d-flex align-items-center gap-2 justify-content-end" style="width:40%">
+                      <span class="team-name-elite-table text-end">${m.local}</span>
+                      <input type="number" class="input-elite-sm input-elite-score" value="${valGL}" placeholder="-" min="0"
+                        onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'golesLocal', this.value)">
+                    </div>
+                    <span class="text-primary-glow fw-900" style="font-size:0.7rem">VS</span>
+                    <div class="d-flex align-items-center gap-2 justify-content-start" style="width:40%">
+                      <input type="number" class="input-elite-sm input-elite-score" value="${valGV}" placeholder="-" min="0"
+                        onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'golesVisitor', this.value)">
+                      <span class="team-name-elite-table text-start">${m.visitor}</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="row g-2">
+                    <div class="col-6">
+                      <input type="text" class="input-elite-sm" value="${m.vocalAsignado || ""}" placeholder="Vocal..." 
+                        onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'vocalAsignado', this.value)">
+                    </div>
+                    <div class="col-6">
+                      <input type="text" class="input-elite-sm" value="${m.veedorAsignado || ""}" placeholder="Veedor..." 
+                        onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'veedorAsignado', this.value)">
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            `;
+          });
+
+          tableHtml += `
+                </tbody>
+              </table>
+            </div>
+            <div class="mt-4 text-center opacity-50">
+              <small class="text-white italic">Edita los campos directamente en la tabla y presiona "Guardar" para oficializar.</small>
+            </div>
+          `;
+          container.insertAdjacentHTML("beforeend", tableHtml + "</div>");
+        }
+      }
+
+      function exportToExcel() {
+        const rows = [["DÍA", "HORA", "CATEGORÍA", "LOCAL", "GL", "GV", "VISITANTE", "VOCAL", "VEEDOR"]];
+        fixturesMap.forEach((meta) => {
+          meta.data.forEach(m => {
+            if (m.jornada === currentJornada && !m.isRest && m.local !== "DESCANSA") {
+              rows.push([
+                m.fechaRealAsignadaText || "Pend",
+                m.horaRealAsignada || "--:--",
+                meta.category,
+                m.local,
+                m.golesLocal ?? "",
+                m.golesVisitor ?? "",
+                m.visitor,
+                m.vocalAsignado || "",
+                m.veedorAsignado || ""
+              ]);
+            }
+          });
+        });
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(rows);
+        XLSX.utils.book_append_sheet(wb, ws, `Jornada ${currentJornada}`);
+        XLSX.writeFile(wb, `LDBAA_Jornada_${currentJornada}.xlsx`);
+      }
+
+      async function exportToImage() {
+        const target = document.getElementById("render-target-elite");
+        const header = document.querySelector("#capture-header h4").cloneNode(true);
+        header.style.textAlign = "center";
+        header.style.marginBottom = "30px";
+        header.style.fontSize = "2rem";
+        
+        const captureDiv = document.createElement("div");
+        captureDiv.style.padding = "40px";
+        captureDiv.style.background = "#0b1118"; // Fondo oscuro uniforme para captura
+        captureDiv.appendChild(header);
+        captureDiv.appendChild(target.cloneNode(true));
+        
+        // El clon no tendrá valores de inputs, debemos copiarlos manualmente si fuera necesario, 
+        // pero es mejor capturar el DOM real y ocultar lo que no queremos.
+        
+        Swal.fire({
+          title: "Generando Imagen...",
+          didOpen: () => Swal.showLoading()
+        });
+
+        const originalHeader = document.getElementById("capture-header");
+        originalHeader.style.display = "none";
+        
+        try {
+          const canvas = await html2canvas(document.getElementById("fixturesList"), {
+            backgroundColor: "#0b1219",
+            scale: 2
+          });
+          const link = document.createElement("a");
+          link.download = `LDBAA_Jornada_${currentJornada}.png`;
+          link.href = canvas.toDataURL();
+          link.click();
+        } finally {
+          originalHeader.style.display = "block";
+          Swal.close();
+        }
+      }
+
+      function updateMatchField(fixId, local, visitor, fecha, field, val) {
+        const entry = fixturesMap.get(fixId);
+        if (entry) {
+          entry.data.forEach((m) => {
+            if (
+              m.local === local &&
+              m.visitor === visitor &&
+              (m.fecha === fecha || m.jornada === currentJornada)
+            ) {
+              if (field === "golesLocal" || field === "golesVisitor") {
+                const parsed = parseInt(val, 10);
+                m[field] = val === "" || val === null || isNaN(parsed) ? null : parsed;
+                if (m.golesLocal === null && m.golesVisitor === null) {
+                  m.isFinalized = false;
+                }
+              } else {
+                m[field] = val;
+              }
+            }
+          });
+        }
+      }
+
+      async function saveAllSchedules() {
+        Swal.fire({
+          title: "Guardando...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+        try {
+          const batch = db.batch();
+          fixturesMap.forEach((meta, fixId) => {
+            batch.update(db.collection("fixtures").doc(fixId), {
+              data: meta.data,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+          });
+          await batch.commit();
+          Swal.fire({
+            title: "¡Éxito!",
+            text: "La jornada ha sido sincronizada.",
+            icon: "success",
+            confirmButtonColor: "#2ecc71",
+            customClass: {
+              popup: "swal-premium",
+              confirmButton: "btn-success-premium",
+            },
+          });
+        } catch (e) {
+          console.error(e);
+          Swal.fire({
+            title: "Error",
+            text: "No se pudo guardar.",
+            icon: "error",
+            customClass: {
+              popup: "swal-premium",
+              confirmButton: "btn-success-premium",
+            },
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

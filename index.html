@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LDBAA - Plataforma Deportiva Premium</title>
+
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Font Awesome 6 -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+
+    <link rel="icon" href="img/logo.png" />
+    <link rel="stylesheet" href="css/index.css" />
+
+    <!-- Meta tags for SEO -->
+    <meta
+      name="description"
+      content="Sistema de gestión y carnetización para la Liga Barrial Argelia Alta. Moderno, eficiente y elegante."
+    />
+  </head>
+  <body>
+    <div class="main-bg"></div>
+
+    <main class="welcome-container">
+      <!-- Header Section -->
+      <section class="header-section">
+        <img
+          src="img/logo.png"
+          alt="LDBAA Logo"
+          class="league-logo"
+          onerror="this.style.display = 'none'"
+        />
+        <h1 class="display-3">
+          SISTEMA DE GESTIÓN
+          <span class="accent-text">ARGELIA ALTA</span>
+        </h1>
+        <p class="subtitle">
+          Plataforma deportiva de alto rendimiento para el fútbol barrial.
+        </p>
+      </section>
+
+      <!-- Card Grid - Visual Buttons -->
+      <div class="card-grid">
+        <!-- Card 1: Carnetización -->
+        <a href="carnetizacion.html" class="action-card">
+          <div class="card-icon">
+            <i class="fa-solid fa-id-card"></i>
+          </div>
+          <h2 class="card-title">CARNETIZACIÓN</h2>
+          <p class="card-description">Registros y credenciales digitales</p>
+          <div class="card-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <!-- Card 2: Login -->
+        <a href="login.html" class="action-card">
+          <div class="card-icon">
+            <i class="fa-solid fa-user-gear"></i>
+          </div>
+          <h2 class="card-title">ADMINISTRACIÓN</h2>
+          <p class="card-description">Módulo de control y configuración</p>
+          <div class="card-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <!-- Card 3: Vocalías -->
+        <a href="vocalias.html" class="action-card">
+          <div class="card-icon">
+            <i class="fa-solid fa-table-cells"></i>
+          </div>
+          <h2 class="card-title">VOCALÍA DIGITAL</h2>
+          <p class="card-description">Planillas y arbitraje en tiempo real</p>
+          <div class="card-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+
+        <!-- Card 4: Pasión Argelia -->
+        <a href="pasion-argelia.html" class="action-card position-relative">
+          <span class="badge bg-danger rounded-pill position-absolute top-0 end-0 m-3 px-2.5 py-1 shadow" style="font-size: 0.7rem; letter-spacing: 0.5px;">
+            <i class="fas fa-circle text-white me-1" style="font-size: 0.5rem;"></i> EN VIVO
+          </span>
+          <div class="card-icon">
+            <i class="fa-solid fa-satellite-dish"></i>
+          </div>
+          <h2 class="card-title">PASIÓN ARGELIA</h2>
+          <p class="card-description">Minuto a Minuto en Vivo, Posiciones y Goleadores</p>
+          <div class="card-arrow">
+            <i class="fa-solid fa-arrow-right"></i>
+          </div>
+        </a>
+      </div>
+
+      <!-- Footer Info -->
+      <footer class="footer-info">
+        &copy; 2026 Liga Barrial Argelia Alta | Realizado por
+        <a
+          href="https://mallitaxicodevision.netlify.app/"
+          target="_blank"
+          style="color: inherit; text-decoration: none; font-weight: 600"
+          >MCV Mallitaxi Code Vision</a
+        >
+      </footer>
+    </main>
+
+    <script>
+      // Simple mouse track effect for cards
+      document.querySelectorAll(".action-card").forEach((card) => {
+        card.addEventListener("mousemove", (e) => {
+          const rect = card.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          card.style.setProperty("--x", `${x}px`);
+          card.style.setProperty("--y", `${y}px`);
+        });
+      });
+    </script>
+  </body>
+</html>

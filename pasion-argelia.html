@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pasión Argelia | En Vivo, Resultados & Estadísticas | LDBAA</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+
+  <link rel="icon" href="img/logo.png" />
+  <link rel="stylesheet" href="css/global-theme.css" />
+  <link rel="stylesheet" href="css/vocalias.css" />
+  <link rel="stylesheet" href="css/tabla-posiciones.css" />
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+    }
+    
+    .goal-badge {
+      background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 8px;
+      font-weight: 900;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
+    }
+    .player-row:hover {
+      background: rgba(255, 255, 255, 0.02) !important;
+    }
+    .points-cell { font-weight: 900; color: #2ecc71; font-size: 1.1rem; }
+
+    /* Animaciones y Badges EN VIVO */
+    @keyframes livePulse {
+      0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.85); }
+      70% { transform: scale(1.04); box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); }
+      100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); }
+    }
+    .live-pulse-badge {
+      animation: livePulse 2s infinite;
+    }
+
+    /* Tarjeta Élite de Jornada (Igual a Vocalías) */
+    .jornada-card-elite {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 35px 25px;
+      text-align: center;
+      transition: 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    }
+    .jornada-card-elite:hover {
+      transform: translateY(-8px);
+      background: rgba(46, 204, 113, 0.1);
+      border-color: #2ecc71;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+    .jornada-card-elite i {
+      font-size: 2.8rem;
+      color: #2ecc71;
+      margin-bottom: 15px;
+      display: block;
+    }
+    .jornada-card-elite h5 {
+      color: white;
+      font-weight: 900;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-size: 1.25rem;
+    }
+    .jornada-card-elite .match-count {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 700;
+    }
+
+    /* Botón Volver */
+    .btn-back-jornadas {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      padding: 8px 20px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      transition: all 0.25s ease;
+      display: inline-flex;
+      align-items: center;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .btn-back-jornadas:hover {
+      background: #c9a227;
+      color: #000;
+      border-color: #c9a227;
+      transform: translateX(-3px);
+      box-shadow: 0 4px 15px rgba(201, 162, 39, 0.4);
+    }
+
+    /* Tarjeta de Partido */
+    .live-match-card {
+      background: rgba(18, 24, 32, 0.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 22px;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+    }
+    .live-match-card.is-active-match {
+      border: 1.5px solid rgba(231, 76, 60, 0.7);
+      box-shadow: 0 0 30px rgba(231, 76, 60, 0.25);
+    }
+    .live-match-card.is-finalized-match {
+      border-left: 5px solid #2ecc71;
+    }
+    .live-match-card.is-scheduled-match {
+      border-left: 5px solid #f39c12;
+    }
+    .live-match-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .score-display-huge {
+      font-size: 3rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+      letter-spacing: 2px;
+    }
+
+    .timeline-container {
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 18px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .timeline-event-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid rgba(255,255,255,0.2);
+      transition: 0.2s ease;
+    }
+    .timeline-event-card:last-child {
+      margin-bottom: 0;
+    }
+    .timeline-event-card.event-gol {
+      border-left-color: #2ecc71;
+      background: rgba(46, 204, 113, 0.09);
+    }
+    .timeline-event-card.event-amarilla {
+      border-left-color: #f1c40f;
+      background: rgba(241, 196, 15, 0.09);
+    }
+    .timeline-event-card.event-roja {
+      border-left-color: #e74c3c;
+      background: rgba(231, 76, 60, 0.09);
+    }
+    .timeline-event-card.event-cambio {
+      border-left-color: #3498db;
+      background: rgba(52, 152, 219, 0.09);
+    }
+
+    .event-minute-pill {
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+      color: #f1c40f;
+    }
+
+    .section-header-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50px;
+      padding: 8px 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="main-bg"></div>
+
+  <!-- Navigation -->
+  <nav class="nav-premium shadow-sm">
+    <div class="nav-content">
+      <a href="index.html" class="nav-logo">
+        <img src="img/logo.png" alt="Logo" />
+        <span>LDBAA <span class="brand-accent">ARGELIA ALTA</span></span>
+      </a>
+      <div class="nav-links d-none d-md-flex">
+        <a href="index.html"><i class="fas fa-home me-2"></i>Inicio</a>
+        <a href="#" class="active"><i class="fas fa-trophy me-2"></i>Pasión Argelia</a>
+      </div>
+      <a href="index.html" class="btn-logout-premium text-decoration-none">
+        <i class="fas fa-chevron-left me-2"></i><span>Volver</span>
+      </a>
+    </div>
+  </nav>
+
+  <div class="container py-4">
+    <!-- Encabezado -->
+    <div class="text-center mb-4">
+      <h2 class="section-title fw-900 mb-1">
+        🏆 Pasión <span class="text-warning">Argelia</span>
+      </h2>
+      <p class="text-white-50 fs-6">
+        Sigue los partidos <span class="text-danger fw-bold"><i class="fas fa-circle text-danger me-1"></i>EN VIVO Minuto a Minuto</span>, resultados por jornada, posiciones y goleadores.
+      </p>
+    </div>
+
+    <!-- Selector de Campeonato -->
+    <div class="glass-panel mb-4 py-3 px-4">
+      <div class="row align-items-center g-3">
+        <div class="col-md-5">
+          <label class="form-label mb-1 text-white-50 small fw-bold"><i class="fas fa-trophy text-warning me-1"></i> CAMPEONATO ACTIVO</label>
+          <select id="campSelect" class="select-premium" onchange="onChampionshipSelected()">
+            <option value="">Cargando campeonatos...</option>
+          </select>
+        </div>
+        <div class="col-md-7 text-md-end">
+          <div class="d-flex justify-content-md-end align-items-center gap-2 flex-wrap">
+            <span class="badge bg-danger bg-opacity-25 border border-danger text-danger px-3 py-2 rounded-pill fw-bold">
+              <i class="fas fa-broadcast-tower me-1"></i> TIEMPO REAL
+            </span>
+            <span class="badge bg-success bg-opacity-25 border border-success text-success px-3 py-2 rounded-pill fw-bold" id="liveMatchCounterBadge">
+              <i class="fas fa-signal me-1"></i> Conectado
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pestañas de Categoría -->
+    <ul class="nav nav-pills nav-pills-premium justify-content-center mb-4" id="categoryTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active fw-bold" id="maxima-tab" data-bs-toggle="pill" type="button" role="tab">MÁXIMA</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold" id="primera-tab" data-bs-toggle="pill" type="button" role="tab">PRIMERA</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link fw-bold" id="femenino-tab" data-bs-toggle="pill" type="button" role="tab">FEMENINO</button>
+      </li>
+    </ul>
+
+    <!-- Pestañas Principales (En Vivo & Resultados, Posiciones, Goleadores) -->
+    <ul class="nav nav-tabs border-0 justify-content-center mb-4 gap-2" id="statsTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="btn btn-outline-danger active rounded-pill px-4 py-2 fw-bold shadow-sm" id="envivo-tab" data-bs-toggle="tab" data-bs-target="#envivo" type="button" role="tab">
+          <i class="fas fa-satellite-dish me-2"></i>🔴 EN VIVO & RESULTADOS
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="btn btn-outline-warning rounded-pill px-4 py-2 fw-bold shadow-sm" id="posiciones-tab" data-bs-toggle="tab" data-bs-target="#posiciones" type="button" role="tab">
+          <i class="fa-solid fa-list-ol me-2"></i>Tabla de Posiciones
+        </button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="btn btn-outline-info rounded-pill px-4 py-2 fw-bold shadow-sm" id="goleadores-tab" data-bs-toggle="tab" data-bs-target="#goleadores" type="button" role="tab">
+          <i class="fa-solid fa-futbol me-2"></i>Goleadores
+        </button>
+      </li>
+    </ul>
+
+    <div class="tab-content" id="statsTabContent">
+      <!-- PESTAÑA 1: EN VIVO & RESULTADOS POR JORNADA -->
+      <div class="tab-pane fade show active" id="envivo" role="tabpanel">
+        <!-- VISTA DE JORNADAS O PARTIDOS -->
+        <div id="liveMatchesContainer">
+          <div class="text-center py-5">
+            <div class="spinner-border text-danger mb-3"></div>
+            <div class="text-white-50">Cargando jornadas y partidos...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 2: TABLA DE POSICIONES -->
+      <div class="tab-pane fade" id="posiciones" role="tabpanel">
+        <div class="table-premium-container p-0 overflow-hidden shadow-lg">
+          <div class="table-responsive">
+            <table class="table-premium">
+              <thead>
+                <tr>
+                  <th class="text-center">Pos</th>
+                  <th>Equipo</th>
+                  <th class="text-center">PJ</th>
+                  <th class="text-center">PG</th>
+                  <th class="text-center">PE</th>
+                  <th class="text-center">PP</th>
+                  <th class="text-center">GF</th>
+                  <th class="text-center">GC</th>
+                  <th class="text-center">GD</th>
+                  <th class="text-center">Pts</th>
+                </tr>
+              </thead>
+              <tbody id="posicionesTableBody">
+                <tr><td colspan="10" class="text-center py-5 text-white-50">Seleccione un campeonato</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- PESTAÑA 3: GOLEADORES -->
+      <div class="tab-pane fade" id="goleadores" role="tabpanel">
+        <div class="table-premium-container p-0 overflow-hidden shadow-lg">
+          <div class="table-responsive">
+            <table class="table-premium">
+              <thead>
+                <tr>
+                  <th style="width: 80px">Pos</th>
+                  <th class="text-start ps-4">Jugador</th>
+                  <th class="text-start ps-4">Equipo</th>
+                  <th style="width: 150px">Goles</th>
+                </tr>
+              </thead>
+              <tbody id="goleadoresTableBody">
+                <tr><td colspan="4" class="text-center py-5 text-white-50">Seleccione un campeonato</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+      authDomain: "ldbaa-calificaciones.firebaseapp.com",
+      projectId: "ldbaa-calificaciones",
+      storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+      messagingSenderId: "277579489603",
+      appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    let currentChampionshipId = null;
+    let currentChampionshipName = "Campeonato Oficial";
+    let currentCategory = 'maxima';
+    let currentSelectedJornada = null; // null = ver lista de tarjetas de Jornadas; número = ver partidos de esa jornada
+    let fixturesLiveUnsubscribe = null;
+    let cachedFixtures = [];
+    let cachedTeams = {};
+
+    window.addEventListener("DOMContentLoaded", async () => {
+      await loadChampionships();
+    });
+
+    async function loadChampionships() {
+      const select = document.getElementById("campSelect");
+      try {
+        const snapshot = await db.collection("championships").orderBy("createdAt", "desc").get();
+        select.innerHTML = '<option value="">Seleccionar campeonato...</option>';
+        if (snapshot.empty) {
+          select.innerHTML = '<option value="">No hay campeonatos</option>';
+          return;
+        }
+        snapshot.forEach((doc) => {
+          const opt = document.createElement("option");
+          opt.value = doc.id;
+          opt.textContent = doc.data().name;
+          select.appendChild(opt);
+        });
+        if (select.options.length > 1) {
+          select.value = select.options[1].value;
+          currentChampionshipName = select.options[1].textContent;
+          onChampionshipSelected();
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function onChampionshipSelected() {
+      const campSelect = document.getElementById('campSelect');
+      const campId = campSelect.value;
+      if (!campId) return;
+      currentChampionshipId = campId;
+      currentChampionshipName = campSelect.options[campSelect.selectedIndex]?.text || "Campeonato Oficial";
+      currentSelectedJornada = null;
+      
+      listenLiveMatches();
+      loadStats();
+    }
+
+    // Escuchar cambios en las pestañas de categorías
+    document.querySelectorAll('#categoryTabs .nav-link').forEach(tab => {
+      tab.addEventListener('click', (e) => {
+        document.querySelectorAll('#categoryTabs .nav-link').forEach(t => t.classList.remove('active'));
+        e.target.classList.add('active');
+        
+        currentCategory = e.target.id.replace('-tab', '');
+        currentSelectedJornada = null; // Al cambiar categoría, mostrar la lista de jornadas de esa categoría
+
+        renderLiveMatches();
+        loadStats();
+      });
+    });
+
+    window.selectJornada = function(j) {
+      currentSelectedJornada = j;
+      renderLiveMatches();
+    };
+
+    window.backToJornadas = function() {
+      currentSelectedJornada = null;
+      renderLiveMatches();
+    };
+
+    // ==========================================
+    // MOTOR EN VIVO & RESULTADOS (POR CATEGORÍA Y JORNADA)
+    // ==========================================
+    function listenLiveMatches() {
+      if (fixturesLiveUnsubscribe) {
+        fixturesLiveUnsubscribe();
+      }
+
+      if (!currentChampionshipId) return;
+
+      // Cargar logos de equipos
+      db.collection('teams').where('championshipId', '==', currentChampionshipId).get()
+        .then(snap => {
+          cachedTeams = {};
+          snap.forEach(d => {
+            const t = d.data();
+            cachedTeams[t.name] = t.logo || 'img/logo.png';
+          });
+        });
+
+      fixturesLiveUnsubscribe = db.collection("fixtures")
+        .where("championshipId", "==", currentChampionshipId)
+        .onSnapshot((snapshot) => {
+          cachedFixtures = [];
+          snapshot.forEach((doc) => {
+            cachedFixtures.push({ id: doc.id, ...doc.data() });
+          });
+          renderLiveMatches();
+        }, (error) => {
+          console.error("Error al escuchar partidos en vivo:", error);
+          const container = document.getElementById("liveMatchesContainer");
+          if (container) {
+            container.innerHTML = `<div class="alert alert-danger text-center"><i class="fas fa-exclamation-circle me-2"></i>Error al conectar con la transmisión en vivo.</div>`;
+          }
+        });
+    }
+
+    function getValidProgrammedMatchesForCategory(categoryStr) {
+      const normCat = categoryStr.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+      const validMatches = [];
+
+      cachedFixtures.forEach(fix => {
+        const fixCat = (fix.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        if (Array.isArray(fix.data)) {
+          fix.data.forEach(m => {
+            const matchCat = (m.category || m._cat || fix.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+            // Debe pertenecer a la categoría seleccionada
+            if (matchCat === normCat || fixCat === normCat) {
+              const isNotRest = !m.isRest && 
+                                m.local && m.local !== "DESCANSA" && 
+                                m.visitor && m.visitor !== "DESCANSA";
+
+              // Solo partidos programados reales (con fecha/hora asignada, o finalizados o en vivo)
+              const isProgrammed = (m.fechaRealAsignadaText && m.fechaRealAsignadaText !== "Por Definir" && m.fechaRealAsignadaText !== "---") ||
+                                   (m.horaRealAsignada && m.horaRealAsignada !== "--:--" && m.horaRealAsignada !== "---") ||
+                                   (m.time && m.time !== "--:--" && m.time !== "---") ||
+                                   m.isFinalized ||
+                                   (m.liveStatus && m.liveStatus.isLive === true);
+
+              if (isNotRest && isProgrammed) {
+                const jNum = parseInt(String(m.jornada || fix.jornada || '1').replace(/\D/g, '')) || 1;
+                validMatches.push({
+                  ...m,
+                  _fixId: fix.id,
+                  _fixCategory: fix.category || m.category || categoryStr,
+                  _jornadaNum: jNum
+                });
+              }
+            }
+          });
+        }
+      });
+
+      return validMatches;
+    }
+
+    function renderSingleMatchCard(m, sectionType) {
+      const ls = m.liveStatus || {};
+      const isLive = ls.isLive === true;
+      const isFinalized = m.isFinalized === true || ls.period === "Finalizado" || sectionType === 'finalized';
+      const isScheduled = !isLive && !isFinalized;
+      const period = ls.period || (isFinalized ? "Finalizado" : "1T");
+      const minute = ls.minute || "1'";
+      
+      // Calcular marcador
+      let scoreLocal = 0;
+      let scoreVisitor = 0;
+      if (typeof ls.scoreLocal !== 'undefined') {
+        scoreLocal = ls.scoreLocal;
+        scoreVisitor = ls.scoreVisitor;
+      } else {
+        scoreLocal = (m.playersLocal || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+        scoreVisitor = (m.playersVisitor || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+      }
+
+      const logoLocal = cachedTeams[m.local] || 'img/logo.png';
+      const logoVisitor = cachedTeams[m.visitor] || 'img/logo.png';
+
+      // Badge de estado
+      let statusBadge = "";
+      let cardClass = "";
+      if (isLive) {
+        cardClass = "is-active-match";
+        statusBadge = `
+          <span class="badge bg-danger rounded-pill px-3 py-2 live-pulse-badge shadow">
+            <i class="fas fa-circle text-white me-1" style="font-size:0.6rem;"></i> EN VIVO &bull; ${minute} (${period})
+          </span>
+        `;
+      } else if (period === "Descanso") {
+        cardClass = "is-active-match";
+        statusBadge = `
+          <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fw-bold shadow">
+            <i class="fas fa-coffee me-1"></i> DESCANSO
+          </span>
+        `;
+      } else if (isFinalized) {
+        cardClass = "is-finalized-match";
+        statusBadge = `
+          <span class="badge bg-secondary rounded-pill px-3 py-2 fw-bold">
+            <i class="fas fa-flag-checkered me-1"></i> FINALIZADO
+          </span>
+        `;
+      } else {
+        cardClass = "is-scheduled-match";
+        statusBadge = `
+          <span class="badge bg-dark border border-warning text-warning rounded-pill px-3 py-2 fw-bold">
+            <i class="far fa-clock me-1"></i> POR JUGAR
+          </span>
+        `;
+      }
+
+      // Eventos / Incidencias
+      const events = Array.isArray(ls.events) ? [...ls.events] : [];
+      if (events.length === 0 && (m.playersLocal || m.playersVisitor)) {
+        (m.playersLocal || []).forEach(p => {
+          const g = parseInt(p.goles) || 0;
+          if (g > 0) events.push({ type: "GOL", team: m.local, player: `#${p.num || ''} ${p.name}`, count: g, minute: "Partido", period: "Oficial", isLocal: true });
+          if (p.ta > 0) events.push({ type: "AMARILLA", team: m.local, player: `#${p.num || ''} ${p.name}`, count: p.ta, minute: "Partido", period: "Oficial", isLocal: true });
+          if (p.tr > 0) events.push({ type: "ROJA", team: m.local, player: `#${p.num || ''} ${p.name}`, minute: "Partido", period: "Oficial", isLocal: true });
+        });
+        (m.playersVisitor || []).forEach(p => {
+          const g = parseInt(p.goles) || 0;
+          if (g > 0) events.push({ type: "GOL", team: m.visitor, player: `#${p.num || ''} ${p.name}`, count: g, minute: "Partido", period: "Oficial", isLocal: false });
+          if (p.ta > 0) events.push({ type: "AMARILLA", team: m.visitor, player: `#${p.num || ''} ${p.name}`, count: p.ta, minute: "Partido", period: "Oficial", isLocal: false });
+          if (p.tr > 0) events.push({ type: "ROJA", team: m.visitor, player: `#${p.num || ''} ${p.name}`, minute: "Partido", period: "Oficial", isLocal: false });
+        });
+      }
+
+      let timelineHtml = "";
+      if (events.length === 0) {
+        timelineHtml = `
+          <div class="text-center py-2 text-white-50 small">
+            ${isLive ? '<i class="fas fa-stopwatch me-1 text-warning"></i> Partido en juego. Esperando goles, tarjetas o sustituciones...' : '<i class="far fa-futbol me-1 text-white-50"></i> Sin incidencias registradas.'}
+          </div>
+        `;
+      } else {
+        const reversedEvents = [...events].reverse();
+        timelineHtml = reversedEvents.map(ev => {
+          let icon = "";
+          let evCardClass = "";
+          let actionText = "";
+
+          const evMin = (ev.minute && String(ev.minute) !== "undefined") ? String(ev.minute) : (isLive ? minute : "Partido");
+          const evPer = (ev.period && String(ev.period) !== "undefined" && String(ev.period) !== "Oficial") ? `(${ev.period})` : "";
+
+          if (ev.type === "GOL") {
+            icon = '<i class="fas fa-futbol text-success fa-lg"></i>';
+            evCardClass = "event-gol";
+            actionText = `⚽ <strong>¡GOL DE ${(ev.team || '').toUpperCase()}!</strong> - ${ev.player || ''} ${ev.count > 1 ? '(' + ev.count + ' goles)' : ''}`;
+          } else if (ev.type === "AMARILLA") {
+            icon = '<i class="fas fa-square text-warning fa-lg"></i>';
+            evCardClass = "event-amarilla";
+            actionText = `🟨 <strong>Tarjeta Amarilla:</strong> ${ev.player || ''} <span class="text-white-50">(${ev.team || ''})</span>`;
+          } else if (ev.type === "ROJA") {
+            icon = '<i class="fas fa-square text-danger fa-lg"></i>';
+            evCardClass = "event-roja";
+            actionText = `🟥 <strong>Tarjeta Roja:</strong> ${ev.player || ''} <span class="text-white-50">(${ev.team || ''})</span>`;
+          } else if (ev.type === "CAMBIO") {
+            icon = '<i class="fas fa-exchange-alt text-info fa-lg"></i>';
+            evCardClass = "event-cambio";
+            actionText = `🔄 <strong>Sustitución:</strong> ${ev.player || ''} <span class="text-white-50">(${ev.team || ''})</span>`;
+          }
+
+          return `
+            <div class="timeline-event-card ${evCardClass}">
+              <div class="event-minute-pill">${evMin} ${evPer}</div>
+              <div class="d-flex align-items-center gap-2 flex-grow-1">
+                ${icon}
+                <div class="small text-white">${actionText}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Fecha y hora
+      const matchDateText = m.fechaRealAsignadaText || m.date || "Por definir";
+      const matchHourText = m.horaRealAsignada || m.time || "Por definir";
+      const matchVocalText = m.vocalAsignado || "Por asignar";
+
+      return `
+        <div class="live-match-card ${cardClass}">
+          <!-- Cabecera del Partido: Categoría, Jornada, Mesa, Hora y Fecha -->
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <span class="badge bg-dark border border-secondary text-warning fw-bold px-3 py-1.5 rounded-pill">
+                <i class="fas fa-shield-alt me-1"></i> ${(m._fixCategory || '').toUpperCase()}
+              </span>
+              <span class="badge bg-dark border border-secondary text-white-50 px-3 py-1.5 rounded-pill">
+                <i class="fas fa-calendar-alt me-1"></i> Jornada ${m._jornadaNum}
+              </span>
+              ${m.mesa ? `
+                <span class="badge bg-dark border border-warning text-warning px-2.5 py-1.5 rounded-pill small">
+                  <i class="fas fa-table me-1"></i> Mesa ${m.mesa}
+                </span>
+              ` : ''}
+              <span class="badge bg-dark border border-secondary text-white px-2.5 py-1.5 rounded-pill small">
+                <i class="far fa-calendar-alt text-primary-glow me-1"></i> ${matchDateText}
+              </span>
+              <span class="badge bg-dark border border-info text-info px-2.5 py-1.5 rounded-pill small">
+                <i class="far fa-clock me-1"></i> ${matchHourText}
+              </span>
+            </div>
+            <div>
+              ${statusBadge}
+            </div>
+          </div>
+
+          <!-- Marcador Principal -->
+          <div class="row align-items-center py-2 g-2 text-center">
+            <!-- Equipo Local -->
+            <div class="col-4 d-flex flex-column align-items-center justify-content-center">
+              <div class="p-1 rounded-circle bg-white shadow-sm mb-2" style="width: 65px; height: 65px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <img src="${logoLocal}" alt="${m.local}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='img/logo.png'">
+              </div>
+              <h5 class="fw-bold text-white mb-0 text-truncate w-100" style="font-size: 1.15rem;">${m.local}</h5>
+              <span class="badge bg-dark text-white-50 small mt-1">Local</span>
+            </div>
+
+            <!-- Marcador Central -->
+            <div class="col-4 d-flex flex-column align-items-center justify-content-center">
+              <div class="d-flex align-items-center justify-content-center gap-3">
+                <span class="score-display-huge text-primary-glow">${isScheduled && !isFinalized && !isLive ? '0' : scoreLocal}</span>
+                <span class="fs-4 text-white-50 fw-bold">-</span>
+                <span class="score-display-huge text-primary-glow">${isScheduled && !isFinalized && !isLive ? '0' : scoreVisitor}</span>
+              </div>
+              <div class="mt-1">
+                ${isLive ? `
+                  <span class="badge bg-dark border border-secondary text-warning fw-bold px-2.5 py-1 small">
+                    <i class="fas fa-stopwatch me-1"></i> ${minute}
+                  </span>
+                ` : isFinalized ? `
+                  <span class="badge bg-dark border border-secondary text-success fw-bold px-2.5 py-1 small">
+                    <i class="fas fa-check-circle me-1"></i> Final
+                  </span>
+                ` : `
+                  <span class="badge bg-dark border border-secondary text-white-50 px-2.5 py-1 small">
+                    <i class="far fa-clock me-1"></i> ${matchHourText}
+                  </span>
+                `}
+              </div>
+            </div>
+
+            <!-- Equipo Visitante -->
+            <div class="col-4 d-flex flex-column align-items-center justify-content-center">
+              <div class="p-1 rounded-circle bg-white shadow-sm mb-2" style="width: 65px; height: 65px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <img src="${logoVisitor}" alt="${m.visitor}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.src='img/logo.png'">
+              </div>
+              <h5 class="fw-bold text-white mb-0 text-truncate w-100" style="font-size: 1.15rem;">${m.visitor}</h5>
+              <span class="badge bg-dark text-white-50 small mt-1">Visitante</span>
+            </div>
+          </div>
+
+          <!-- Minuto a Minuto (Timeline de Incidencias) para partidos en vivo o con incidencias -->
+          ${(isLive || events.length > 0) ? `
+            <div class="timeline-container">
+              <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-secondary border-opacity-25">
+                <div class="fw-bold text-warning small text-uppercase" style="letter-spacing: 1px;">
+                  <i class="fas fa-stream me-1"></i> ${isLive ? 'Minuto a Minuto en Vivo' : 'Incidencias del Partido'}
+                </div>
+                <span class="badge bg-dark text-white-50 small">${events.length} eventos</span>
+              </div>
+              <div class="timeline-feed">
+                ${timelineHtml}
+              </div>
+            </div>
+          ` : ''}
+
+          <!-- Pie de Tarjeta: Vocal Asignado & Estado Oficial -->
+          <div class="d-flex justify-content-between align-items-center mt-3 pt-2 border-top border-secondary border-opacity-25 small text-white-50 flex-wrap gap-2">
+            <div>
+              <span class="text-white-50"><i class="fas fa-user-shield text-warning me-1"></i>VOCAL:</span>
+              <strong class="text-warning">${matchVocalText}</strong>
+            </div>
+            <span><i class="fas fa-eye me-1"></i> Transmisión Oficial (Solo Lectura)</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderLiveMatches() {
+      const container = document.getElementById("liveMatchesContainer");
+      if (!container) return;
+
+      const categoryMatches = getValidProgrammedMatchesForCategory(currentCategory);
+
+      // Agrupar los partidos por número de Jornada
+      const jornadasMap = {};
+      let totalLiveInCategory = 0;
+
+      categoryMatches.forEach(m => {
+        const j = m._jornadaNum;
+        if (!jornadasMap[j]) jornadasMap[j] = [];
+        jornadasMap[j].push(m);
+
+        if (m.liveStatus && m.liveStatus.isLive === true) {
+          totalLiveInCategory++;
+        }
+      });
+
+      // Actualizar contador del badge
+      const counterBadge = document.getElementById("liveMatchCounterBadge");
+      if (counterBadge) {
+        counterBadge.innerHTML = `<i class="fas fa-circle ${totalLiveInCategory > 0 ? 'text-danger live-pulse-badge' : 'text-success'} me-1"></i> ${totalLiveInCategory} en juego`;
+      }
+
+      const sortedJornadasKeys = Object.keys(jornadasMap).map(Number).sort((a, b) => a - b);
+
+      // ==========================================
+      // VISTA 1: LISTA DE TARJETAS DE JORNADAS
+      // ==========================================
+      if (currentSelectedJornada === null) {
+        if (sortedJornadasKeys.length === 0) {
+          container.innerHTML = `
+            <div class="live-match-card text-center py-5">
+              <i class="fas fa-calendar-times text-warning fa-3x mb-3 opacity-50"></i>
+              <h4 class="fw-bold text-white mb-2">No hay jornadas programadas para ${currentCategory.toUpperCase()}</h4>
+              <p class="text-white-50 max-w-500 mx-auto mb-4" style="max-width: 500px;">
+                Tan pronto como el administrador programe los horarios y jornadas de la categoría <strong>${currentCategory.toUpperCase()}</strong>, aparecerán aquí automáticamente.
+              </p>
+              <button class="btn btn-outline-warning rounded-pill px-4 fw-bold" onclick="document.getElementById('posiciones-tab').click()">
+                <i class="fas fa-list-ol me-2"></i> Ver Tabla de Posiciones
+              </button>
+            </div>
+          `;
+          return;
+        }
+
+        let gridHtml = `
+          <div class="text-center mb-4">
+            <span class="badge bg-success bg-opacity-10 border border-success border-opacity-25 text-success px-3 py-1.5 rounded-pill fw-bold text-uppercase" style="letter-spacing: 1px;">
+              <i class="fas fa-calendar-check me-1"></i> JORNADAS PROGRAMADAS - ${currentCategory.toUpperCase()}
+            </span>
+            <p class="text-white-50 small mt-2 mb-0">Selecciona una jornada para ver sus partidos, marcadores en vivo y resultados oficiales.</p>
+          </div>
+          <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 justify-content-center">
+        `;
+
+        sortedJornadasKeys.forEach(j => {
+          const matchCount = jornadasMap[j].length;
+          const liveCount = jornadasMap[j].filter(m => m.liveStatus && m.liveStatus.isLive === true).length;
+          const finalizedCount = jornadasMap[j].filter(m => m.isFinalized === true || (m.liveStatus && m.liveStatus.period === "Finalizado")).length;
+
+          gridHtml += `
+            <div class="col">
+              <div class="jornada-card-elite" onclick="window.selectJornada(${j})">
+                <i class="fas fa-calendar-alt ${liveCount > 0 ? 'text-danger animate__animated animate__pulse animate__infinite' : ''}"></i>
+                <h5>JORNADA ${j}</h5>
+                <div class="match-count mb-2">
+                  ${liveCount > 0 ? `<span class="badge bg-danger rounded-pill px-2.5 py-1 text-white fw-bold me-1"><i class="fas fa-circle text-white me-1" style="font-size:0.5rem"></i> ${liveCount} EN VIVO</span>` : ''}
+                  ${matchCount} PARTIDOS LISTOS
+                </div>
+                <div class="small text-white-50">
+                  ${finalizedCount > 0 ? `<span class="text-success"><i class="fas fa-check-circle me-1"></i>${finalizedCount} finalizados</span>` : '<span><i class="far fa-clock me-1"></i>Programada</span>'}
+                </div>
+              </div>
+            </div>
+          `;
+        });
+
+        gridHtml += `</div>`;
+        container.innerHTML = gridHtml;
+        return;
+      }
+
+      // ==========================================
+      // VISTA 2: PARTIDOS DE LA JORNADA SELECCIONADA
+      // ==========================================
+      const matchesInJornada = jornadasMap[currentSelectedJornada] || [];
+
+      // Separar en 3 grupos: En Vivo, Finalizados y Por Jugar
+      const liveList = [];
+      const finalizedList = [];
+      const scheduledList = [];
+
+      matchesInJornada.forEach(m => {
+        const ls = m.liveStatus || {};
+        const isLive = ls.isLive === true;
+        
+        if (isLive) {
+          liveList.push(m);
+          return;
+        }
+
+        const isFinalized = m.isFinalized === true || 
+                            ls.period === "Finalizado" || 
+                            (m.vocalReport && m.vocalReport.vocalSignature) ||
+                            (m.refereeReport && m.refereeReport.judgeSignature) ||
+                            (m.playersLocal && m.playersLocal.length > 0) ||
+                            (m.playersVisitor && m.playersVisitor.length > 0) ||
+                            (typeof ls.scoreLocal !== 'undefined' && (ls.scoreLocal > 0 || ls.scoreVisitor > 0));
+
+        if (isFinalized) {
+          finalizedList.push(m);
+        } else {
+          scheduledList.push(m);
+        }
+      });
+
+      let jornadaHtml = `
+        <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom border-secondary border-opacity-25 flex-wrap gap-2">
+          <button class="btn-back-jornadas" onclick="window.backToJornadas()">
+            <i class="fas fa-arrow-left me-2"></i> Volver a Jornadas
+          </button>
+          <div class="text-center">
+            <h3 class="text-white mb-0 text-uppercase fw-900" style="letter-spacing:2px">JORNADA ${currentSelectedJornada}</h3>
+            <small class="text-warning fw-bold text-uppercase">${currentCategory} &bull; ${matchesInJornada.length} PARTIDOS</small>
+          </div>
+          <div style="width: 140px;" class="d-none d-md-block text-end">
+            <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill small">
+              <i class="fas fa-list me-1"></i> Partidos
+            </span>
+          </div>
+        </div>
+      `;
+
+      if (matchesInJornada.length === 0) {
+        jornadaHtml += `
+          <div class="live-match-card text-center py-5">
+            <i class="fas fa-calendar-day text-warning fa-3x mb-3 opacity-50"></i>
+            <h5 class="fw-bold text-white mb-2">No hay partidos en la Jornada ${currentSelectedJornada}</h5>
+            <p class="text-white-50">Seleccione otra jornada para consultar los encuentros.</p>
+          </div>
+        `;
+        container.innerHTML = jornadaHtml;
+        return;
+      }
+
+      // 🔴 SECCIÓN 1: EN VIVO AHORA (SIEMPRE ARRIBA)
+      if (liveList.length > 0) {
+        jornadaHtml += `
+          <div class="section-header-pill border-danger border-opacity-50">
+            <span class="badge bg-danger rounded-pill px-3 py-1.5 live-pulse-badge fw-bold">
+              <i class="fas fa-satellite-dish me-1"></i> EN VIVO AHORA
+            </span>
+            <span class="text-white fw-bold small">${liveList.length} partido(s) transmitiendo en tiempo real</span>
+          </div>
+        `;
+        liveList.forEach(m => {
+          jornadaHtml += renderSingleMatchCard(m, 'live');
+        });
+      }
+
+      // 🏁 SECCIÓN 2: PARTIDOS FINALIZADOS / RESULTADOS
+      if (finalizedList.length > 0) {
+        jornadaHtml += `
+          <div class="section-header-pill border-secondary border-opacity-50 ${liveList.length > 0 ? 'mt-4' : ''}">
+            <span class="badge bg-secondary rounded-pill px-3 py-1.5 fw-bold">
+              <i class="fas fa-flag-checkered me-1"></i> PARTIDOS FINALIZADOS / RESULTADOS
+            </span>
+            <span class="text-white fw-bold small">${finalizedList.length} partido(s) concluidos</span>
+          </div>
+        `;
+        finalizedList.forEach(m => {
+          jornadaHtml += renderSingleMatchCard(m, 'finalized');
+        });
+      }
+
+      // ⏳ SECCIÓN 3: PARTIDOS PROGRAMADOS (POR JUGAR)
+      if (scheduledList.length > 0) {
+        jornadaHtml += `
+          <div class="section-header-pill border-warning border-opacity-50 ${liveList.length > 0 || finalizedList.length > 0 ? 'mt-4' : ''}">
+            <span class="badge bg-warning text-dark rounded-pill px-3 py-1.5 fw-bold">
+              <i class="far fa-clock me-1"></i> PRÓXIMOS PARTIDOS (POR DISPUTARSE)
+            </span>
+            <span class="text-white fw-bold small">${scheduledList.length} partidos en agenda</span>
+          </div>
+        `;
+        scheduledList.forEach(m => {
+          jornadaHtml += renderSingleMatchCard(m, 'scheduled');
+        });
+      }
+
+      container.innerHTML = jornadaHtml;
+    }
+
+    // ==========================================
+    // ESTADÍSTICAS (POSICIONES Y GOLEADORES)
+    // ==========================================
+    async function loadStats() {
+      if (!currentChampionshipId) return;
+      
+      const posTableBody = document.getElementById('posicionesTableBody');
+      const golTableBody = document.getElementById('goleadoresTableBody');
+      
+      posTableBody.innerHTML = '<tr><td colspan="10" class="text-center py-5"><div class="spinner-border text-success"></div><div class="mt-2 text-white-50">Cargando Posiciones...</div></td></tr>';
+      golTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-5"><div class="spinner-border text-info"></div><div class="mt-2 text-white-50">Cargando Goleadores...</div></td></tr>';
+
+      try {
+        // 1. Obtener equipos
+        const teamsSnap = await db.collection('teams').where('championshipId', '==', currentChampionshipId).get();
+        let teamsData = {};
+        
+        const normalizedCat = currentCategory.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+        teamsSnap.forEach(doc => {
+          const team = doc.data();
+          const teamCat = (team.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          
+          if (teamCat === normalizedCat) {
+            teamsData[team.name] = {
+              name: team.name,
+              logo: team.logo || 'img/logo.png',
+              pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0
+            };
+          }
+        });
+
+        // 2. Obtener fixtures (partidos) para posiciones y goleadores
+        const fixturesSnap = await db.collection('fixtures').where('championshipId', '==', currentChampionshipId).get();
+
+        let allGoleadores = {}; // clave: "Jugador|Equipo"
+
+        fixturesSnap.forEach(doc => {
+          const fixture = doc.data();
+          const fixCat = (fixture.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+          if (fixCat === normalizedCat && Array.isArray(fixture.data)) {
+            fixture.data.forEach(m => {
+              if (m.isFinalized && teamsData[m.local] && teamsData[m.visitor]) {
+                const goalsLocal = (m.playersLocal || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+                const goalsVisitor = (m.playersVisitor || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+
+                // Update Posiciones
+                teamsData[m.local].pj++;
+                teamsData[m.local].gf += goalsLocal;
+                teamsData[m.local].gc += goalsVisitor;
+
+                teamsData[m.visitor].pj++;
+                teamsData[m.visitor].gf += goalsVisitor;
+                teamsData[m.visitor].gc += goalsLocal;
+
+                if (goalsLocal > goalsVisitor) {
+                  teamsData[m.local].pg++;
+                  teamsData[m.local].pts += 3;
+                  teamsData[m.visitor].pp++;
+                } else if (goalsLocal < goalsVisitor) {
+                  teamsData[m.visitor].pg++;
+                  teamsData[m.visitor].pts += 3;
+                  teamsData[m.local].pp++;
+                } else {
+                  teamsData[m.local].pe++;
+                  teamsData[m.local].pts += 1;
+                  teamsData[m.visitor].pe++;
+                  teamsData[m.visitor].pts += 1;
+                }
+
+                // Update Goleadores Local
+                (m.playersLocal || []).forEach(p => {
+                  let goles = parseInt(p.goles) || 0;
+                  if(goles > 0 && p.name) {
+                    let key = p.name.trim().toUpperCase() + "|" + m.local;
+                    if(!allGoleadores[key]) {
+                      allGoleadores[key] = { nombre: p.name.trim().toUpperCase(), equipo: m.local, goles: 0 };
+                    }
+                    allGoleadores[key].goles += goles;
+                  }
+                });
+
+                // Update Goleadores Visitor
+                (m.playersVisitor || []).forEach(p => {
+                  let goles = parseInt(p.goles) || 0;
+                  if(goles > 0 && p.name) {
+                    let key = p.name.trim().toUpperCase() + "|" + m.visitor;
+                    if(!allGoleadores[key]) {
+                      allGoleadores[key] = { nombre: p.name.trim().toUpperCase(), equipo: m.visitor, goles: 0 };
+                    }
+                    allGoleadores[key].goles += goles;
+                  }
+                });
+              }
+            });
+          }
+        });
+
+        // 3. Renderizar Tabla de Posiciones
+        let sortedTeams = Object.values(teamsData).map(t => {
+          t.dg = t.gf - t.gc;
+          return t;
+        });
+
+        sortedTeams.sort((a, b) => {
+          if (b.pts !== a.pts) return b.pts - a.pts;
+          if (b.dg !== a.dg) return b.dg - a.dg;
+          return b.gf - a.gf;
+        });
+
+        if(sortedTeams.length === 0) {
+          posTableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4 text-white-50">No hay equipos registrados o partidos finalizados.</td></tr>';
+        } else {
+          posTableBody.innerHTML = sortedTeams.map((team, index) => {
+            let posClass = "";
+            if(index === 0) posClass = "pos-1";
+            else if(index === 1) posClass = "pos-2";
+            else if(index === 2) posClass = "pos-3";
+
+            return `
+              <tr>
+                <td class="text-center"><span class="position-badge ${posClass}">${index + 1}</span></td>
+                <td>
+                  <div class="d-flex align-items-center">
+                    <img src="${team.logo}" alt="Logo" class="me-2" style="width: 30px; height: 30px; border-radius: 50%; object-fit: cover;" onerror="this.src='img/logo.png'">
+                    <span class="fw-bold">${team.name}</span>
+                  </div>
+                </td>
+                <td class="text-center">${team.pj}</td>
+                <td class="text-center">${team.pg}</td>
+                <td class="text-center">${team.pe}</td>
+                <td class="text-center">${team.pp}</td>
+                <td class="text-center">${team.gf}</td>
+                <td class="text-center">${team.gc}</td>
+                <td class="text-center fw-bold ${team.dg >= 0 ? 'text-info' : 'text-danger'}">${team.dg > 0 ? '+'+team.dg : team.dg}</td>
+                <td class="text-center points-cell">${team.pts}</td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+        // 4. Renderizar Goleadores
+        let sortedGoleadores = Object.values(allGoleadores).sort((a, b) => b.goles - a.goles);
+
+        if(sortedGoleadores.length === 0) {
+          golTableBody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-white-50">No se registraron goles aún.</td></tr>';
+        } else {
+          golTableBody.innerHTML = sortedGoleadores.map((jugador, index) => {
+            return `
+              <tr class="player-row">
+                <td class="fw-bold fs-5" style="color: #2ecc71">#${index + 1}</td>
+                <td class="text-start ps-4">
+                  <div class="fw-bold text-white fs-6">${jugador.nombre}</div>
+                </td>
+                <td class="text-start ps-4">
+                  <div class="d-flex align-items-center">
+                    <img src="${teamsData[jugador.equipo] ? teamsData[jugador.equipo].logo : 'img/logo.png'}" alt="Team" class="me-2" style="width: 25px; height: 25px; border-radius: 50%; object-fit: cover" onerror="this.src='img/logo.png'">
+                    <span class="text-white-50 small fw-bold">${jugador.equipo}</span>
+                  </div>
+                </td>
+                <td>
+                  <span class="goal-badge">${jugador.goles}</span>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+
+      } catch (error) {
+        console.error("Error al calcular estadísticas:", error);
+        posTableBody.innerHTML = '<tr><td colspan="10" class="text-danger text-center">Error al cargar estadísticas.</td></tr>';
+        golTableBody.innerHTML = '<tr><td colspan="4" class="text-danger text-center">Error al cargar goleadores.</td></tr>';
+      }
+    }
+  </script>
+</body>
+</html>

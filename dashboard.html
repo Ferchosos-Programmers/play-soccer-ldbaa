@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard | Liga Barrial</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/responsive.css" />
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/global-swal-patch.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-storage.js"></script>
+
+    <!-- Report Exports (SheetJS) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+    />
+    <link rel="icon" href="img/logo.png" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/dashboard.css" />
+    <link rel="stylesheet" href="css/global-theme.css" />
+  </head>
+  <body>
+    <!-- Header -->
+    <!-- Main Background -->
+    <div class="main-bg"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-premium shadow-sm">
+      <div
+        class="container-fluid d-flex justify-content-between align-items-center"
+      >
+        <a
+          class="navbar-brand text-white fw-bold d-flex align-items-center"
+          href="index.html"
+        >
+          <img
+            src="img/logo.png"
+            alt="Logo"
+            width="40"
+            height="40"
+            class="me-3"
+          />
+          <div class="brand-text d-flex flex-column">
+            <span class="fs-5 lh-1">LDBAA</span>
+            <span class="brand-accent small lh-1">ARGELIA ALTA</span>
+          </div>
+        </a>
+        <div class="nav-actions d-flex gap-3 align-items-center" id="navActionsContainer">
+          <button class="btn btn-logout" onclick="logout()">
+            <i class="fas fa-power-off me-2"></i> <span>Salir</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container py-5">
+      <div class="text-center mb-5 mt-4">
+        <p
+          class="text-uppercase tracking-widest text-white-50 mb-2 fw-bold"
+          style="letter-spacing: 3px; font-size: 0.8rem"
+        >
+          Panel de Administración
+        </p>
+        <h1 class="section-title">
+          Gestión de <span class="brand-accent">Campeonatos</span>
+        </h1>
+        <p
+          class="text-white-50 mx-auto"
+          style="max-width: 600px; font-size: 1.1rem"
+        >
+          Bienvenido al centro de control. Administra los torneos vigentes de la
+          liga Argelia Alta.
+        </p>
+
+        <div class="mt-5">
+          <button
+            class="btn-premium px-5 py-3"
+            data-bs-toggle="modal"
+            data-bs-target="#addChampionshipModal"
+          >
+            <i class="fas fa-plus-circle fa-lg"></i> CREAR NUEVO CAMPEONATO
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenedor de tarjetas de campeonatos -->
+      <div class="row" id="championshipCardsContainer">
+        <!-- Se cargan dinámicamente -->
+      </div>
+    </div>
+
+    <!-- Modal para crear campeonato -->
+    <div
+      class="modal fade"
+      id="addChampionshipModal"
+      tabindex="-1"
+      aria-labelledby="addChampionshipModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content shadow">
+          <form id="championshipForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="addChampionshipModalLabel">
+                <i class="fas fa-plus-circle me-2 brand-accent"></i>Crear Nuevo
+                Campeonato
+              </h5>
+              <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div class="modal-body p-4">
+              <div class="mb-3">
+                <label for="championshipName" class="form-label"
+                  >Nombre del Campeonato</label
+                >
+                <input
+                  type="text"
+                  class="glass-input"
+                  id="championshipName"
+                  placeholder="Ej: Copa Renacer"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="championshipYear" class="form-label">Año</label>
+                <input
+                  type="number"
+                  class="glass-input"
+                  id="championshipYear"
+                  required
+                  min="2024"
+                  max="2100"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="championshipDescription" class="form-label"
+                  >Descripción</label
+                >
+                <textarea
+                  class="glass-input"
+                  id="championshipDescription"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="championshipDeadline" class="form-label"
+                  ><i class="fas fa-calendar-alt me-1 brand-accent"></i>Fecha Límite de Calificación / Carnetización</label
+                >
+                <input
+                  type="datetime-local"
+                  class="glass-input"
+                  id="championshipDeadline"
+                />
+                <small class="text-white-50">Durante este lapso los equipos pueden calificar y eliminar jugadores.</small>
+              </div>
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="championshipAllowDeletion"
+                    checked
+                  />
+                  <label class="form-check-label text-white" for="championshipAllowDeletion">
+                    Permitir a los equipos eliminar jugadores durante el período de calificación
+                  </label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="championshipAllowRegistration"
+                    checked
+                  />
+                  <label class="form-check-label text-white" for="championshipAllowRegistration">
+                    Permitir a los equipos registrar nuevos jugadores durante el período de calificación
+                  </label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="championshipCountdownMessage" class="form-label"
+                  >Mensaje Cuenta Regresiva</label
+                >
+                <textarea
+                  class="glass-input"
+                  id="championshipCountdownMessage"
+                  rows="2"
+                  placeholder="Ej: Tienes hasta el [fecha] para completar la carnetización."
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="championshipExpiredMessage" class="form-label"
+                  >Mensaje de Expiración</label
+                >
+                <textarea
+                  class="glass-input"
+                  id="championshipExpiredMessage"
+                  rows="2"
+                  placeholder="Ej: La fecha de carnetización ha terminado."
+                ></textarea>
+              </div>
+            </div>
+            <div class="modal-footer border-0">
+              <button
+                type="submit"
+                class="btn-premium w-100 justify-content-center"
+              >
+                <i class="fas fa-save"></i> Guardar Campeonato
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para editar campeonato -->
+    <div
+      class="modal fade"
+      id="editChampionshipModal"
+      tabindex="-1"
+      aria-labelledby="editChampionshipModalLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content shadow">
+          <form id="editChampionshipForm">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editChampionshipModalLabel">
+                <i class="fas fa-edit me-2 brand-accent"></i>Editar Campeonato
+              </h5>
+              <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                aria-label="Cerrar"
+              ></button>
+            </div>
+            <div class="modal-body p-4">
+              <input type="hidden" id="editChampionshipId" />
+              <div class="mb-3">
+                <label for="editChampionshipName" class="form-label"
+                  >Nombre del Campeonato</label
+                >
+                <input
+                  type="text"
+                  class="glass-input"
+                  id="editChampionshipName"
+                  required
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editChampionshipYear" class="form-label">Año</label>
+                <input
+                  type="number"
+                  class="glass-input"
+                  id="editChampionshipYear"
+                  required
+                  min="2024"
+                  max="2100"
+                />
+              </div>
+              <div class="mb-3">
+                <label for="editChampionshipDescription" class="form-label"
+                  >Descripción</label
+                >
+                <textarea
+                  class="glass-input"
+                  id="editChampionshipDescription"
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="editChampionshipDeadline" class="form-label"
+                  ><i class="fas fa-calendar-alt me-1 brand-accent"></i>Fecha Límite de Calificación / Carnetización</label
+                >
+                <input
+                  type="datetime-local"
+                  class="glass-input"
+                  id="editChampionshipDeadline"
+                />
+                <small class="text-white-50">Durante este lapso los equipos pueden calificar y eliminar jugadores.</small>
+              </div>
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="editChampionshipAllowDeletion"
+                    checked
+                  />
+                  <label class="form-check-label text-white" for="editChampionshipAllowDeletion">
+                    Permitir a los equipos eliminar jugadores durante el período de calificación
+                  </label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <div class="form-check form-switch">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="editChampionshipAllowRegistration"
+                    checked
+                  />
+                  <label class="form-check-label text-white" for="editChampionshipAllowRegistration">
+                    Permitir a los equipos registrar nuevos jugadores durante el período de calificación
+                  </label>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="editChampionshipCountdownMessage" class="form-label"
+                  >Mensaje Cuenta Regresiva</label
+                >
+                <textarea
+                  class="glass-input"
+                  id="editChampionshipCountdownMessage"
+                  rows="2"
+                  placeholder="Ej: Tienes hasta el [fecha] para completar la carnetización."
+                ></textarea>
+              </div>
+              <div class="mb-3">
+                <label for="editChampionshipExpiredMessage" class="form-label"
+                  >Mensaje de Expiración</label
+                >
+                <textarea
+                  class="glass-input"
+                  id="editChampionshipExpiredMessage"
+                  rows="2"
+                  placeholder="Ej: La fecha de carnetización ha terminado."
+                ></textarea>
+              </div>
+            </div>
+            <div class="modal-footer border-0">
+              <button
+                type="submit"
+                class="btn-premium w-100 justify-content-center"
+              >
+                <i class="fas fa-save"></i> Guardar Cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Comisión de Calificaciones (Documentación de Equipos) -->
+    <div class="modal fade" id="qualificationsModal" tabindex="-1">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content modal-premium">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              <i class="fas fa-folder-open me-2 brand-accent"></i>COMISIÓN DE CALIFICACIONES
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle text-white">
+                <thead>
+                  <tr class="text-white-50 small text-uppercase" style="background: rgba(255,255,255,0.03)">
+                    <th class="ps-4">Equipo</th>
+                    <th>Tipo de Documento</th>
+                    <th>Notas</th>
+                    <th>Fecha</th>
+                    <th class="text-end pe-4">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="qualificationsList">
+                  <!-- Dynamic -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para ver Documento PDF/Imagen -->
+    <div class="modal fade" id="viewDocModal" tabindex="-1">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content modal-premium">
+          <div class="modal-header">
+            <h5 class="modal-title" id="viewDocTitle">Ver Documento</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-0 text-center" style="min-height: 500px">
+            <iframe id="docViewerFrame" src="" style="width: 100%; height: 80vh; display: none;" frameborder="0"></iframe>
+            <img id="docViewerImg" src="" style="max-width: 100%; display: none;" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // Configuración de Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+        authDomain: "ldbaa-calificaciones.firebaseapp.com",
+        projectId: "ldbaa-calificaciones",
+        storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+        messagingSenderId: "277579489603",
+        appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6",
+      };
+
+      // Inicializar Firebase
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+
+      const db = firebase.firestore();
+      const auth = firebase.auth();
+
+      // Configurar Firestore
+      db.settings({
+        cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED,
+      });
+
+      // Habilitar persistencia offline
+      db.enablePersistence().catch((err) => {
+        if (err.code == "failed-precondition") {
+          console.warn("La persistencia falló: múltiples pestañas abiertas");
+        } else if (err.code == "unimplemented") {
+          console.warn("El navegador no soporta persistencia");
+        }
+      });
+
+      // Verificar estado de autenticación
+      auth.onAuthStateChanged((user) => {
+        if (!user) {
+          console.log("Usuario no autenticado, redirigiendo...");
+          window.location.href = "login.html";
+          return;
+        }
+        console.log("Usuario autenticado:", user.email);
+
+        // Si es el súper admin, agregar botón de acceso a la gestión de usuarios
+        if (user.email === "admin@gmail.com") {
+          const navActions = document.getElementById("navActionsContainer");
+          if (navActions && !document.getElementById("btnGoSuperAdmin")) {
+            const superAdminBtn = document.createElement("a");
+            superAdminBtn.href = "super-admin.html";
+            superAdminBtn.id = "btnGoSuperAdmin";
+            superAdminBtn.className = "btn btn-secondary-glass btn-sm me-2";
+            superAdminBtn.innerHTML = '<i class="fas fa-user-shield me-2"></i>Panel Súper Admin';
+            navActions.insertBefore(superAdminBtn, navActions.firstChild);
+          }
+        }
+
+        // Verificar si el usuario es de sanciones
+        if (user.email === "sanciones@gmail.com") {
+          // Redirigir a la sección de sanciones
+          window.location.href = "sanciones.html";
+          return;
+        }
+
+        loadInitialAndChampionships(); // Cargar campeonatos y asegurar Renacer 2025
+      });
+
+      function setupRealtimeUpdates() {
+        console.log("Configurando actualizaciones en tiempo real...");
+        // Escuchar cambios en la colección teams
+        db.collection("teams").onSnapshot(
+          (snapshot) => {
+            teamCardsContainer.innerHTML = ""; // Limpiar contenedor
+            if (snapshot.empty) {
+              teamCardsContainer.innerHTML =
+                '<div class="col-12 text-center"><p>No hay equipos registrados</p></div>';
+            } else {
+              snapshot.forEach((doc) => {
+                const teamData = doc.data();
+                teamData.id = doc.id; // Agregar el ID del documento
+                createTeamCard(teamData);
+              });
+            }
+          },
+          (error) => {
+            console.error("Error al escuchar cambios:", error);
+            Swal.fire(
+              "Error",
+              "Error al actualizar los equipos en tiempo real",
+              "error",
+            );
+          },
+        );
+      }
+
+      function loadTeams() {
+        console.log("Iniciando carga de equipos...");
+        db.collection("teams")
+          .get()
+          .then((querySnapshot) => {
+            console.log("Equipos cargados exitosamente");
+            teamCardsContainer.innerHTML = ""; // Limpiar contenedor
+            if (querySnapshot.empty) {
+              teamCardsContainer.innerHTML =
+                '<div class="col-12 text-center"><p>No hay equipos registrados</p></div>';
+            } else {
+              querySnapshot.forEach((doc) => {
+                const teamData = doc.data();
+                teamData.id = doc.id; // Agregar el ID del documento
+                createTeamCard(teamData);
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error al cargar equipos:", error);
+            let mensaje = "Error al cargar los equipos. ";
+            if (error.code === "permission-denied") {
+              mensaje += "No tienes permisos para ver los equipos.";
+            } else if (error.code === "unavailable") {
+              mensaje += "El servicio no está disponible en este momento.";
+            } else {
+              mensaje += "Por favor, intenta de nuevo.";
+            }
+            Swal.fire("Error", mensaje, "error");
+          });
+      }
+
+      function createTeamCard(team) {
+        const card = document.createElement("div");
+        card.className = "col-md-4 mb-4";
+        card.innerHTML = `
+        <div class="glass-card">
+          <img src="${team.logo}" class="mb-3" alt="Logo" style="height: 120px; object-fit: contain;">
+          <h5 class="fw-bold mb-2">${team.name}</h5>
+          <p class="text-white-50 small mb-4">Categoría: ${team.category}</p>
+          <div class="d-grid gap-2 w-100">
+            <button class="btn btn-secondary-glass btn-sm" onclick="gestionarArchivos('${team.id}', '${team.name}')">
+              <i class="fas fa-file-alt"></i> Archivos
+            </button>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-warning border-0 flex-grow-1" style="background: rgba(243, 156, 18, 0.1);" onclick="resetAdminKey('${team.id}')">
+                <i class="fas fa-key"></i>
+              </button>
+              <button class="btn btn-outline-danger border-0 flex-grow-1" style="background: rgba(231, 76, 60, 0.1);" onclick="deleteTeam('${team.id}')">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+        document.getElementById("championshipCardsContainer").appendChild(card);
+      }
+
+      function deleteTeam(teamId) {
+        Swal.fire({
+          title: "¿Estás seguro?",
+          text: "Este equipo será eliminado permanentemente.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            db.collection("teams")
+              .doc(teamId)
+              .delete()
+              .then(() => {
+                Swal.fire({
+                  title: "Eliminado",
+                  text: "El equipo ha sido eliminado.",
+                  icon: "success",
+                }).then(() => {
+                  location.reload();
+                });
+              })
+              .catch((error) => {
+                console.error("Error al eliminar equipo:", error);
+                Swal.fire(
+                  "Error",
+                  "No se pudo eliminar el equipo. Por favor, intenta de nuevo.",
+                  "error",
+                );
+              });
+          }
+        });
+      }
+
+      // Función para resetear la clave de administrador
+      function resetAdminKey(teamId) {
+        Swal.fire({
+          title: "¿Resetear la clave?",
+          text: "Se eliminará la clave actual y se deberá establecer una nueva la próxima vez que se acceda al registro de jugadores.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#28a745",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, resetear",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            db.collection("teams")
+              .doc(teamId)
+              .update({
+                adminKey: null,
+              })
+              .then(() => {
+                Swal.fire({
+                  title: "¡Clave reseteada!",
+                  text: "La clave ha sido eliminada. Se solicitará una nueva clave la próxima vez que se acceda al registro de jugadores.",
+                  icon: "success",
+                });
+              })
+              .catch((error) => {
+                console.error("Error al resetear la clave:", error);
+                Swal.fire(
+                  "Error",
+                  "No se pudo resetear la clave. Por favor, intenta de nuevo.",
+                  "error",
+                );
+              });
+          }
+        });
+      }
+
+      // Función para cerrar sesión con SweetAlert2
+      function logout() {
+        Swal.fire({
+          title: "¿Cerrar sesión?",
+          text: "¿Estás seguro de que deseas salir?",
+          icon: "warning",
+          showCancelButton: true,
+          showDenyButton: false,
+          confirmButtonColor: "#28a745",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Sí, salir",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            auth
+              .signOut()
+              .then(() => {
+                window.location.href = "login.html";
+              })
+              .catch((error) => {
+                console.error("Error al cerrar sesión:", error);
+                Swal.fire(
+                  "Error",
+                  "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",
+                  "error",
+                );
+              });
+          }
+        });
+      }
+
+      // Función para gestionar archivos
+      function gestionarArchivos(teamId, teamName) {
+        // Verificar si el usuario es admin
+        auth.onAuthStateChanged((user) => {
+          if (user && user.email === "admin@gmail.com") {
+            document.getElementById("teamIdArchivos").value = teamId;
+            document.getElementById("modalGestionarArchivosLabel").textContent =
+              `Gestionar Archivos - ${teamName}`;
+            cargarArchivos(teamId);
+            const modal = new bootstrap.Modal(
+              document.getElementById("modalGestionarArchivos"),
+            );
+            modal.show();
+          } else {
+            Swal.fire(
+              "Error",
+              "No tienes permisos para gestionar archivos",
+              "error",
+            );
+          }
+        });
+      }
+
+      // Función para cargar los archivos existentes
+      function cargarArchivos(teamId) {
+        const listaArchivos = document.getElementById("listaArchivos");
+        listaArchivos.innerHTML =
+          '<div class="text-center"><div class="spinner-border text-info" role="status"></div></div>';
+
+        db.collection("archivos")
+          .where("teamId", "==", teamId)
+          .get()
+          .then((querySnapshot) => {
+            listaArchivos.innerHTML = "";
+            if (querySnapshot.empty) {
+              listaArchivos.innerHTML =
+                '<p class="text-center text-muted">No hay archivos subidos</p>';
+              return;
+            }
+
+            querySnapshot.forEach((doc) => {
+              const archivo = doc.data();
+              const item = document.createElement("div");
+              item.className =
+                "list-group-item d-flex justify-content-between align-items-center";
+              item.innerHTML = `
+                <div>
+                  <i class="fas fa-file-pdf text-danger me-2"></i>
+                  ${
+                    archivo.tipo === "CARTA_PASE"
+                      ? "Carta Pase"
+                      : "Autorización"
+                  }
+                </div>
+                <div>
+                  <a href="${
+                    archivo.url
+                  }" target="_blank" class="btn btn-sm btn-info me-2">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <button onclick="eliminarArchivo('${
+                    doc.id
+                  }')" class="btn btn-sm btn-danger">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              `;
+              listaArchivos.appendChild(item);
+            });
+          })
+          .catch((error) => {
+            console.error("Error al cargar archivos:", error);
+            listaArchivos.innerHTML =
+              '<p class="text-center text-danger">Error al cargar los archivos</p>';
+          });
+      }
+
+      // Función para crear o asegurar el campeonato del año actual
+      async function ensureRenacer2025AndAssignTeams() {
+        const currentYear = new Date().getFullYear();
+        const defaultName = `Renacer ${currentYear}`;
+        
+        try {
+          // Prellenar el año actual en los formularios de campeonatos si existen
+          const yearInput = document.getElementById("championshipYear");
+          if (yearInput && !yearInput.value) {
+            yearInput.value = currentYear;
+          }
+
+          // Verificar si ya existe al menos un campeonato en Firestore
+          const snap = await db.collection("championships").limit(1).get();
+          if (snap.empty) {
+            await db.collection("championships").add({
+              name: defaultName,
+              year: currentYear,
+              description: `Campeonato principal de la temporada ${currentYear}`,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+          }
+        } catch (e) {
+          console.error("Error al asegurar campeonato inicial:", e);
+        }
+      }
+
+      // Modificar la carga inicial para asegurar el campeonato y equipos
+      async function loadInitialAndChampionships() {
+        await ensureRenacer2025AndAssignTeams();
+        loadChampionships();
+      }
+
+      // Función para cargar campeonatos
+      function loadChampionships() {
+        const container = document.getElementById("championshipCardsContainer");
+        container.innerHTML =
+          '<div class="col-12 text-center"><div class="spinner-border text-success" role="status"></div></div>';
+
+        db.collection("championships")
+          .get()
+          .then((querySnapshot) => {
+            container.innerHTML = "";
+            if (querySnapshot.empty) {
+              container.innerHTML =
+                '<div class="col-12 text-center"><p>No hay campeonatos registrados</p></div>';
+              return;
+            }
+
+            querySnapshot.forEach((doc) => {
+              const championship = doc.data();
+              createChampionshipCard(doc.id, championship);
+            });
+          })
+          .catch((error) => {
+            console.error("Error al cargar campeonatos:", error);
+            Swal.fire(
+              "Error",
+              "No se pudieron cargar los campeonatos",
+              "error",
+            );
+          });
+      }
+
+      // Función para crear tarjeta de campeonato
+      function createChampionshipCard(id, championship) {
+        const card = document.createElement("div");
+        card.className = "col-md-4 mb-4";
+
+        let deadlineBadge = '<span class="badge bg-secondary mb-1" style="font-size: 0.75rem;"><i class="fas fa-calendar-check me-1"></i>Calificación sin límite</span>';
+        let deletionBadge = '<span class="badge bg-success-subtle text-success border border-success-subtle mb-3" style="font-size: 0.75rem;"><i class="fas fa-user-minus me-1"></i>Eliminación: Permitida</span>';
+
+        const now = new Date();
+        if (championship.deadline) {
+          const dlDate = new Date(championship.deadline);
+          if (!isNaN(dlDate.getTime())) {
+            if (now > dlDate) {
+              deadlineBadge = '<span class="badge bg-danger mb-1" style="font-size: 0.75rem;"><i class="fas fa-lock me-1"></i>Calificación Finalizada</span>';
+              deletionBadge = '<span class="badge bg-danger-subtle text-danger border border-danger-subtle mb-3" style="font-size: 0.75rem;"><i class="fas fa-user-slash me-1"></i>Eliminación: Bloqueada (Vencido)</span>';
+            } else {
+              const formattedDate = dlDate.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+              deadlineBadge = `<span class="badge bg-success mb-1" style="font-size: 0.75rem;"><i class="fas fa-clock me-1"></i>Calificación hasta: ${formattedDate}</span>`;
+            }
+          }
+        }
+
+        if (championship.allowPlayerDeletion === false) {
+          deletionBadge = '<span class="badge bg-warning text-dark mb-3" style="font-size: 0.75rem;"><i class="fas fa-user-slash me-1"></i>Eliminación: Deshabilitada</span>';
+        }
+
+        card.innerHTML = `
+          <div class="glass-card">
+            <div class="text-center w-100">
+              <div class="mb-3">
+                <i class="fas fa-trophy text-warning fa-3x mb-2" style="filter: drop-shadow(0 0 10px rgba(241, 196, 15, 0.3));"></i>
+              </div>
+              <h3 class="fw-bold mb-1">${championship.name}</h3>
+              <div class="d-flex flex-column align-items-center gap-1 my-2">
+                ${deadlineBadge}
+                ${deletionBadge}
+              </div>
+              <p class="text-white-50 mb-4 px-3" style="font-size: 0.95rem;">${championship.description || "Inicia tu gestión en este campeonato."}</p>
+              
+              <div class="d-grid gap-3 w-100 mt-2">
+                <a href="championship-teams.html?id=${id}" class="btn-premium justify-content-center py-3">
+                  <i class="fas fa-sign-in-alt me-2"></i> ENTRAR AL PANEL
+                </a>
+                <div class="d-flex gap-2">
+                  <button class="btn btn-secondary-glass flex-grow-1" onclick="editChampionship('${id}')">
+                    <i class="fas fa-cog me-1"></i> Configurar
+                  </button>
+                  <button class="btn btn-outline-danger border-0 flex-shrink-0 px-3" style="background: rgba(231, 76, 60, 0.1);" onclick="deleteChampionship('${id}')">
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        document.getElementById("championshipCardsContainer").appendChild(card);
+      }
+
+      // Manejar el envío del formulario de campeonato
+      document
+        .getElementById("championshipForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const deadline = document.getElementById(
+            "championshipDeadline",
+          ).value;
+          const allowDeletion = document.getElementById(
+            "championshipAllowDeletion",
+          ).checked;
+          const allowRegistration = document.getElementById(
+            "championshipAllowRegistration",
+          ).checked;
+
+          const championshipData = {
+            name: document.getElementById("championshipName").value,
+            year: parseInt(document.getElementById("championshipYear").value),
+            description: document.getElementById("championshipDescription")
+              .value,
+            deadline: deadline || null, // Guardar como cadena ISO 8601
+            allowPlayerDeletion: allowDeletion,
+            allowRegistration: allowRegistration,
+            countdownMessage:
+              document.getElementById("championshipCountdownMessage").value ||
+              null,
+            expiredMessage:
+              document.getElementById("championshipExpiredMessage").value ||
+              null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          };
+
+          // Si hay fecha de deadline, establecerla como fecha de inicio de notificaciones
+          if (deadline) {
+            championshipData.notificationStartDate = deadline;
+            championshipData.deadlineLastChanged =
+              firebase.firestore.FieldValue.serverTimestamp();
+          }
+
+          db.collection("championships")
+            .add(championshipData)
+            .then(() => {
+              Swal.fire({
+                title: "Éxito",
+                text: "Campeonato creado correctamente",
+                icon: "success",
+              });
+              document.getElementById("championshipForm").reset();
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById("addChampionshipModal"),
+              );
+              modal.hide();
+              loadChampionships();
+            })
+            .catch((error) => {
+              console.error("Error al crear campeonato:", error);
+              Swal.fire("Error", "No se pudo crear el campeonato", "error");
+            });
+        });
+
+      // Función para editar campeonato
+      async function editChampionship(id) {
+        try {
+          const doc = await db.collection("championships").doc(id).get();
+          if (!doc.exists) {
+            Swal.fire("Error", "Campeonato no encontrado", "error");
+            return;
+          }
+
+          const championship = doc.data();
+          document.getElementById("editChampionshipId").value = id;
+          document.getElementById("editChampionshipName").value =
+            championship.name;
+          document.getElementById("editChampionshipYear").value =
+            championship.year;
+          document.getElementById("editChampionshipDescription").value =
+            championship.description || "";
+
+          // Formatear la fecha para el input datetime-local
+          if (championship.deadline) {
+            const date = new Date(championship.deadline);
+            const formattedDate = date.toISOString().slice(0, 16);
+            document.getElementById("editChampionshipDeadline").value =
+              formattedDate;
+          } else {
+            document.getElementById("editChampionshipDeadline").value = "";
+          }
+
+          document.getElementById("editChampionshipAllowDeletion").checked =
+            championship.allowPlayerDeletion !== false;
+          document.getElementById("editChampionshipAllowRegistration").checked =
+            championship.allowRegistration !== false;
+
+          document.getElementById("editChampionshipCountdownMessage").value =
+            championship.countdownMessage || "";
+          document.getElementById("editChampionshipExpiredMessage").value =
+            championship.expiredMessage || "";
+
+          // Guardar la fecha original para comparar si cambió
+          window.originalDeadline = championship.deadline;
+
+          const modal = new bootstrap.Modal(
+            document.getElementById("editChampionshipModal"),
+          );
+          modal.show();
+        } catch (error) {
+          console.error(
+            "Error al cargar datos del campeonato para edición:",
+            error,
+          );
+          Swal.fire(
+            "Error",
+            "No se pudieron cargar los datos del campeonato para edición",
+            "error",
+          );
+        }
+      }
+
+      // Manejar el envío del formulario de edición de campeonato
+      document
+        .getElementById("editChampionshipForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const id = document.getElementById("editChampionshipId").value;
+          const newDeadline = document.getElementById(
+            "editChampionshipDeadline",
+          ).value;
+          const allowDeletion = document.getElementById(
+            "editChampionshipAllowDeletion",
+          ).checked;
+          const allowRegistration = document.getElementById(
+            "editChampionshipAllowRegistration",
+          ).checked;
+          const originalDeadline = window.originalDeadline;
+
+          const updatedData = {
+            name: document.getElementById("editChampionshipName").value,
+            year: parseInt(
+              document.getElementById("editChampionshipYear").value,
+            ),
+            description: document.getElementById("editChampionshipDescription")
+              .value,
+            deadline: newDeadline || null,
+            allowPlayerDeletion: allowDeletion,
+            allowRegistration: allowRegistration,
+            countdownMessage:
+              document.getElementById("editChampionshipCountdownMessage")
+                .value || null,
+            expiredMessage:
+              document.getElementById("editChampionshipExpiredMessage").value ||
+              null,
+          };
+
+          // Verificar si la fecha de deadline cambió
+          const deadlineChanged = originalDeadline !== newDeadline;
+
+          if (deadlineChanged && newDeadline) {
+            // Si la fecha cambió, establecer la nueva fecha como punto de inicio para notificaciones
+            updatedData.notificationStartDate = newDeadline;
+            updatedData.deadlineLastChanged =
+              firebase.firestore.FieldValue.serverTimestamp();
+          }
+
+          db.collection("championships")
+            .doc(id)
+            .update(updatedData)
+            .then(() => {
+              let message = "Campeonato actualizado correctamente";
+              if (deadlineChanged) {
+                message +=
+                  ". Las notificaciones de jugadores nuevos comenzarán desde la nueva fecha de finalización.";
+              }
+
+              Swal.fire({
+                title: "Éxito",
+                text: message,
+                icon: "success",
+              });
+              const modal = bootstrap.Modal.getInstance(
+                document.getElementById("editChampionshipModal"),
+              );
+              modal.hide();
+              loadChampionships(); // Recargar la lista de campeonatos
+            })
+            .catch((error) => {
+              console.error("Error al actualizar campeonato:", error);
+              Swal.fire(
+                "Error",
+                "No se pudo actualizar el campeonato",
+                "error",
+              );
+            });
+        });
+
+      // Función para eliminar campeonato
+      function deleteChampionship(id) {
+        Swal.fire({
+          title: "¿Estás seguro?",
+          text: "Este campeonato será eliminado permanentemente",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, eliminar",
+          cancelButtonText: "Cancelar",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            db.collection("championships")
+              .doc(id)
+              .delete()
+              .then(() => {
+                Swal.fire(
+                  "Eliminado",
+                  "El campeonato ha sido eliminado",
+                  "success",
+                );
+                loadChampionships();
+              })
+              .catch((error) => {
+                console.error("Error al eliminar campeonato:", error);
+                Swal.fire(
+                  "Error",
+                  "No se pudo eliminar el campeonato",
+                  "error",
+                );
+              });
+          }
+        });
+      }
+
+      // --- COMISIÓN DE CALIFICACIONES ---
+      async function showQualifications() {
+        const modal = new bootstrap.Modal(document.getElementById('qualificationsModal'));
+        modal.show();
+        
+        const list = document.getElementById('qualificationsList');
+        list.innerHTML = '<tr><td colspan="5" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>';
+        
+        try {
+          const snapshot = await db.collection("team_documentation").orderBy("timestamp", "desc").get();
+          list.innerHTML = "";
+          
+          if (snapshot.empty) {
+            list.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-white-50">No hay documentos pendientes.</td></tr>';
+            return;
+          }
+          
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            const date = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'N/A';
+            const statusBadge = d.status === 'Aprobado' ? '<span class="badge bg-success">Aprobado</span>' : '<span class="badge bg-warning text-dark">Pendiente</span>';
+            list.insertAdjacentHTML('beforeend', `
+              <tr>
+                <td class="ps-4 fw-bold text-primary">${d.teamName}</td>
+                <td class="text-uppercase small">${d.type} <br>${statusBadge}</td>
+                <td class="small opacity-75">${d.notes || '-'}</td>
+                <td class="small text-white-50">${date}</td>
+                <td class="text-end pe-4">
+                  <div class="btn-group">
+                    ${d.status !== 'Aprobado' ? `<button class="btn btn-sm btn-outline-success" onclick="approveTeamDoc('${doc.id}', '${d.type}')" title="Aprobar"><i class="fas fa-check"></i></button>` : ''}
+                    <button class="btn btn-sm btn-outline-info" onclick="viewTeamDoc('${doc.id}')" title="Ver">
+                      <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTeamDoc('${doc.id}')" title="Eliminar">
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            `);
+          });
+        } catch (e) {
+          console.error(e);
+          list.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-danger">Error al cargar documentos.</td></tr>';
+        }
+      }
+
+      async function viewTeamDoc(id) {
+        try {
+          const doc = await db.collection("team_documentation").doc(id).get();
+          if (!doc.exists) return;
+          const data = doc.data();
+          
+          const frame = document.getElementById('docViewerFrame');
+          const img = document.getElementById('docViewerImg');
+          
+          document.getElementById('viewDocTitle').textContent = `Documento: ${data.teamName} (${data.type})`;
+          
+          if (data.file.startsWith('data:application/pdf')) {
+            frame.src = data.file;
+            frame.style.display = 'block';
+            img.style.display = 'none';
+          } else {
+            img.src = data.file;
+            img.style.display = 'inline-block';
+            frame.style.display = 'none';
+          }
+          
+          const modal = new bootstrap.Modal(document.getElementById('viewDocModal'));
+          modal.show();
+        } catch (e) {
+          Swal.fire("Error", "No se pudo cargar el documento.", "error");
+        }
+      }
+
+      async function deleteTeamDoc(id) {
+        const result = await Swal.fire({
+          title: '¿Eliminar documento?',
+          text: "Esta acción no se puede deshacer.",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#e74c3c',
+          confirmButtonText: 'Sí, eliminar'
+        });
+        
+        if (result.isConfirmed) {
+          await db.collection("team_documentation").doc(id).delete();
+          Swal.fire("Eliminado", "El documento ha sido removido.", "success");
+          showQualifications();
+        }
+      }
+
+      async function approveTeamDoc(id, type) {
+        if (type === 'transferencia') {
+            const { value: formValues } = await Swal.fire({
+                title: 'Aprobar Carta Pase',
+                html: `
+                    <div class="mb-3">
+                      <label class="form-label text-start w-100 fw-bold">Número de Carta Pase</label>
+                      <input id="swal-num" class="form-control" placeholder="Ej: 0015">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label text-start w-100 fw-bold">Valor ($)</label>
+                      <input id="swal-val" type="number" step="0.01" class="form-control" placeholder="Ej: 2.50">
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Aprobar Documento',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    const num = document.getElementById('swal-num').value;
+                    const val = document.getElementById('swal-val').value;
+                    if (!num || !val) {
+                        Swal.showValidationMessage('Ambos campos son obligatorios');
+                    }
+                    return { num: num, val: parseFloat(val) };
+                }
+            });
+
+            if (formValues) {
+                await db.collection("team_documentation").doc(id).update({
+                    status: 'Aprobado',
+                    numeroCartaPase: formValues.num,
+                    valor: formValues.val,
+                    fechaAprobacion: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                Swal.fire('¡Aprobado!', 'La carta pase ha sido aprobada y registrada.', 'success');
+                showQualifications();
+            }
+        } else {
+            const result = await Swal.fire({
+                title: '¿Aprobar documento?',
+                text: 'Se marcará como aprobado por la comisión.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Aprobar',
+            });
+            if (result.isConfirmed) {
+                await db.collection("team_documentation").doc(id).update({
+                    status: 'Aprobado',
+                    fechaAprobacion: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                Swal.fire('¡Aprobado!', 'El documento ha sido aprobado.', 'success');
+                showQualifications();
+            }
+        }
+      }
+
+      // --- END COMISIÓN DE CALIFICACIONES ---
+
+      // Función para exportar todos los jugadores a Excel
+      async function exportarJugadoresExcel() {
+        try {
+          Swal.fire({
+            title: "Preparando exportación...",
+            text: "Obteniendo datos de todos los jugadores registrados",
+            allowOutsideClick: false,
+            didOpen: () => {
+              Swal.showLoading();
+            },
+          });
+
+          // Obtener todos los jugadores
+          const snapshot = await db.collection("players").get();
+
+          if (snapshot.empty) {
+            Swal.fire(
+              "Error",
+              "No hay jugadores registrados para exportar",
+              "error",
+            );
+            return;
+          }
+
+          const data = [];
+          snapshot.forEach((doc) => {
+            const player = doc.data();
+            data.push({
+              Número: player.numeroJugador || "S/N",
+              Nombres: player.nombres || "",
+              Apellidos: player.apellidos || "",
+              Cédula: player.cedula || "",
+              "Club/Equipo": player.teamName || "Sin asignar",
+            });
+          });
+
+          // Crear hoja de Excel
+          const ws = XLSX.utils.json_to_sheet(data);
+
+          // Ajustar ancho de columnas automáticamente
+          const colWidths = [
+            { wch: 10 }, // Número
+            { wch: 25 }, // Nombres
+            { wch: 25 }, // Apellidos
+            { wch: 15 }, // Cédula
+            { wch: 30 }, // Club
+          ];
+          ws["!cols"] = colWidths;
+
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "Jugadores");
+
+          // Nombre del archivo con fecha
+          const fecha = new Date().toLocaleDateString().replace(/\//g, "-");
+          XLSX.writeFile(wb, `Reporte_Jugadores_${fecha}.xlsx`);
+
+          Swal.fire({
+            title: "¡Éxito!",
+            text: "El reporte de jugadores ha sido generado correctamente.",
+            icon: "success",
+          });
+        } catch (error) {
+          console.error("Error al exportar a Excel:", error);
+          Swal.fire({
+            title: "Error",
+            text: "Ocurrió un error al generar el archivo Excel. Por favor intente de nuevo.",
+            icon: "error",
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

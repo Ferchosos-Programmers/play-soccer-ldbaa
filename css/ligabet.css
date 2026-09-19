@@ -1,0 +1,324 @@
+/* LigaBet Specific Styles */
+
+.card-glass-container {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.section-title {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -1px;
+}
+
+.pill {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 0.5rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pill:hover, .pill.active {
+    background: #2ecc71;
+    border-color: #2ecc71;
+    color: #000;
+}
+
+/* Match Card */
+.match-card-premium {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 1.5rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.match-card-premium:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(46, 204, 113, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+}
+
+.match-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.team {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 40%;
+}
+
+.team-logo-small {
+    width: 45px;
+    height: 45px;
+    object-fit: contain;
+    filter: drop-shadow(0 0 10px rgba(255,255,255,0.1));
+}
+
+.team-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.match-vs {
+    width: 10%;
+    text-align: center;
+    font-weight: 800;
+    color: rgba(255,255,255,0.2);
+    font-size: 0.9rem;
+}
+
+/* Odds Container */
+.match-odds {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.odd-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 12px;
+    padding: 10px 0;
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.odd-btn:hover {
+    background: rgba(46, 204, 113, 0.1);
+    border-color: rgba(46, 204, 113, 0.5);
+    color: #2ecc71;
+}
+
+.odd-btn.active {
+    background: #2ecc71;
+    border-color: #2ecc71;
+    color: #000;
+    box-shadow: 0 0 20px rgba(46, 204, 113, 0.3);
+}
+
+.odd-btn .label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    opacity: 0.5;
+    text-transform: uppercase;
+}
+
+.odd-btn .value {
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* Betting Slip */
+.match-row-premium {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: all 0.3s ease;
+}
+
+.match-row-premium:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: #2ecc71;
+    transform: scale(1.02);
+}
+
+.team-name-small {
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.vs-badge {
+    font-size: 0.65rem;
+    font-weight: 900;
+    color: #2ecc71;
+    background: rgba(46, 204, 113, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 2px;
+}
+
+.category-pill {
+    font-size: 0.55rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    display: block;
+    margin: 0 auto;
+    width: fit-content;
+}
+
+.category-pill.máxima, .category-pill.maxima { background: #2ecc71; color: #000; }
+.category-pill.primera { background: #3498db; color: #fff; }
+.category-pill.femenino { background: #e74c3c; color: #fff; }
+
+/* Jornada Cards (Vocalía Style) */
+.jornada-card-elite {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    height: 100%;
+}
+
+.jornada-card-elite:hover {
+    transform: translateY(-10px);
+    background: rgba(46, 204, 113, 0.1);
+    border-color: #2ecc71;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+}
+
+.jornada-card-elite i {
+    font-size: 2.5rem;
+    color: #2ecc71;
+    margin-bottom: 15px;
+    display: block;
+}
+
+.jornada-card-elite h5 {
+    color: white;
+    font-weight: 800;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.jornada-card-elite .match-count {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.5);
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.match-content-bet {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.vs-badge-bet {
+    background: #2ecc71;
+    color: black;
+    font-weight: 900;
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 4px;
+}
+
+.uppercase { text-transform: uppercase; }
+
+.selection-card {
+    border-left: 4px solid #2ecc71 !important;
+}
+
+.jackpot-card {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1), rgba(218, 165, 32, 0.2)) !important;
+    border: 2px solid rgba(255, 215, 0, 0.3) !important;
+    padding: 2.5rem !important;
+}
+
+.btn-whatsapp {
+    background: #25D366;
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.btn-whatsapp:hover {
+    background: #128C7E;
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(37, 211, 102, 0.3);
+    color: white;
+}
+
+/* Match Bet Card */
+.match-bet-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    padding: 1.2rem;
+}
+
+.bet-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 12px;
+    padding: 12px 0;
+    font-weight: 800;
+    transition: all 0.2s ease;
+}
+
+.bet-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.bet-btn.active {
+    background: #2ecc71;
+    border-color: #2ecc71;
+    color: #000;
+    box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+}
+
+.step-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .match-info {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .team {
+        width: 100%;
+        justify-content: center;
+    }
+    .match-vs {
+        width: 100%;
+    }
+    .team-home { text-align: center; }
+    .team-away { text-align: center; flex-direction: row-reverse; }
+}

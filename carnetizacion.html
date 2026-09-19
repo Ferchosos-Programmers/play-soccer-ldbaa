@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Campeonatos - Plataforma Deportiva LDBAA</title>
+    
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    
+    <link rel="icon" href="img/logo.png" />
+    <link rel="stylesheet" href="css/responsive.css" />
+    <link rel="stylesheet" href="css/carnetizacion.css" />
+    <link rel="stylesheet" href="css/global-theme.css" />
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/global-swal-patch.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
+  </head>
+  <body>
+    <!-- Persistent Background -->
+    <div class="main-bg"></div>
+
+    <!-- Navigation -->
+    <nav class="nav-premium shadow-sm">
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        <a class="navbar-brand text-white" href="index.html">
+          <img src="img/logo.png" alt="Logo" width="35" height="35" />
+          <span>LIGA BARRIAL <span class="brand-accent">ARGELIA ALTA</span></span>
+        </a>
+        <a href="index.html" class="btn-back">
+          <i class="fas fa-arrow-left"></i>
+          <span class="d-none d-md-inline">Regresar</span>
+        </a>
+      </div>
+    </nav>
+
+    <div class="container pb-5">
+      <!-- Welcome Header -->
+      <div class="text-center">
+        <h2 class="section-title">🏆 Campeonatos Disponibles</h2>
+        <p class="text-white-50 mb-4">Selecciona un campeonato para gestionar la carnetización de los equipos.</p>
+      </div>
+
+      <!-- Enhanced Search Filters -->
+      <div class="d-flex justify-content-center">
+          <div class="search-container w-100">
+            <div class="input-group-premium">
+                <i class="fas fa-search"></i>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    class="search-input" 
+                    placeholder="Buscar campeonato por nombre..." 
+                    oninput="filterChampionships()"
+                />
+            </div>
+          </div>
+      </div>
+
+      <!-- Championships Container -->
+      <div class="championship-grid" id="championshipsContainer">
+        <!-- Cards loaded dynamically -->
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Firebase Logic -->
+    <script>
+      // Configuración de Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+        authDomain: "ldbaa-calificaciones.firebaseapp.com",
+        projectId: "ldbaa-calificaciones",
+        storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+        messagingSenderId: "277579489603",
+        appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6",
+      };
+
+      if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+      }
+      const db = firebase.firestore();
+
+      const championshipsContainer = document.getElementById("championshipsContainer");
+      const searchInput = document.getElementById("searchInput");
+      let allChampionships = [];
+
+      function loadChampionships() {
+        db.collection("championships")
+          .get()
+          .then((querySnapshot) => {
+            allChampionships = [];
+            championshipsContainer.innerHTML = "";
+
+            if (querySnapshot.empty) {
+              championshipsContainer.innerHTML = 
+                '<div class="col-12 text-center py-5"><p class="text-white-50">No hay campeonatos registrados actualmente.</p></div>';
+            } else {
+              querySnapshot.forEach((doc) => {
+                const championshipData = doc.data();
+                const championship = {
+                  id: doc.id,
+                  name: championshipData.name,
+                  logo: championshipData.logo,
+                };
+                allChampionships.push(championship);
+              });
+              displayChampionships(allChampionships);
+            }
+          })
+          .catch((error) => {
+            console.error("Error al cargar campeonatos:", error);
+            Swal.fire("Error", "No se pudieron cargar los campeonatos.", "error");
+          });
+      }
+
+      function filterChampionships() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const filtered = allChampionships.filter((c) =>
+          c.name.toLowerCase().includes(searchTerm)
+        );
+        displayChampionships(filtered);
+      }
+
+      function displayChampionships(championships) {
+        championshipsContainer.innerHTML = "";
+        if (championships.length === 0) {
+          championshipsContainer.innerHTML = 
+            '<div class="col-12 text-center py-5"><p class="text-white-50">No se encontraron campeonatos que coincidan.</p></div>';
+        } else {
+          championships.forEach((championship) => {
+            createChampionshipCard(championship);
+          });
+        }
+      }
+
+      function createChampionshipCard(championship) {
+        const card = document.createElement("a");
+        card.href = `equipos-campeonato.html?championshipId=${championship.id}&championshipName=${encodeURIComponent(championship.name)}`;
+        card.className = "glass-card";
+
+        card.innerHTML = `
+            <img src="${championship.logo || 'img/logo.png'}" class="card-logo" alt="Logo">
+            <h3 class="card-name">${championship.name}</h3>
+            <button class="btn-enter">
+              <i class="fas fa-sign-in-alt me-2"></i> Ingresar
+            </button>
+        `;
+        championshipsContainer.appendChild(card);
+      }
+
+      // Initial load
+      document.addEventListener("DOMContentLoaded", loadChampionships);
+    </script>
+  </body>
+</html>
+
