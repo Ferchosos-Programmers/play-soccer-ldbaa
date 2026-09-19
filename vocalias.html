@@ -3106,7 +3106,7 @@
         const secondaryKey = `${normTeam}___${normCat}___`;
         const neutralKey = `${normTeam}______${cleanCamp}`;
 
-        // 1. Si ya está en memoria RAM con jugadores completos de esta categoría, retorno instantáneo (0ms)
+        // 1. Verificación instantánea en memoria RAM (0ms)
         if (
           teamPlayersMemoryCache.has(primaryKey) &&
           teamPlayersMemoryCache.get(primaryKey).length > 0
@@ -3127,6 +3127,13 @@
           return teamPlayersMemoryCache.get(neutralKey);
         }
 
+        // Búsqueda flexible en memoria por coincidencia de equipo
+        for (let [k, list] of teamPlayersMemoryCache) {
+          if (list && list.length > 0 && k.startsWith(`${normTeam}___`)) {
+            return list;
+          }
+        }
+
         // 2. Coalescing de promesas en vuelo para evitar llamadas duplicadas simultáneas
         if (teamPlayersFetchPromises.has(primaryKey)) {
           return teamPlayersFetchPromises.get(primaryKey);
@@ -3135,48 +3142,29 @@
         const fetchPromise = (async () => {
           try {
             const cleanTeam = teamName.trim().toUpperCase();
-            // Consultas exhaustivas en paralelo: por nombre y por campeonato
-            const [snap1, snap2, snap3, tSnap1, tSnap2, tSnapCamp1, tSnapCamp2] = await Promise.all([
-              db
-                .collection("players")
-                .where("teamName", "==", teamName)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("players")
-                .where("teamName", "==", cleanTeam)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("players")
-                .where("teamName", "==", teamName.replace(/\./g, ""))
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("teams")
-                .where("name", "==", teamName)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("teams")
-                .where("name", "==", cleanTeam)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              currentCampId
-                ? db
-                    .collection("teams")
-                    .where("championshipId", "==", currentCampId)
-                    .get()
-                    .catch(() => ({ forEach: () => {} }))
-                : Promise.resolve({ forEach: () => {} }),
-              currentCampId
-                ? db
-                    .collection("teams")
-                    .where("campeonatoId", "==", currentCampId)
-                    .get()
-                    .catch(() => ({ forEach: () => {} }))
-                : Promise.resolve({ forEach: () => {} }),
-            ]);
+            const strippedTeam = cleanTeam.replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?)\s+/i, "").trim();
+
+            const queryPromises = [
+              db.collection("players").where("teamName", "==", teamName).get().catch(() => ({ forEach: () => {} })),
+              db.collection("players").where("teamName", "==", cleanTeam).get().catch(() => ({ forEach: () => {} })),
+              db.collection("players").where("teamName", "==", teamName.replace(/\./g, "")).get().catch(() => ({ forEach: () => {} })),
+              db.collection("teams").where("name", "==", teamName).get().catch(() => ({ forEach: () => {} })),
+              db.collection("teams").where("name", "==", cleanTeam).get().catch(() => ({ forEach: () => {} })),
+            ];
+
+            if (strippedTeam && strippedTeam !== cleanTeam) {
+              queryPromises.push(db.collection("players").where("teamName", "==", strippedTeam).get().catch(() => ({ forEach: () => {} })));
+              queryPromises.push(db.collection("teams").where("name", "==", strippedTeam).get().catch(() => ({ forEach: () => {} })));
+            }
+
+            if (currentCampId) {
+              queryPromises.push(db.collection("teams").where("championshipId", "==", currentCampId).get().catch(() => ({ forEach: () => {} })));
+              queryPromises.push(db.collection("teams").where("campeonatoId", "==", currentCampId).get().catch(() => ({ forEach: () => {} })));
+              queryPromises.push(db.collection("players").where("championshipId", "==", currentCampId).get().catch(() => ({ forEach: () => {} })));
+              queryPromises.push(db.collection("players").where("campeonatoId", "==", currentCampId).get().catch(() => ({ forEach: () => {} })));
+            }
+
+            const snaps = await Promise.all(queryPromises);
 
             const teamMetaMap = new Map();
             const validTeamIdsForCat = new Set();
@@ -3184,7 +3172,11 @@
 
             const processTeamDoc = (tDoc) => {
               const tData = tDoc.data();
-              if (tData.name && normalizeTeamName(tData.name) === normTeam) {
+              if (
+                tData.name &&
+                (normalizeTeamName(tData.name) === normTeam ||
+                  (strippedTeam && normalizeTeamName(tData.name) === normalizeTeamName(strippedTeam)))
+              ) {
                 const tCat = tData.category || "";
                 teamMetaMap.set(tDoc.id, { ...tData, category: tCat });
                 allClubTeamIds.add(tDoc.id);
@@ -3194,10 +3186,15 @@
               }
             };
 
-            tSnap1.forEach(processTeamDoc);
-            tSnap2.forEach(processTeamDoc);
-            tSnapCamp1.forEach(processTeamDoc);
-            tSnapCamp2.forEach(processTeamDoc);
+            snaps.forEach((snap) => {
+              if (snap && snap.forEach) {
+                snap.forEach((doc) => {
+                  if (doc.ref?.parent?.id === "teams") {
+                    processTeamDoc(doc);
+                  }
+                });
+              }
+            });
 
             const playersList = [];
             const addedPlayerDocIds = new Set();
@@ -3213,8 +3210,8 @@
               const pTeamNorm = normalizeTeamName(p.teamName);
               const belongsToClub =
                 (p.teamId && (allClubTeamIds.has(p.teamId) || validTeamIdsForCat.has(p.teamId))) ||
-                (pTeamNorm && pTeamNorm === normTeam) ||
-                (p.teamName && p.teamName.trim().toUpperCase() === cleanTeam);
+                (pTeamNorm && (pTeamNorm === normTeam || (strippedTeam && pTeamNorm === normalizeTeamName(strippedTeam)))) ||
+                (p.teamName && (p.teamName.trim().toUpperCase() === cleanTeam || (strippedTeam && p.teamName.trim().toUpperCase() === strippedTeam)));
 
               if (!belongsToClub) return;
 
@@ -3240,9 +3237,15 @@
               });
             };
 
-            snap1.forEach(processPlayerDoc);
-            snap2.forEach(processPlayerDoc);
-            snap3.forEach(processPlayerDoc);
+            snaps.forEach((snap) => {
+              if (snap && snap.forEach) {
+                snap.forEach((doc) => {
+                  if (doc.ref?.parent?.id === "players") {
+                    processPlayerDoc(doc);
+                  }
+                });
+              }
+            });
 
             // Traer todos los jugadores vinculados por teamId de los equipos de esta categoría
             const teamIdsToQuery =
@@ -3260,13 +3263,23 @@
             }
 
             playersList.sort((a, b) => {
-              const numA = parseInt(a.numeroJugador || a.num) || 999;
-              const numB = parseInt(b.numeroJugador || b.num) || 999;
+              const numA = parseInt(a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999, 10) || 999;
+              const numB = parseInt(b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999, 10) || 999;
               return numA - numB;
             });
 
             teamPlayersMemoryCache.set(primaryKey, playersList);
             teamPlayersMemoryCache.set(secondaryKey, playersList);
+            if (strippedTeam) {
+              teamPlayersMemoryCache.set(
+                `${normalizeTeamName(strippedTeam)}___${normCat}___${cleanCamp}`,
+                playersList,
+              );
+              teamPlayersMemoryCache.set(
+                `${normalizeTeamName(strippedTeam)}___${normCat}___`,
+                playersList,
+              );
+            }
             if (!normCat) teamPlayersMemoryCache.set(neutralKey, playersList);
 
             return playersList;
@@ -3765,6 +3778,29 @@
         return result;
       }
 
+      // Helper para buscar jugador por dorsal de forma flexible (string o numérico)
+      window.findPlayerByDorsal = function (query) {
+        if (!query || !currentTeamPlayersList || currentTeamPlayersList.length === 0) return null;
+        const qTrim = String(query).trim();
+        const qNum = parseInt(qTrim, 10);
+
+        // 1. Coincidencia exacta por string de dorsal
+        let found = currentTeamPlayersList.find((p) => {
+          const numStr = String(p.numeroJugador ?? p.num ?? p.dorsal ?? p.numero ?? p.number ?? "").trim();
+          return numStr === qTrim;
+        });
+
+        // 2. Coincidencia numérica (ej: "07" === 7 o "7" === 7)
+        if (!found && !isNaN(qNum)) {
+          found = currentTeamPlayersList.find((p) => {
+            const raw = p.numeroJugador ?? p.num ?? p.dorsal ?? p.numero ?? p.number;
+            if (raw === undefined || raw === null || raw === "") return false;
+            return parseInt(raw, 10) === qNum;
+          });
+        }
+        return found || null;
+      };
+
       async function openPlayerSelector(
         teamName,
         category,
@@ -3870,7 +3906,7 @@
           }
         }
 
-        if (cachedPlayers) {
+        if (cachedPlayers && cachedPlayers.length > 0) {
           currentTeamPlayersList = cachedPlayers;
           isFetchingCurrentTeamPlayers = false;
         } else {
@@ -3886,7 +3922,10 @@
 
         setTimeout(() => {
           const inp = document.getElementById("dorsalSearchInput");
-          if (inp) inp.focus();
+          if (inp) {
+            inp.value = "";
+            inp.focus();
+          }
         }, 80);
 
         // Background fetching y resolución reactiva
@@ -3908,14 +3947,19 @@
               window.currentMatchOpened?.jornada,
             );
 
-            // Si el modal sigue abierto, refrescar la vista con los carnets validados
+            // Si el modal sigue abierto, refrescar la vista reactivamente
             const modalInstance = bootstrap.Modal.getInstance(modalEl);
             if (modalInstance && currentTeamName === teamName) {
-              renderPlayerSelectionView();
-              const currentVal =
-                document.getElementById("dorsalSearchInput")?.value;
-              if (currentVal && currentVal.trim()) {
-                window.handleDorsalSearchInput(currentVal);
+              const currentInp = document.getElementById("dorsalSearchInput");
+              const val = currentInp?.value || dorsalSearchQuery;
+              if (val && val.trim()) {
+                window.handleDorsalSearchInput(val);
+              } else {
+                renderPlayerSelectionView();
+                setTimeout(() => {
+                  const refreshedInp = document.getElementById("dorsalSearchInput");
+                  if (refreshedInp) refreshedInp.focus();
+                }, 50);
               }
             }
           } catch (e) {
@@ -4020,8 +4064,8 @@
             filled: cStatus.filled,
             total: cStatus.total,
             nextInput: cStatus.nextRow
-              ? cStatus.nextRow.querySelectorAll("input")[1]
-              : null,
+            ? cStatus.nextRow.querySelectorAll("input")[1]
+            : null,
             currentIndex: cStatus.currentIndex,
             isChanges: true,
           };
@@ -4111,11 +4155,7 @@
         }
 
         if (dorsalSearchQuery) {
-          const q = dorsalSearchQuery.trim();
-          const match = currentTeamPlayersList.find(
-            (p) => String(p.numeroJugador || p.num || "").trim() === q,
-          );
-          selectedPlayerForPreview = match || null;
+          selectedPlayerForPreview = window.findPlayerByDorsal(dorsalSearchQuery);
         } else {
           selectedPlayerForPreview = null;
         }
@@ -4144,7 +4184,7 @@
                   </label>
                   <span class="badge bg-dark border border-secondary text-warning small">
                       ${
-                        isFetchingCurrentTeamPlayers
+                        isFetchingCurrentTeamPlayers && currentTeamPlayersList.length === 0
                           ? `<span class="spinner-border spinner-border-sm text-warning me-1"></span> Sincronizando nómina...`
                           : `${currentTeamPlayersList.length} inscritos (${currentTeamCategory || "MÁXIMA"})`
                       }
@@ -4174,7 +4214,7 @@
 
           <!-- Contenedor Centrado de Previsualización del Carnet -->
           <div class="p-3 rounded-4 border border-secondary border-opacity-50 d-flex flex-column align-items-center justify-content-center"
-               style="background: rgba(0,0,0,0.5); min-height: 480px;">
+               style="background: rgba(0,0,0,0.5); min-height: 440px;">
               <div id="playerCarnetPreviewContainer" class="w-100 d-flex flex-column align-items-center">
                   ${renderCarnetPreviewContent(selectedPlayerForPreview)}
               </div>
@@ -4184,24 +4224,23 @@
 
       function renderCarnetPreviewContent(player) {
         if (!player) {
-          if (isFetchingCurrentTeamPlayers) {
-            return `
-              <div class="text-center py-5 text-white-50 d-flex flex-column align-items-center justify-content-center animate__animated animate__fadeIn" style="min-height: 400px;">
-                  <div class="spinner-border text-warning mb-3" style="width: 3.5rem; height: 3.5rem;" role="status">
-                      <span class="visually-hidden">Cargando...</span>
-                  </div>
-                  <h5 class="fw-bold text-white mb-2">${dorsalSearchQuery ? `Buscando jugador #${dorsalSearchQuery}...` : `Cargando nómina oficial de ${currentTeamName}...`}</h5>
-                  <p class="small text-white-50 mb-0" style="max-width: 360px;">
-                      Sincronizando nómina oficial de jugadores y validaciones antifraude en tiempo real...
-                  </p>
-              </div>
-            `;
-          }
-
           if (dorsalSearchQuery) {
+            if (isFetchingCurrentTeamPlayers && currentTeamPlayersList.length === 0) {
+              return `
+                <div class="text-center py-4 text-white-50 d-flex flex-column align-items-center justify-content-center animate__animated animate__fadeIn" style="min-height: 360px;">
+                    <div class="spinner-border text-warning mb-3" style="width: 3rem; height: 3rem;" role="status">
+                        <span class="visually-hidden">Buscando...</span>
+                    </div>
+                    <h5 class="fw-bold text-white mb-2">Buscando jugador #${dorsalSearchQuery}...</h5>
+                    <p class="small text-white-50 mb-0" style="max-width: 360px;">
+                        Verificando nómina oficial y validaciones disciplinarias de ${currentTeamName}...
+                    </p>
+                </div>
+              `;
+            }
             return `
-              <div class="text-center py-5 text-white-50 d-flex flex-column align-items-center justify-content-center animate__animated animate__fadeIn" style="min-height: 400px;">
-                  <i class="fas fa-user-slash text-warning opacity-75 mb-3" style="font-size: 4.5rem;"></i>
+              <div class="text-center py-4 text-white-50 d-flex flex-column align-items-center justify-content-center animate__animated animate__fadeIn" style="min-height: 360px;">
+                  <i class="fas fa-user-slash text-warning opacity-75 mb-3" style="font-size: 4rem;"></i>
                   <h5 class="fw-bold text-white mb-2">No se encontró jugador con dorsal #${dorsalSearchQuery}</h5>
                   <p class="small text-white-50 mb-3" style="max-width: 360px;">
                       No existe ningún jugador registrado con el dorsal <b>#${dorsalSearchQuery}</b> en <b>${currentTeamName}</b> (${currentTeamCategory || "Esta Categoría"}).
@@ -4214,15 +4253,22 @@
           }
 
           return `
-            <div class="text-center py-5 text-white-50 d-flex flex-column align-items-center justify-content-center" style="min-height: 400px;">
-                <i class="fas fa-id-badge text-warning opacity-30 mb-3" style="font-size: 5rem;"></i>
-                <h5 class="fw-bold text-white mb-2">Previsualización del Carnet Digital</h5>
-                <p class="small text-white-50 mb-3" style="max-width: 340px;">
-                    Digite el número de dorsal en el buscador superior para verificar en tiempo real el carnet oficial, sanciones y estado en cancha.
+            <div class="text-center py-4 text-white-50 d-flex flex-column align-items-center justify-content-center animate__animated animate__fadeIn" style="min-height: 360px;">
+                <div class="p-3 rounded-circle mb-3" style="background: rgba(255, 193, 7, 0.1); border: 2px dashed rgba(255, 193, 7, 0.4);">
+                    <i class="fas fa-tshirt text-warning" style="font-size: 3.5rem;"></i>
+                </div>
+                <h5 class="fw-bold text-white mb-1">Ingrese el Número de Dorsal</h5>
+                <p class="small text-white-50 mb-3" style="max-width: 320px;">
+                    Escriba el dorsal del jugador en el buscador de arriba para previsualizar al instante su carnet oficial y habilitarlo.
                 </p>
-                <span class="badge bg-dark border border-secondary text-white-50 px-3 py-2 rounded-pill">
-                    <i class="fas fa-shield-alt text-warning me-1"></i> Club: ${currentTeamName} (${currentTeamCategory || "MÁXIMA"})
-                </span>
+                <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center">
+                    <span class="badge bg-dark border border-secondary text-warning px-3 py-1.5 rounded-pill">
+                        <i class="fas fa-shield-alt me-1"></i> ${currentTeamName}
+                    </span>
+                    <span class="badge bg-dark border border-secondary text-white-50 px-3 py-1.5 rounded-pill">
+                        ${currentTeamCategory || "MÁXIMA"}
+                    </span>
+                </div>
             </div>
           `;
         }
@@ -4233,7 +4279,7 @@
           (player.apellidos || "")
         ).trim();
         const safeNombre = nombreCompleto.replace(/'/g, "\\'");
-        const num = String(player.numeroJugador || player.num || "--").trim();
+        const num = String(player.numeroJugador ?? player.num ?? player.dorsal ?? player.numero ?? "--").trim();
         const normNum = String(parseInt(num, 10) || num).trim();
         const sanction = getPlayerSanction(player);
         const matchExpulsados =
@@ -4407,10 +4453,10 @@
         const p = currentTeamPlayersList.find(
           (x) =>
             (x.id && String(x.id) === String(playerIdOrNum)) ||
-            String(x.numeroJugador || x.num || "").trim() ===
+            String(x.numeroJugador ?? x.num ?? "").trim() ===
               String(playerIdOrNum).trim() ||
             (dorsalFallback &&
-              String(x.numeroJugador || x.num || "").trim() ===
+              String(x.numeroJugador ?? x.num ?? "").trim() ===
                 String(dorsalFallback).trim()),
         );
 
@@ -4432,12 +4478,7 @@
       window.handleDorsalSearchInput = function (typedVal) {
         dorsalSearchQuery = (typedVal || "").trim();
         if (dorsalSearchQuery) {
-          const match = currentTeamPlayersList.find(
-            (p) =>
-              String(p.numeroJugador || p.num || "").trim() ===
-              dorsalSearchQuery,
-          );
-          selectedPlayerForPreview = match || null;
+          selectedPlayerForPreview = window.findPlayerByDorsal(dorsalSearchQuery);
         } else {
           selectedPlayerForPreview = null;
         }
@@ -4456,9 +4497,7 @@
       window.handleDorsalSearchSubmit = function (typedVal) {
         const val = (typedVal || "").trim();
         if (!val) return;
-        const exact = currentTeamPlayersList.find(
-          (p) => String(p.numeroJugador || p.num || "").trim() === val,
-        );
+        const exact = window.findPlayerByDorsal(val);
         if (exact) {
           selectedPlayerForPreview = exact;
           const container = document.getElementById(
@@ -4466,6 +4505,24 @@
           );
           if (container)
             container.innerHTML = renderCarnetPreviewContent(exact);
+
+          // Si el jugador está disponible y sin restricciones, seleccionarlo de inmediato al presionar Enter/Buscar
+          const sanction = getPlayerSanction(exact);
+          const matchExpulsados = getPlayersWithRedCardInMatch(currentRosterTbodyId);
+          const num = String(exact.numeroJugador ?? exact.num ?? exact.dorsal ?? exact.numero ?? "").trim();
+          const normNum = String(parseInt(num, 10) || num).trim();
+          const hasRed = matchExpulsados.has(num) || matchExpulsados.has(normNum);
+
+          const rosterInfo = getPlayersInMatchRoster(currentRosterTbodyId);
+          const inTitular = rosterInfo?.titulares?.get(num) || rosterInfo?.titulares?.get(normNum);
+          const inCambio = rosterInfo?.cambios?.get(num) || rosterInfo?.cambios?.get(normNum);
+          const isSameTr = (inTitular && currentTargetInput?.closest("tr") === inTitular.tr) || (inCambio && currentSubstitutionRow === inCambio.tr);
+          const isAlreadyOnField = (inTitular || inCambio) && !isSameTr;
+
+          if (!sanction && !hasRed && !isAlreadyOnField) {
+            const nombre = ((exact.nombres || "") + " " + (exact.apellidos || "")).trim();
+            selectPlayer(nombre, num);
+          }
         } else {
           selectedPlayerForPreview = null;
           const container = document.getElementById(
@@ -4872,17 +4929,19 @@
       function selectPlayer(name, number) {
         // 1. Verificación de seguridad disciplinaria y sanciones activas
         const matchedP =
+          selectedPlayerForPreview ||
+          window.findPlayerByDorsal(number) ||
           currentTeamPlayersList.find(
             (p) =>
               (p.id &&
                 selectedPlayerForPreview?.id &&
                 p.id === selectedPlayerForPreview.id) ||
-              String(p.numeroJugador || p.num || "").trim() ===
+              String(p.numeroJugador ?? p.num ?? p.dorsal ?? p.numero ?? "").trim() ===
                 String(number).trim() ||
               ((p.nombres || "") + " " + (p.apellidos || ""))
                 .trim()
                 .toLowerCase() === name.trim().toLowerCase(),
-          ) || selectedPlayerForPreview;
+          );
 
         const sanction = getPlayerSanction(matchedP);
         if (sanction) {
