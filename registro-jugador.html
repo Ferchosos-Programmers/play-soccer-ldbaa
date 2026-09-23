@@ -1493,73 +1493,119 @@
       }
 
       // Función para eliminar un jugador
-      function deletePlayer(playerId) {
+      async function deletePlayer(playerId) {
         // Verificar el estado de la calificación y permisos de eliminación
         const qualStatus = getQualificationStatus();
         if (!qualStatus.canDelete) {
           Swal.fire({
             title: qualStatus.isOpen ? "Eliminación Deshabilitada" : "Período de Calificación Finalizado",
-            text: qualStatus.reason,
+            text: qualStatus.reason || "La eliminación de jugadores no está disponible fuera de la fecha límite o está deshabilitada por la administración.",
             icon: "warning",
             confirmButtonColor: "#28a745",
           });
           return;
         }
 
-        Swal.fire({
+        const { value: confirmedPassword } = await Swal.fire({
           title: "¿Eliminar Jugador?",
-          text: "Ingresa la clave de administrador o del equipo para confirmar:",
+          html: `
+            <div class="text-start p-2">
+              <p class="text-white-50 mb-2 small">Para eliminar a este jugador de la nómina y liberar el cupo, debes ingresar la <strong>clave asignada a tu equipo</strong> al momento de registrarlo:</p>
+            </div>
+          `,
           input: "password",
+          inputPlaceholder: "Ingresa la clave de tu equipo...",
           inputAttributes: {
             autocapitalize: "off",
+            autocorrect: "off",
+            class: "form-control bg-dark text-white border-secondary"
           },
           showCancelButton: true,
-          confirmButtonText: "Eliminar",
+          confirmButtonText: '<i class="fas fa-trash-alt me-2"></i>Eliminar Jugador',
           cancelButtonText: "Cancelar",
           confirmButtonColor: "#e74c3c",
           cancelButtonColor: "#6c757d",
           showLoaderOnConfirm: true,
-          preConfirm: (password) => {
-            if (!password) {
-              Swal.showValidationMessage("Por favor ingresa la clave");
-              return false;
-            }
-            if (
-              password !== adminKey &&
-              password !== "admin2025" &&
-              password !== "admin2026" &&
-              password !== "admin"
-            ) {
-              Swal.showValidationMessage("Clave incorrecta");
-              return false;
-            }
-            return password;
+          customClass: {
+            popup: 'glass-popup'
           },
-        }).then((result) => {
-          if (result.isConfirmed) {
-            db.collection("players")
-              .doc(playerId)
-              .delete()
-              .then(() => {
-                Swal.fire({
-                  title: "¡Eliminado!",
-                  text: "El jugador ha sido eliminado correctamente. El cupo ha sido liberado.",
-                  icon: "success",
-                  timer: 2000,
-                  confirmButtonColor: "#28a745"
-                });
-                loadPlayers();
-              })
-              .catch((error) => {
-                console.error("Error al eliminar jugador:", error);
-                Swal.fire(
-                  "Error",
-                  "No se pudo eliminar el jugador. Por favor, intenta de nuevo.",
-                  "error",
-                );
-              });
-          }
+          preConfirm: async (passwordInput) => {
+            if (!passwordInput || !passwordInput.trim()) {
+              Swal.showValidationMessage("Por favor ingresa la clave de tu equipo");
+              return false;
+            }
+            
+            const trimmedPass = passwordInput.trim();
+
+            // Claves maestras de administrador
+            if (
+              trimmedPass === "admin2025" ||
+              trimmedPass === "admin2026" ||
+              trimmedPass === "admin"
+            ) {
+              return trimmedPass;
+            }
+
+            try {
+              // Obtener la clave más reciente del equipo en Firestore
+              let currentTeamKeys = [];
+              if (teamId) {
+                const teamDoc = await db.collection("teams").doc(teamId).get();
+                if (teamDoc.exists) {
+                  const tData = teamDoc.data();
+                  if (tData.adminKey) currentTeamKeys.push(String(tData.adminKey).trim());
+                  if (tData.password) currentTeamKeys.push(String(tData.password).trim());
+                }
+              }
+              if (adminKey) {
+                currentTeamKeys.push(String(adminKey).trim());
+              }
+
+              const isMatch = currentTeamKeys.some(k => k && k === trimmedPass);
+              if (!isMatch) {
+                Swal.showValidationMessage("Clave incorrecta. Debes ingresar la clave proporcionada al registrar su equipo.");
+                return false;
+              }
+              return trimmedPass;
+            } catch (err) {
+              console.error("Error al validar clave de equipo:", err);
+              Swal.showValidationMessage("No se pudo verificar la clave en el servidor.");
+              return false;
+            }
+          },
         });
+
+        if (confirmedPassword) {
+          try {
+            Swal.fire({
+              title: "Eliminando Jugador...",
+              text: "Liberando el cupo en la nómina...",
+              allowOutsideClick: false,
+              allowEscapeKey: false,
+              didOpen: () => {
+                Swal.showLoading();
+              }
+            });
+
+            await db.collection("players").doc(playerId).delete();
+
+            Swal.fire({
+              title: "¡Eliminado!",
+              text: "El jugador ha sido eliminado correctamente. El cupo ha sido liberado.",
+              icon: "success",
+              timer: 2000,
+              confirmButtonColor: "#28a745"
+            });
+            loadPlayers();
+          } catch (error) {
+            console.error("Error al eliminar jugador:", error);
+            Swal.fire(
+              "Error",
+              "No se pudo eliminar el jugador. Por favor, intenta de nuevo.",
+              "error"
+            );
+          }
+        }
       }
 
       // Previsualización de imágenes
@@ -1620,11 +1666,29 @@
         250,
       );
 
+      let isSubmitting = false;
+
+      function resetSubmitButtonUI() {
+        const submitButton = document.getElementById("submitButton");
+        if (submitButton) {
+          submitButton.disabled = false;
+          if (mode === "reclassify") {
+            submitButton.innerHTML = '<i class="fas fa-exchange-alt me-2"></i> Recalificar Jugador';
+          } else {
+            submitButton.innerHTML = '<i class="fas fa-user-plus me-2"></i> Registrar Nuevo Jugador';
+          }
+        }
+      }
+
       // Manejar el envío del formulario
       document
         .getElementById("playerForm")
         .addEventListener("submit", async function (e) {
           e.preventDefault();
+
+          if (isSubmitting) {
+            return;
+          }
 
           // Verificar si el período de calificación ya finalizó o si el registro está deshabilitado
           const qualStatus = getQualificationStatus();
@@ -1652,7 +1716,7 @@
           if (window.cupoCompleto && mode === "register") {
             Swal.fire({
               title: "Cupo Completo",
-              text: "Tu equipo ya tiene el máximo de 25 jugadores permitidos. Para ingresar un nuevo jugador, debes eliminar uno existente de la lista lateral mientras la calificación esté abierta.",
+              text: "Tu equipo ya tiene el máximo de 27 jugadores permitidos. Para ingresar un nuevo jugador, debes eliminar uno existente de la lista lateral mientras la calificación esté abierta.",
               icon: "warning",
               confirmButtonColor: "#28a745",
             });
@@ -1662,29 +1726,12 @@
           // Validar el tipo de jugador antes de procesar
           const fechaNacValidacion =
             document.getElementById("fechaNacimiento").value;
-          if (fechaNacValidacion) {
-            const esJuvenil = esJuvenilMenor15(fechaNacValidacion);
-
-            if (
-              esJuvenil &&
-              window.cupoJuvenilesCompleto &&
-              window.cupoRegularesCompleto
-            ) {
+          if (fechaNacValidacion && mode === "register") {
+            const esMasterPlayer = esMaster(fechaNacValidacion);
+            if (!esMasterPlayer && window.cupoRegularesCompleto) {
               Swal.fire({
-                title: "Cupo Completo",
-                text: "Ya tienes el máximo de jugadores permitidos. No puedes registrar más jugadores.",
-                icon: "warning",
-                confirmButtonColor: "#28a745",
-              });
-              return;
-            } else if (
-              !esJuvenil &&
-              window.cupoRegularesCompleto &&
-              !window.cupoJuvenilesCompleto
-            ) {
-              Swal.fire({
-                title: "Cupo Principal Completo",
-                text: "Ya tienes 25 jugadores. Solo puedes registrar jugadores menores de 15 años (cupos especiales).",
+                title: "Cupo de Regulares Completo",
+                text: "Ya tienes 26 jugadores regulares. Solo puedes registrar un jugador Master (>= 40 años) para completar el cupo de 27.",
                 icon: "warning",
                 confirmButtonColor: "#28a745",
               });
@@ -1692,14 +1739,79 @@
             }
           }
 
+          // Validar fotos requeridas
+          const playerPhotoElem = document.getElementById("playerPhotoPreview");
+          const cedulaPhotoElem = document.getElementById("cedulaPhotoPreview");
+          const playerPhotoSrc = playerPhotoElem ? playerPhotoElem.src : "";
+          const cedulaPhotoSrc = cedulaPhotoElem ? cedulaPhotoElem.src : "";
+
+          if (!playerPhotoSrc || playerPhotoSrc.includes("data:image/svg") || playerPhotoElem.classList.contains("d-none")) {
+            Swal.fire({
+              title: "Foto Requerida",
+              text: "Por favor selecciona la foto del jugador.",
+              icon: "warning",
+              confirmButtonColor: "#28a745"
+            });
+            return;
+          }
+
+          if (!cedulaPhotoSrc || cedulaPhotoSrc.includes("data:image/svg") || cedulaPhotoElem.classList.contains("d-none")) {
+            Swal.fire({
+              title: "Foto de Cédula Requerida",
+              text: "Por favor selecciona la foto de la cédula del jugador.",
+              icon: "warning",
+              confirmButtonColor: "#28a745"
+            });
+            return;
+          }
+
+          // Obtener los valores de los campos y convertir a mayúsculas
+          const nombres = document
+            .getElementById("nombres")
+            .value.trim().toUpperCase();
+          const apellidos = document
+            .getElementById("apellidos")
+            .value.trim().toUpperCase();
+          const cedula = document.getElementById("cedula").value.trim().toUpperCase();
+          const fechaNacimiento =
+            document.getElementById("fechaNacimiento").value;
+          const numeroJugador = document.getElementById("numeroJugador").value;
+
+          if (!nombres || !apellidos || !cedula || !fechaNacimiento || !numeroJugador) {
+            Swal.fire("Campos Incompletos", "Por favor completa todos los datos obligatorios del jugador.", "warning");
+            return;
+          }
+
+          // Bloquear interfaz para evitar doble registro
+          isSubmitting = true;
+          const submitButton = document.getElementById("submitButton");
+          if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Guardando jugador... Por favor espere';
+          }
+
+          Swal.fire({
+            title: mode === "reclassify" ? "Recalificando Jugador..." : "Registrando Jugador...",
+            html: `
+              <div class="text-center py-2">
+                <p class="text-white mb-2 fw-bold">${nombres} ${apellidos}</p>
+                <p class="text-white-50 small mb-0">Guardando datos e imágenes en el servidor. Por favor, no recargue ni cierre la página.</p>
+              </div>
+            `,
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+            didOpen: () => {
+              Swal.showLoading();
+            }
+          });
+
           let campeonatoId = document.getElementById("campeonato").value;
-          let teamData = {}; // Inicializamos teamData
+          let teamData = {};
 
           try {
             const teamDoc = await db.collection("teams").doc(teamId).get();
             if (teamDoc.exists) {
               teamData = teamDoc.data();
-              // Si estamos en modo recalificar, obtener el campeonato del jugador original o usar el determinado al cargar
               if (mode === "reclassify") {
                 const selectedPlayerId =
                   document.getElementById("playerSelector").value;
@@ -1709,6 +1821,8 @@
                     "Por favor seleccione un jugador para recalificar",
                     "error",
                   );
+                  isSubmitting = false;
+                  resetSubmitButtonUI();
                   return;
                 }
                 const oldPlayerDoc = await db
@@ -1716,23 +1830,18 @@
                   .doc(selectedPlayerId)
                   .get();
 
-                console.log(
-                  "Datos del jugador antiguo seleccionado (oldPlayerDoc.data()):",
-                  oldPlayerDoc.data(),
-                );
-                console.log("Datos del equipo (teamData):", teamData);
-
                 if (oldPlayerDoc.exists && oldPlayerDoc.data().campeonatoId) {
                   campeonatoId = oldPlayerDoc.data().campeonatoId;
                 } else if (teamData.championshipId) {
-                  // ¡Corregido! Usamos championshipId
                   campeonatoId = teamData.championshipId;
                 } else {
                   Swal.fire(
                     "Error",
-                    "No se pudo determinar el campeonato para la recalificación. Por favor, asegúrese de que el equipo o el jugador antiguo tengan un campeonato asociado.",
+                    "No se pudo determinar el campeonato para la recalificación.",
                     "error",
                   );
+                  isSubmitting = false;
+                  resetSubmitButtonUI();
                   return;
                 }
               }
@@ -1742,84 +1851,141 @@
                 "No se pudo obtener la información del equipo",
                 "error",
               );
+              isSubmitting = false;
+              resetSubmitButtonUI();
               return;
             }
-          } catch (error) {
-            console.error(
-              "Error al obtener información del equipo o jugador antiguo:",
-              error,
-            );
-            Swal.fire(
-              "Error",
-              "No se pudo obtener la información del equipo o jugador antiguo",
-              "error",
-            );
-            return;
-          }
 
-          if (!campeonatoId && mode !== "reclassify") {
-            // Campeonato es requerido solo en modo registro si no es recalificación
-            Swal.fire("Error", "Por favor seleccione un campeonato", "error");
-            return;
-          }
+            if (!campeonatoId && mode !== "reclassify") {
+              Swal.fire("Error", "Por favor seleccione un campeonato", "error");
+              isSubmitting = false;
+              resetSubmitButtonUI();
+              return;
+            }
 
-          // Obtener los valores de los campos y convertir a mayúsculas
-          const nombres = document
-            .getElementById("nombres")
-            .value.toUpperCase();
-          const apellidos = document
-            .getElementById("apellidos")
-            .value.toUpperCase();
-          const cedula = document.getElementById("cedula").value.toUpperCase();
-          const fechaNacimiento =
-            document.getElementById("fechaNacimiento").value;
-          const numeroJugador = document.getElementById("numeroJugador").value;
+            // VALIDACIÓN ANTIDUPLICADOS 1: Cédula duplicada en el mismo equipo
+            const selectedPlayerId = mode === "reclassify" ? document.getElementById("playerSelector").value : null;
+            const duplicateCedulaSnap = await db.collection("players")
+              .where("teamId", "==", teamId)
+              .where("cedula", "==", cedula)
+              .get();
 
-          // Crear el objeto con los datos del jugador
-          const playerData = {
-            teamId: teamId,
-            teamName: teamData.name,
-            teamCategory: teamData.category,
-            nombres: nombres,
-            apellidos: apellidos,
-            cedula: cedula,
-            fechaNacimiento: fechaNacimiento,
-            numeroJugador: numeroJugador,
-            playerPhoto: document.getElementById("playerPhotoPreview").src,
-            cedulaPhoto: document.getElementById("cedulaPhotoPreview").src,
-            campeonatoId: campeonatoId,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-          };
+            let isDuplicateCedula = false;
+            duplicateCedulaSnap.forEach(doc => {
+              if (mode === "reclassify") {
+                if (doc.id !== selectedPlayerId && doc.data().status !== "recalificado") {
+                  isDuplicateCedula = true;
+                }
+              } else {
+                if (doc.data().status !== "recalificado") {
+                  isDuplicateCedula = true;
+                }
+              }
+            });
 
-          try {
+            if (isDuplicateCedula) {
+              Swal.fire({
+                icon: "warning",
+                title: "¡Jugador Ya Registrado!",
+                text: `El jugador con cédula ${cedula} ya se encuentra registrado en la nómina de ${teamData.name || 'este equipo'}. No se permiten registros duplicados.`,
+                confirmButtonColor: "#28a745"
+              });
+              isSubmitting = false;
+              resetSubmitButtonUI();
+              return;
+            }
+
+            // VALIDACIÓN ANTIDUPLICADOS 2: Mismo nombre y apellido en el equipo
+            const duplicateNameSnap = await db.collection("players")
+              .where("teamId", "==", teamId)
+              .where("nombres", "==", nombres)
+              .where("apellidos", "==", apellidos)
+              .get();
+
+            let isDuplicateName = false;
+            duplicateNameSnap.forEach(doc => {
+              if (mode === "reclassify") {
+                if (doc.id !== selectedPlayerId && doc.data().status !== "recalificado") {
+                  isDuplicateName = true;
+                }
+              } else {
+                if (doc.data().status !== "recalificado") {
+                  isDuplicateName = true;
+                }
+              }
+            });
+
+            if (isDuplicateName) {
+              Swal.fire({
+                icon: "warning",
+                title: "¡Nombre Ya Registrado!",
+                text: `Ya existe un jugador registrado con los nombres "${nombres} ${apellidos}" en este equipo.`,
+                confirmButtonColor: "#28a745"
+              });
+              isSubmitting = false;
+              resetSubmitButtonUI();
+              return;
+            }
+
+            // VALIDACIÓN DE CUPO EN TIEMPO REAL (Límite 27)
+            if (mode === "register") {
+              const currentPlayersSnap = await db.collection("players")
+                .where("teamId", "==", teamId)
+                .get();
+
+              let activeCount = 0;
+              currentPlayersSnap.forEach(doc => {
+                const p = doc.data();
+                if (p.status !== "recalificado" && !p.reemplazoDe) {
+                  activeCount++;
+                }
+              });
+
+              if (activeCount >= 27) {
+                Swal.fire({
+                  icon: "warning",
+                  title: "Cupo Máximo Alcanzado",
+                  text: "El equipo ya cuenta con el cupo máximo de 27 jugadores registrados.",
+                  confirmButtonColor: "#28a745"
+                });
+                isSubmitting = false;
+                resetSubmitButtonUI();
+                return;
+              }
+            }
+
+            // Crear el objeto con los datos del jugador
+            const playerData = {
+              teamId: teamId,
+              teamName: teamData.name,
+              teamCategory: teamData.category,
+              nombres: nombres,
+              apellidos: apellidos,
+              cedula: cedula,
+              fechaNacimiento: fechaNacimiento,
+              numeroJugador: numeroJugador,
+              playerPhoto: playerPhotoSrc,
+              cedulaPhoto: cedulaPhotoSrc,
+              campeonatoId: campeonatoId,
+              createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+            };
+
             if (mode === "reclassify") {
-              const selectedPlayerId =
-                document.getElementById("playerSelector").value;
-              // 1. Registrar al nuevo jugador con referencia al jugador que reemplazó
               const playerDataWithReplacement = {
                 ...playerData,
-                reemplazoDe: selectedPlayerId, // Campo para indicar que reemplazó a un jugador
+                reemplazoDe: selectedPlayerId,
                 fechaReemplazo: firebase.firestore.FieldValue.serverTimestamp(),
               };
               const newPlayerDocRef = await db
                 .collection("players")
                 .add(playerDataWithReplacement);
-              console.log(
-                "Nuevo jugador registrado con ID:",
-                newPlayerDocRef.id,
-              );
 
-              // 2. Marcar al jugador antiguo como recalificado
               await db.collection("players").doc(selectedPlayerId).update({
                 status: "recalificado",
-                recalificadoPor: newPlayerDocRef.id, // Vincular al nuevo jugador
+                recalificadoPor: newPlayerDocRef.id,
                 recalificacionFecha:
                   firebase.firestore.FieldValue.serverTimestamp(),
               });
-              console.log(
-                "Jugador antiguo marcado como recalificado:",
-                selectedPlayerId,
-              );
 
               Swal.fire({
                 title: "¡Recalificación exitosa!",
@@ -1844,7 +2010,7 @@
                 document.getElementById("currentPlayerForm").style.display =
                   "none";
                 document.getElementById("newPlayerForm").style.display = "none";
-                document.getElementById("playerSelector").value = ""; // Resetear el selector
+                document.getElementById("playerSelector").value = "";
               });
             } else {
               // Modo 'register'
@@ -1879,6 +2045,9 @@
               "No se pudo completar la operación. Por favor, intenta de nuevo.",
               "error",
             );
+          } finally {
+            isSubmitting = false;
+            resetSubmitButtonUI();
           }
         });
 
@@ -2085,7 +2254,8 @@
           }
         });
 
-        const maxTotal = 25;
+        const maxTotal = 27;
+        const maxRegulares = 26;
         const totalJugadores = regular + master;
         const totalRegistrados = regular + master + recalificados; // Total incluyendo recalificados
         const faltanTotal = maxTotal - totalJugadores;
@@ -2127,7 +2297,7 @@
         }
 
         // Actualizar barras de progreso principales
-        const progresoRegular = (regular / 24) * 100;
+        const progresoRegular = (regular / maxRegulares) * 100;
         const progresoMaster = (master / 1) * 100;
         const progresoTotal = (totalJugadores / maxTotal) * 100;
         const progresoTotalRegistrados =
@@ -2145,7 +2315,7 @@
 
         // Actualizar estados textuales de los cupos
         document.getElementById("jugadoresRegularesStatus").textContent = 
-          regular >= 24 ? "Cupo máximo alcanzado (24/24)" : `${24 - regular} cupos libres de 24`;
+          regular >= maxRegulares ? `Cupo máximo alcanzado (${maxRegulares}/${maxRegulares})` : `${maxRegulares - regular} cupos libres de ${maxRegulares}`;
         document.getElementById("jugadoresMasterStatus").textContent = 
           master >= 1 ? `Cupo cubierto (${master} registrado/s)` : "Falta mínimo 1 jugador Master";
 
@@ -2171,10 +2341,10 @@
           cupoAlert.style.display = "block";
         } else if (totalJugadores >= maxTotal) {
           cupoAlert.className = "alert alert-success mt-3";
-          cupoAlertText.innerHTML = `<strong>¡Cupo completo!</strong> Tu equipo tiene el máximo de 25 jugadores permitidos (24 regulares y ${master} master). Para registrar otro jugador, puedes eliminar uno de la lista lateral mientras el período de calificación esté activo.`;
+          cupoAlertText.innerHTML = `<strong>¡Cupo completo!</strong> Tu equipo tiene el máximo de 27 jugadores permitidos (${maxRegulares} regulares y ${master} master). Para registrar otro jugador, puedes eliminar uno de la lista lateral mientras el período de calificación esté activo.`;
           cupoAlert.style.display = "block";
         } else {
-          let mensaje = `<strong>Progreso del cupo:</strong> Tienes ${totalJugadores} jugador${totalJugadores !== 1 ? "es" : ""} registrados: ${regular} regular${regular !== 1 ? "es" : ""} y ${master} master (>=40 años). Te faltan ${faltanTotal} jugador${faltanTotal !== 1 ? "es" : ""} para completar el máximo de 25.`;
+          let mensaje = `<strong>Progreso del cupo:</strong> Tienes ${totalJugadores} jugador${totalJugadores !== 1 ? "es" : ""} registrados: ${regular} regular${regular !== 1 ? "es" : ""} y ${master} master (>=40 años). Te faltan ${faltanTotal} jugador${faltanTotal !== 1 ? "es" : ""} para completar el máximo de 27.`;
           if (master < 1) {
             mensaje += ` <strong class="text-danger">¡Recuerda que requieres al menos 1 jugador Master!</strong>`;
           }
@@ -2187,7 +2357,7 @@
         }
 
         window.cupoCompleto = totalJugadores >= maxTotal;
-        window.cupoRegularesCompleto = regular >= 24;
+        window.cupoRegularesCompleto = regular >= maxRegulares;
         window.cupoMasterCompleto = master >= 1;
         manejarEstadoFormulario();
       }
@@ -2227,26 +2397,55 @@
       // Función para generar carnets
       function generarCarnets() {
         Swal.fire({
-          title: "Ingrese la clave de administrador",
+          title: "Generar Carnets de Cancha",
+          text: "Ingrese la clave del equipo o de administrador para generar e imprimir los carnets:",
           input: "password",
           inputAttributes: {
             autocapitalize: "off",
+            class: "form-control bg-dark text-white border-secondary"
           },
           showCancelButton: true,
-          confirmButtonText: "Verificar",
+          confirmButtonText: '<i class="fas fa-id-card me-2"></i>Generar',
           cancelButtonText: "Cancelar",
+          confirmButtonColor: "#28a745",
+          cancelButtonColor: "#6c757d",
           showLoaderOnConfirm: true,
-          preConfirm: (password) => {
-            if (
-              password !== "admin2025" &&
-              password !== "admin2026" &&
-              password !== "admin" &&
-              password !== adminKey
-            ) {
-              Swal.showValidationMessage("Clave incorrecta");
+          customClass: {
+            popup: 'glass-popup'
+          },
+          preConfirm: async (password) => {
+            if (!password || !password.trim()) {
+              Swal.showValidationMessage("Por favor ingresa la clave");
               return false;
             }
-            return password;
+            const trimmed = password.trim();
+            if (
+              trimmed === "admin2025" ||
+              trimmed === "admin2026" ||
+              trimmed === "admin"
+            ) {
+              return trimmed;
+            }
+            try {
+              let keys = [];
+              if (teamId) {
+                const tDoc = await db.collection("teams").doc(teamId).get();
+                if (tDoc.exists) {
+                  const t = tDoc.data();
+                  if (t.adminKey) keys.push(String(t.adminKey).trim());
+                  if (t.password) keys.push(String(t.password).trim());
+                }
+              }
+              if (adminKey) keys.push(String(adminKey).trim());
+              if (!keys.some(k => k === trimmed)) {
+                Swal.showValidationMessage("Clave incorrecta.");
+                return false;
+              }
+              return trimmed;
+            } catch (e) {
+              Swal.showValidationMessage("Error al verificar clave.");
+              return false;
+            }
           },
         }).then(async (result) => {
           if (result.isConfirmed) {
@@ -2756,7 +2955,7 @@
           form.style.pointerEvents = "none";
           form.style.opacity = "0.6";
           submitButton.disabled = true;
-          submitButton.textContent = "Cupo Completo";
+          submitButton.textContent = "Cupo Completo (27/27)";
 
           // Agregar overlay de cupo completo
           let overlay = document.getElementById("cupoOverlay");
@@ -2781,7 +2980,7 @@
             overlay.innerHTML = `
               <div class="text-center p-4">
                 <i class="fas fa-users-slash text-warning" style="font-size: 3rem; margin-bottom: 1rem; filter: drop-shadow(0 0 10px rgba(241,196,15,0.3));"></i>
-                <h5 class="text-white fw-bold mb-2">Cupo Máximo Alcanzado (25 Jugadores)</h5>
+                <h5 class="text-white fw-bold mb-2">Cupo Máximo Alcanzado (27 Jugadores)</h5>
                 <p class="text-white-50 mb-0" style="font-size: 0.9rem; max-width: 320px;">
                   Para registrar un nuevo jugador, puedes <strong class="text-white">eliminar a uno</strong> en la lista lateral mientras la fecha de calificación esté abierta.
                 </p>
@@ -2827,10 +3026,10 @@
           if (!esMasterPlayer && window.cupoRegularesCompleto) {
             // Si es regular pero el cupo de regulares está lleno
             submitButton.disabled = true;
-            submitButton.textContent = "Cupo Regulares Completo";
+            submitButton.textContent = "Cupo Regulares Completo (26/26)";
             Swal.fire({
               title: "Cupo de Regulares Completo",
-              text: "Ya tienes 24 jugadores regulares. Solo puedes registrar un jugador Master (>= 40 años) para completar el cupo.",
+              text: "Ya tienes 26 jugadores regulares. Solo puedes registrar un jugador Master (>= 40 años) para completar el cupo de 27.",
               icon: "warning",
               confirmButtonColor: "#28a745",
             });

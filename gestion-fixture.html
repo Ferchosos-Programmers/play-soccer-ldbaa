@@ -10,6 +10,7 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Font Awesome -->
     <link
       rel="stylesheet"
@@ -37,6 +38,53 @@
         --primary-color: #2ecc71;
         --primary-glow: rgba(46, 204, 113, 0.3);
         --gold-accent: #f1c40f;
+      }
+
+      /* Configuración Modal Programación */
+      .form-check-input:checked {
+        background-color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0 10px var(--primary-glow) !important;
+      }
+      .form-check-input {
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+      }
+      .day-config-card:hover {
+        border-color: rgba(46, 204, 113, 0.3) !important;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.25);
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: rgba(46, 204, 113, 0.4);
+        border-radius: 10px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #2ecc71;
+      }
+      .partido-especial-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 16px;
+        padding: 12px 16px;
+        transition: all 0.25s ease;
+      }
+      .partido-especial-card:hover {
+        border-color: rgba(46, 204, 113, 0.3);
+        background: rgba(255, 255, 255, 0.035);
+      }
+      .partido-especial-card.mode-preferencial {
+        border-color: rgba(241, 196, 15, 0.45) !important;
+        background: rgba(241, 196, 15, 0.04) !important;
+      }
+      .partido-especial-card.mode-no-prog {
+        border-color: rgba(231, 76, 60, 0.45) !important;
+        background: rgba(231, 76, 60, 0.04) !important;
       }
 
       .wizard-container {
@@ -646,6 +694,214 @@
         </div>
       </div>
 
+      <!-- MODAL DE CONFIGURACIÓN DE PROGRAMACIÓN DE HORARIOS Y DÍAS -->
+      <div class="modal fade" id="modalConfigProgramacion" tabindex="-1" aria-labelledby="modalConfigProgramacionLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content glass-panel" style="background: rgba(12, 18, 26, 0.98); border: 1px solid rgba(46, 204, 113, 0.35); border-radius: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.95); padding: 20px;">
+            <div class="modal-header border-0 pb-2 d-flex justify-content-between align-items-start">
+              <div>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="fs-4">⚡</span>
+                  <h4 class="modal-title text-white fw-900 mb-0" id="modalConfigProgramacionLabel" style="letter-spacing: -0.5px;">
+                    Configurar <span class="text-primary-glow">Programación de Partidos</span>
+                  </h4>
+                  <span id="badgeJornadaProgramar" class="badge bg-success text-dark fw-bold ms-2 px-3 py-2" style="font-size: 0.8rem; border-radius: 10px;">JORNADA</span>
+                </div>
+                <p class="text-white-50 small mt-1 mb-0">Define horarios generales, asigna horarios preferenciales específicos o marca partidos como "No Programados" por oficio.</p>
+              </div>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body py-2">
+              <!-- Navegación de Pestañas -->
+              <div class="d-flex gap-2 mb-3 p-1 rounded-4" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold text-white active" id="btnTabGeneral" onclick="switchProgTab('general')" style="flex: 1; transition: all 0.3s ease; background: var(--primary-color); color: #000 !important;">
+                  <i class="fas fa-clock me-2"></i> 1. Días y Horarios Generales
+                </button>
+                <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold text-white-50" id="btnTabEspeciales" onclick="switchProgTab('especiales')" style="flex: 1; transition: all 0.3s ease; background: transparent;">
+                  <i class="fas fa-star text-warning me-2"></i> 2. Horarios Preferenciales & Oficios
+                  <span class="badge bg-warning text-dark ms-2" id="badgeEspecialesCount" style="font-size: 0.72rem; border-radius: 6px;">0</span>
+                </button>
+              </div>
+
+              <!-- PESTAÑA 1: DÍAS Y HORARIOS GENERALES -->
+              <div id="tabGeneralContent">
+                <!-- Duración de Partido -->
+                <div class="p-3 mb-3 rounded-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                    <div>
+                      <label class="text-white fw-bold d-flex align-items-center gap-2 mb-1" style="font-size: 0.9rem;">
+                        <i class="fas fa-stopwatch text-primary-glow"></i> Duración por Partido (Minutos)
+                      </label>
+                      <small class="text-white-50">Tiempo de juego + descanso / rotación entre partidos.</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                      <input type="number" id="progDurationMinutes" class="input-elite-sm text-center fw-bold fs-6" style="width: 90px; height: 40px; border-color: rgba(46, 204, 113, 0.5); color: #2ecc71;" value="100" min="40" max="180" step="5" oninput="recalcularCapacidadProgramacion()">
+                      <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary text-white btn-sm" onclick="setProgDuration(80)">80m</button>
+                        <button type="button" class="btn btn-outline-secondary text-white btn-sm" onclick="setProgDuration(90)">90m</button>
+                        <button type="button" class="btn btn-outline-secondary text-white btn-sm active" onclick="setProgDuration(100)">100m</button>
+                        <button type="button" class="btn btn-outline-secondary text-white btn-sm" onclick="setProgDuration(110)">110m</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Días y Horarios -->
+                <h6 class="text-white text-uppercase fw-800 mb-2" style="font-size: 0.78rem; letter-spacing: 1.5px;">
+                  <i class="fas fa-calendar-days text-primary-glow me-2"></i> Días de Juego y Rangos de Horario
+                </h6>
+
+                <div class="d-flex flex-column gap-2" id="progDaysContainer">
+                  <!-- Viernes -->
+                  <div class="p-3 rounded-4 day-config-card" id="card_day_Viernes" style="background: rgba(46, 204, 113, 0.04); border: 1px solid rgba(46, 204, 113, 0.4); transition: all 0.3s ease;">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                      <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="check_day_Viernes" checked onchange="toggleDiaProgramacion('Viernes')" style="width: 2.4em; height: 1.2em; cursor: pointer;">
+                        <label class="form-check-label text-white fw-bold fs-6 ms-2" for="check_day_Viernes" style="cursor: pointer;">
+                          🌙 VIERNES (Nocturno)
+                        </label>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 flex-wrap" id="controls_day_Viernes">
+                        <div class="d-flex align-items-center gap-1">
+                          <span class="text-white-50 small">Inicio:</span>
+                          <input type="time" id="start_day_Viernes" value="18:20" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                          <span class="text-white-50 small">Fin:</span>
+                          <input type="time" id="end_day_Viernes" value="22:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                        </div>
+                        <span id="slots_badge_Viernes" class="badge rounded-pill px-3 py-2" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; font-size: 0.75rem;">
+                          2 cupos
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sábado -->
+                  <div class="p-3 rounded-4 day-config-card" id="card_day_Sabado" style="background: rgba(46, 204, 113, 0.04); border: 1px solid rgba(46, 204, 113, 0.4); transition: all 0.3s ease;">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                      <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="check_day_Sabado" checked onchange="toggleDiaProgramacion('Sabado')" style="width: 2.4em; height: 1.2em; cursor: pointer;">
+                        <label class="form-check-label text-white fw-bold fs-6 ms-2" for="check_day_Sabado" style="cursor: pointer;">
+                          ☀️ SÁBADO
+                        </label>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 flex-wrap" id="controls_day_Sabado">
+                        <div class="d-flex align-items-center gap-1">
+                          <span class="text-white-50 small">Inicio:</span>
+                          <input type="time" id="start_day_Sabado" value="08:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                          <span class="text-white-50 small">Fin:</span>
+                          <input type="time" id="end_day_Sabado" value="21:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                        </div>
+                        <span id="slots_badge_Sabado" class="badge rounded-pill px-3 py-2" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; font-size: 0.75rem;">
+                          7 cupos
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Domingo -->
+                  <div class="p-3 rounded-4 day-config-card" id="card_day_Domingo" style="background: rgba(46, 204, 113, 0.04); border: 1px solid rgba(46, 204, 113, 0.4); transition: all 0.3s ease;">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                      <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
+                        <input class="form-check-input" type="checkbox" role="switch" id="check_day_Domingo" checked onchange="toggleDiaProgramacion('Domingo')" style="width: 2.4em; height: 1.2em; cursor: pointer;">
+                        <label class="form-check-label text-white fw-bold fs-6 ms-2" for="check_day_Domingo" style="cursor: pointer;">
+                          🏆 DOMINGO
+                        </label>
+                      </div>
+                      <div class="d-flex align-items-center gap-2 flex-wrap" id="controls_day_Domingo">
+                        <div class="d-flex align-items-center gap-1">
+                          <span class="text-white-50 small">Inicio:</span>
+                          <input type="time" id="start_day_Domingo" value="08:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                        </div>
+                        <div class="d-flex align-items-center gap-1">
+                          <span class="text-white-50 small">Fin:</span>
+                          <input type="time" id="end_day_Domingo" value="19:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                        </div>
+                        <span id="slots_badge_Domingo" class="badge rounded-pill px-3 py-2" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; font-size: 0.75rem;">
+                          6 cupos
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PESTAÑA 2: HORARIOS PREFERENCIALES Y OFICIOS -->
+              <div id="tabEspecialesContent" class="d-none">
+                <!-- Filtros y Búsqueda -->
+                <div class="p-3 mb-2 rounded-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                  <div class="row g-2 align-items-center">
+                    <div class="col-md-5">
+                      <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-search"></i></span>
+                        <input type="text" id="filtroPartidosEspeciales" placeholder="Buscar equipo..." class="input-elite-sm form-control" oninput="filtrarPartidosEspeciales()">
+                      </div>
+                    </div>
+                    <div class="col-md-7 d-flex justify-content-md-end gap-1 flex-wrap" id="filtrosCategoriaEspeciales">
+                      <button type="button" class="btn btn-outline-secondary text-white btn-sm active px-3" onclick="filtrarCategoriaEspeciales('TODAS', this)">Todas</button>
+                      <button type="button" class="btn btn-outline-secondary text-white btn-sm px-3" onclick="filtrarCategoriaEspeciales('MÁXIMA', this)">Máxima</button>
+                      <button type="button" class="btn btn-outline-secondary text-white btn-sm px-3" onclick="filtrarCategoriaEspeciales('PRIMERA', this)">Primera</button>
+                      <button type="button" class="btn btn-outline-secondary text-white btn-sm px-3" onclick="filtrarCategoriaEspeciales('FEMENINO', this)">Femenino</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Lista de Partidos Especiales -->
+                <div id="listaPartidosEspeciales" style="max-height: 320px; overflow-y: auto; padding-right: 4px;" class="d-flex flex-column gap-2 custom-scrollbar">
+                  <!-- Se genera dinámicamente con renderListaPartidosEspeciales() -->
+                </div>
+              </div>
+
+              <!-- Resumen de Capacidad vs Partidos -->
+              <div class="mt-3 p-3 rounded-4" id="progSummaryBox" style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div class="row align-items-center g-2 text-center text-md-start">
+                  <div class="col-md-7">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 flex-wrap">
+                      <div>
+                        <div class="text-white-50 small">Total Partidos</div>
+                        <div class="text-white fw-900 fs-5" id="progTotalMatchesCount">0</div>
+                      </div>
+                      <div class="vr bg-secondary opacity-25 d-none d-md-block" style="height: 30px;"></div>
+                      <div>
+                        <div class="text-warning small">⭐ Preferenciales</div>
+                        <div class="text-warning fw-900 fs-5" id="progTotalPrefCount">0</div>
+                      </div>
+                      <div class="vr bg-secondary opacity-25 d-none d-md-block" style="height: 30px;"></div>
+                      <div>
+                        <div class="text-danger small">🚫 Por Oficio</div>
+                        <div class="text-danger fw-900 fs-5" id="progTotalNoProgCount">0</div>
+                      </div>
+                      <div class="vr bg-secondary opacity-25 d-none d-md-block" style="height: 30px;"></div>
+                      <div>
+                        <div class="text-primary-glow small">🎲 Automáticos</div>
+                        <div class="text-primary-glow fw-900 fs-5" id="progTotalAutoCount">0</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-5 text-center text-md-end" id="progStatusMessage">
+                    <!-- Estado dinámico -->
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-1 d-flex justify-content-between">
+              <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill text-white fw-bold" data-bs-dismiss="modal">
+                Cancelar
+              </button>
+              <button type="button" class="btn-schedule-premium d-flex align-items-center gap-2 px-4 py-2" onclick="ejecutarProgramacionPersonalizada()">
+                <i class="fas fa-bolt"></i>
+                <span>Programar Jornada</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div id="fixturesList">
         <div class="text-center py-5 opacity-20">
           <i class="fas fa-layer-group fa-5x mb-4 text-purple"></i>
@@ -907,8 +1163,501 @@
         });
       }
 
-      function autoScheduleMixed() {
-        let all = [];
+      // ==========================================
+      // SISTEMA DE PROGRAMACIÓN INTELIGENTE DE PARTIDOS
+      // (Horarios Generales + Preferenciales + Por Oficio)
+      // ==========================================
+
+      let partidosEspecialesConfig = {}; // mKey -> { mode: 'auto'|'preferencial'|'no_programar', day, time, motivo }
+      let filtroEspecialCategoria = "TODAS";
+      let filtroEspecialTexto = "";
+
+      function loadSavedProgConfig() {
+        try {
+          const raw = localStorage.getItem("ldbaa_custom_prog_config");
+          if (!raw) return null;
+          return JSON.parse(raw);
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function saveProgConfig(config) {
+        try {
+          localStorage.setItem("ldbaa_custom_prog_config", JSON.stringify(config));
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function switchProgTab(tab) {
+        const btnGeneral = document.getElementById("btnTabGeneral");
+        const btnEspeciales = document.getElementById("btnTabEspeciales");
+        const tabGeneral = document.getElementById("tabGeneralContent");
+        const tabEspeciales = document.getElementById("tabEspecialesContent");
+
+        if (tab === "general") {
+          btnGeneral.classList.add("active");
+          btnGeneral.style.background = "var(--primary-color)";
+          btnGeneral.style.color = "#000 !important";
+          btnGeneral.classList.remove("text-white-50");
+          btnGeneral.classList.add("text-dark");
+
+          btnEspeciales.classList.remove("active");
+          btnEspeciales.style.background = "transparent";
+          btnEspeciales.classList.add("text-white-50");
+          btnEspeciales.classList.remove("text-dark");
+
+          tabGeneral.classList.remove("d-none");
+          tabEspeciales.classList.add("d-none");
+        } else {
+          btnEspeciales.classList.add("active");
+          btnEspeciales.style.background = "var(--primary-color)";
+          btnEspeciales.style.color = "#000 !important";
+          btnEspeciales.classList.remove("text-white-50");
+          btnEspeciales.classList.add("text-dark");
+
+          btnGeneral.classList.remove("active");
+          btnGeneral.style.background = "transparent";
+          btnGeneral.classList.add("text-white-50");
+          btnGeneral.classList.remove("text-dark");
+
+          tabGeneral.classList.add("d-none");
+          tabEspeciales.classList.remove("d-none");
+        }
+      }
+
+      function getMatchKey(fixId, local, visitor, jornada) {
+        return `${fixId || ""}_${(local || "").trim().replace(/\s+/g, "_")}_${(visitor || "").trim().replace(/\s+/g, "_")}_J${jornada}`;
+      }
+
+      function openProgramacionModal() {
+        if (!currentJornada) {
+          return Swal.fire("Aviso", "Selecciona una jornada primero.", "info");
+        }
+
+        let totalMatches = 0;
+        fixturesMap.forEach((meta) => {
+          meta.data.forEach((m) => {
+            if (
+              m.jornada === currentJornada &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA"
+            ) {
+              totalMatches++;
+            }
+          });
+        });
+
+        if (totalMatches === 0) {
+          return Swal.fire("Aviso", `No hay partidos activos para la Jornada ${currentJornada}.`, "info");
+        }
+
+        document.getElementById("badgeJornadaProgramar").innerText = `JORNADA ${currentJornada}`;
+        document.getElementById("progTotalMatchesCount").innerText = totalMatches;
+
+        // Cargar configuración guardada
+        const saved = loadSavedProgConfig();
+        if (saved) {
+          if (saved.duration) {
+            document.getElementById("progDurationMinutes").value = saved.duration;
+            updateDurationButtons(saved.duration);
+          }
+          if (Array.isArray(saved.days)) {
+            saved.days.forEach((d) => {
+              const check = document.getElementById(`check_day_${d.id}`);
+              const start = document.getElementById(`start_day_${d.id}`);
+              const end = document.getElementById(`end_day_${d.id}`);
+              if (check) check.checked = !!d.checked;
+              if (start && d.start) start.value = d.start;
+              if (end && d.end) end.value = d.end;
+              toggleDiaProgramacion(d.id, false);
+            });
+          }
+        } else {
+          toggleDiaProgramacion("Viernes", false);
+          toggleDiaProgramacion("Sabado", false);
+          toggleDiaProgramacion("Domingo", false);
+        }
+
+        // Renderizar lista de partidos especiales
+        renderListaPartidosEspeciales();
+
+        // Recalcular
+        recalcularCapacidadProgramacion();
+
+        // Resetear tab a General por defecto
+        switchProgTab("general");
+
+        const modalElem = document.getElementById("modalConfigProgramacion");
+        if (window.bootstrap && bootstrap.Modal) {
+          const modal = bootstrap.Modal.getOrCreateInstance(modalElem);
+          modal.show();
+        } else {
+          modalElem.classList.add("show");
+          modalElem.style.display = "block";
+        }
+      }
+
+      function setProgDuration(mins) {
+        document.getElementById("progDurationMinutes").value = mins;
+        updateDurationButtons(mins);
+        recalcularCapacidadProgramacion();
+      }
+
+      function updateDurationButtons(mins) {
+        const buttons = document.querySelectorAll("#modalConfigProgramacion .btn-group button");
+        buttons.forEach((btn) => {
+          if (btn.innerText.includes(`${mins}m`)) {
+            btn.classList.add("active", "btn-success");
+            btn.classList.remove("btn-outline-secondary");
+          } else {
+            btn.classList.remove("active", "btn-success");
+            btn.classList.add("btn-outline-secondary");
+          }
+        });
+      }
+
+      function toggleDiaProgramacion(dayId, recalcular = true) {
+        const check = document.getElementById(`check_day_${dayId}`);
+        const card = document.getElementById(`card_day_${dayId}`);
+        const startInput = document.getElementById(`start_day_${dayId}`);
+        const endInput = document.getElementById(`end_day_${dayId}`);
+        const badge = document.getElementById(`slots_badge_${dayId}`);
+
+        if (!check || !card) return;
+
+        if (check.checked) {
+          card.style.opacity = "1";
+          card.style.borderColor = "rgba(46, 204, 113, 0.4)";
+          card.style.background = "rgba(46, 204, 113, 0.04)";
+          if (startInput) startInput.disabled = false;
+          if (endInput) endInput.disabled = false;
+          if (badge) badge.style.display = "inline-block";
+        } else {
+          card.style.opacity = "0.45";
+          card.style.borderColor = "rgba(255, 255, 255, 0.08)";
+          card.style.background = "rgba(255, 255, 255, 0.02)";
+          if (startInput) startInput.disabled = true;
+          if (endInput) endInput.disabled = true;
+          if (badge) badge.innerText = "0 cupos";
+        }
+
+        if (recalcular) {
+          recalcularCapacidadProgramacion();
+        }
+      }
+
+      function calcularSlotsPorDia(startTime, endTime, durationMin) {
+        if (!startTime || !endTime || durationMin <= 0) return [];
+        const [h1, m1] = startTime.split(":").map(Number);
+        const [h2, m2] = endTime.split(":").map(Number);
+        const startTotal = h1 * 60 + m1;
+        const endTotal = h2 * 60 + m2;
+
+        if (endTotal <= startTotal) return [];
+
+        const slots = [];
+        let current = startTotal;
+        while (current + durationMin <= endTotal || (slots.length === 0 && current < endTotal)) {
+          const hh = String(Math.floor(current / 60)).padStart(2, "0");
+          const mm = String(current % 60).padStart(2, "0");
+          slots.push(`${hh}:${mm}`);
+          current += durationMin;
+          if (current >= 1440) break; // Límite medianoche
+        }
+        return slots;
+      }
+
+      function renderListaPartidosEspeciales() {
+        const container = document.getElementById("listaPartidosEspeciales");
+        if (!container) return;
+        container.innerHTML = "";
+
+        let allMatches = [];
+        fixturesMap.forEach((meta, fixId) => {
+          meta.data.forEach((m) => {
+            if (
+              m.jornada === currentJornada &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA"
+            ) {
+              allMatches.push({ ...m, _cat: meta.category, _fixId: fixId });
+            }
+          });
+        });
+
+        if (allMatches.length === 0) {
+          container.innerHTML = `<div class="text-center text-white-50 py-4 small">No hay partidos en esta jornada.</div>`;
+          return;
+        }
+
+        allMatches.forEach((m) => {
+          const mKey = getMatchKey(m._fixId, m.local, m.visitor, m.jornada);
+          
+          if (!partidosEspecialesConfig[mKey]) {
+            if (m.fechaRealAsignadaText === "No Programado") {
+              partidosEspecialesConfig[mKey] = {
+                mode: "no_programar",
+                day: "Sábado",
+                time: "10:00",
+                motivo: m.observacionProgramacion || "Por oficio"
+              };
+            } else if (m.fechaRealAsignadaText && m.horaRealAsignada && m.fechaRealAsignadaText !== "Pendiente") {
+              partidosEspecialesConfig[mKey] = {
+                mode: "preferencial",
+                day: m.fechaRealAsignadaText,
+                time: m.horaRealAsignada,
+                motivo: m.observacionProgramacion || ""
+              };
+            } else {
+              partidosEspecialesConfig[mKey] = {
+                mode: "auto",
+                day: "Sábado",
+                time: "10:00",
+                motivo: ""
+              };
+            }
+          }
+
+          const cfg = partidosEspecialesConfig[mKey];
+          const modeClass = cfg.mode === "preferencial" ? "mode-preferencial" : (cfg.mode === "no_programar" ? "mode-no-prog" : "");
+
+          const cardHtml = `
+            <div class="partido-especial-card ${modeClass}" id="card_spec_${mKey}" data-cat="${m._cat}" data-teams="${(m.local + ' ' + m.visitor).toLowerCase()}">
+              <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge-category-mini">${m._cat}</span>
+                  <span class="text-white fw-bold" style="font-size: 0.88rem;">${m.local}</span>
+                  <span class="text-primary-glow fw-900" style="font-size: 0.7rem;">VS</span>
+                  <span class="text-white fw-bold" style="font-size: 0.88rem;">${m.visitor}</span>
+                </div>
+                <div>
+                  <select class="input-elite-sm fw-bold" onchange="cambiarModoPartido('${mKey}', this.value)" style="width: 235px; font-size: 0.78rem;">
+                    <option value="auto" ${cfg.mode === "auto" ? "selected" : ""}>🎲 Automático (Por sorteo)</option>
+                    <option value="preferencial" ${cfg.mode === "preferencial" ? "selected" : ""}>⭐ Horario Preferencial / Fijo</option>
+                    <option value="no_programar" ${cfg.mode === "no_programar" ? "selected" : ""}>🚫 No Programado (Por Oficio)</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- Subcontroles según modo -->
+              <div id="subcontrols_${mKey}">
+                ${renderSubcontrolesEspeciales(mKey, cfg)}
+              </div>
+            </div>
+          `;
+          container.insertAdjacentHTML("beforeend", cardHtml);
+        });
+      }
+
+      function renderSubcontrolesEspeciales(mKey, cfg) {
+        if (cfg.mode === "preferencial") {
+          return `
+            <div class="d-flex align-items-center gap-2 flex-wrap pt-2 border-top border-secondary border-opacity-25 mt-1">
+              <span class="text-warning small fw-bold"><i class="fas fa-thumbtack me-1"></i> Fijar en:</span>
+              <div class="d-flex align-items-center gap-1">
+                <span class="text-white-50 small">Día:</span>
+                <select class="input-elite-sm" id="pref_dia_${mKey}" onchange="actualizarDatoPreferencial('${mKey}')" style="width: 120px;">
+                  <option value="Viernes" ${cfg.day === "Viernes" ? "selected" : ""}>Viernes</option>
+                  <option value="Sábado" ${cfg.day === "Sábado" ? "selected" : ""}>Sábado</option>
+                  <option value="Domingo" ${cfg.day === "Domingo" ? "selected" : ""}>Domingo</option>
+                </select>
+              </div>
+              <div class="d-flex align-items-center gap-1">
+                <span class="text-white-50 small">Hora:</span>
+                <input type="time" class="input-elite-sm text-center" id="pref_hora_${mKey}" value="${cfg.time || "10:00"}" onchange="actualizarDatoPreferencial('${mKey}')" style="width: 110px;">
+              </div>
+              <div class="d-flex align-items-center gap-1 flex-grow-1">
+                <input type="text" class="input-elite-sm" id="pref_motivo_${mKey}" value="${cfg.motivo || ""}" placeholder="Motivo / Oficio (ej: Oficio N° 12)..." onchange="actualizarDatoPreferencial('${mKey}')" style="font-size: 0.75rem;">
+              </div>
+            </div>
+          `;
+        } else if (cfg.mode === "no_programar") {
+          return `
+            <div class="d-flex align-items-center justify-content-between gap-2 flex-wrap pt-2 border-top border-secondary border-opacity-25 mt-1">
+              <span class="badge bg-danger text-white px-2 py-1" style="font-size: 0.72rem;">
+                <i class="fas fa-ban me-1"></i> Aplazado / No se jugará en esta jornada
+              </span>
+              <div class="flex-grow-1" style="max-width: 400px;">
+                <input type="text" class="input-elite-sm" id="no_prog_motivo_${mKey}" value="${cfg.motivo || ""}" placeholder="Motivo / Oficio (ej: Solicitud de aplazamiento)..." onchange="actualizarDatoPreferencial('${mKey}')" style="font-size: 0.75rem;">
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="d-flex align-items-center gap-2 pt-1">
+              <small class="text-white-50 italic" style="font-size: 0.72rem;">
+                <i class="fas fa-shuffle me-1 text-primary-glow"></i> Este partido entrará al sorteo automático según los horarios generales.
+              </small>
+            </div>
+          `;
+        }
+      }
+
+      function cambiarModoPartido(mKey, mode) {
+        if (!partidosEspecialesConfig[mKey]) {
+          partidosEspecialesConfig[mKey] = { mode: "auto", day: "Sábado", time: "10:00", motivo: "" };
+        }
+        partidosEspecialesConfig[mKey].mode = mode;
+
+        const card = document.getElementById(`card_spec_${mKey}`);
+        if (card) {
+          card.classList.remove("mode-preferencial", "mode-no-prog");
+          if (mode === "preferencial") card.classList.add("mode-preferencial");
+          if (mode === "no_programar") card.classList.add("mode-no-prog");
+        }
+
+        const sub = document.getElementById(`subcontrols_${mKey}`);
+        if (sub) {
+          sub.innerHTML = renderSubcontrolesEspeciales(mKey, partidosEspecialesConfig[mKey]);
+        }
+
+        recalcularCapacidadProgramacion();
+      }
+
+      function actualizarDatoPreferencial(mKey) {
+        if (!partidosEspecialesConfig[mKey]) return;
+        const cfg = partidosEspecialesConfig[mKey];
+
+        const diaEl = document.getElementById(`pref_dia_${mKey}`);
+        const horaEl = document.getElementById(`pref_hora_${mKey}`);
+        const motEl = document.getElementById(`pref_motivo_${mKey}`) || document.getElementById(`no_prog_motivo_${mKey}`);
+
+        if (diaEl) cfg.day = diaEl.value;
+        if (horaEl) cfg.time = horaEl.value;
+        if (motEl) cfg.motivo = motEl.value;
+
+        recalcularCapacidadProgramacion();
+      }
+
+      function filtrarPartidosEspeciales() {
+        const query = (document.getElementById("filtroPartidosEspeciales")?.value || "").toLowerCase().trim();
+        filtroEspecialTexto = query;
+        aplicarFiltrosEspeciales();
+      }
+
+      function filtrarCategoriaEspeciales(cat, btn) {
+        filtroEspecialCategoria = cat;
+        const buttons = document.querySelectorAll("#filtrosCategoriaEspeciales button");
+        buttons.forEach((b) => b.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+        aplicarFiltrosEspeciales();
+      }
+
+      function aplicarFiltrosEspeciales() {
+        const cards = document.querySelectorAll("#listaPartidosEspeciales .partido-especial-card");
+        cards.forEach((card) => {
+          const cardCat = (card.getAttribute("data-cat") || "").toUpperCase();
+          const cardTeams = (card.getAttribute("data-teams") || "").toLowerCase();
+
+          const matchCat = filtroEspecialCategoria === "TODAS" || cardCat === filtroEspecialCategoria;
+          const matchText = !filtroEspecialTexto || cardTeams.includes(filtroEspecialTexto);
+
+          if (matchCat && matchText) {
+            card.classList.remove("d-none");
+          } else {
+            card.classList.add("d-none");
+          }
+        });
+      }
+
+      function recalcularCapacidadProgramacion() {
+        const duration = parseInt(document.getElementById("progDurationMinutes")?.value, 10) || 100;
+        const dayKeys = ["Viernes", "Sabado", "Domingo"];
+        let totalGeneralSlots = 0;
+
+        dayKeys.forEach((dayId) => {
+          const check = document.getElementById(`check_day_${dayId}`);
+          const startInput = document.getElementById(`start_day_${dayId}`);
+          const endInput = document.getElementById(`end_day_${dayId}`);
+          const badge = document.getElementById(`slots_badge_${dayId}`);
+
+          if (check && check.checked && startInput && endInput && startInput.value && endInput.value) {
+            const slots = calcularSlotsPorDia(startInput.value, endInput.value, duration);
+            const count = slots.length;
+            totalGeneralSlots += count;
+            if (badge) {
+              badge.innerText = `${count} ${count === 1 ? "cupo" : "cupos"}`;
+              badge.style.background = count > 0 ? "rgba(46, 204, 113, 0.15)" : "rgba(231, 76, 60, 0.15)";
+              badge.style.color = count > 0 ? "#2ecc71" : "#e74c3c";
+              badge.style.borderColor = count > 0 ? "rgba(46, 204, 113, 0.4)" : "rgba(231, 76, 60, 0.4)";
+            }
+          } else if (badge) {
+            badge.innerText = "0 cupos";
+            badge.style.background = "rgba(255, 255, 255, 0.05)";
+            badge.style.color = "rgba(255, 255, 255, 0.4)";
+            badge.style.borderColor = "rgba(255, 255, 255, 0.1)";
+          }
+        });
+
+        // Contar tipos de partidos
+        let totalMatches = 0;
+        let prefCount = 0;
+        let noProgCount = 0;
+
+        fixturesMap.forEach((meta) => {
+          meta.data.forEach((m) => {
+            if (
+              m.jornada === currentJornada &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA"
+            ) {
+              totalMatches++;
+              const mKey = getMatchKey(meta.category ? meta.category : "", m.local, m.visitor, m.jornada);
+              const entry = Object.entries(partidosEspecialesConfig).find(([k]) => k.includes(`_${m.local.trim().replace(/\s+/g, '_')}_${m.visitor.trim().replace(/\s+/g, '_')}_`));
+              if (entry) {
+                if (entry[1].mode === "preferencial") prefCount++;
+                if (entry[1].mode === "no_programar") noProgCount++;
+              }
+            }
+          });
+        });
+
+        const autoCount = Math.max(0, totalMatches - prefCount - noProgCount);
+
+        const elTotalMatches = document.getElementById("progTotalMatchesCount");
+        const elTotalPref = document.getElementById("progTotalPrefCount");
+        const elTotalNoProg = document.getElementById("progTotalNoProgCount");
+        const elTotalAuto = document.getElementById("progTotalAutoCount");
+        const elBadgeEspeciales = document.getElementById("badgeEspecialesCount");
+
+        if (elTotalMatches) elTotalMatches.innerText = totalMatches;
+        if (elTotalPref) elTotalPref.innerText = prefCount;
+        if (elTotalNoProg) elTotalNoProg.innerText = noProgCount;
+        if (elTotalAuto) elTotalAuto.innerText = autoCount;
+        if (elBadgeEspeciales) elBadgeEspeciales.innerText = prefCount + noProgCount;
+
+        const statusMsgElem = document.getElementById("progStatusMessage");
+        if (statusMsgElem) {
+          if (totalGeneralSlots === 0 && autoCount > 0) {
+            statusMsgElem.innerHTML = `
+              <span class="badge bg-danger text-white px-3 py-2 fw-bold" style="font-size: 0.78rem; border-radius: 8px;">
+                <i class="fas fa-exclamation-triangle me-1"></i> Sin horarios para ${autoCount} automáticos
+              </span>
+            `;
+          } else if (totalGeneralSlots >= autoCount) {
+            statusMsgElem.innerHTML = `
+              <span class="badge bg-success text-dark px-3 py-2 fw-bold" style="font-size: 0.78rem; border-radius: 8px;">
+                <i class="fas fa-check-circle me-1"></i> Capacidad óptima (${totalGeneralSlots} cupos para ${autoCount} partidos por sortear)
+              </span>
+            `;
+          } else {
+            const diff = autoCount - totalGeneralSlots;
+            statusMsgElem.innerHTML = `
+              <span class="badge bg-warning text-dark px-3 py-2 fw-bold" style="font-size: 0.78rem; border-radius: 8px;">
+                <i class="fas fa-exclamation-circle me-1"></i> Faltan ${diff} ${diff === 1 ? "cupo" : "cupos"} (se sortearán ${totalGeneralSlots} de ${autoCount})
+              </span>
+            `;
+          }
+        }
+      }
+
+      function ejecutarProgramacionPersonalizada() {
+        let allMatches = [];
         fixturesMap.forEach((meta, fixId) => {
           const list = meta.data.filter(
             (m) =>
@@ -920,12 +1669,10 @@
           list.forEach((m) => {
             m._cat = meta.category;
             m._fixId = fixId;
-            // Limpieza TOTAL para evitar basura visual y marcadores residuales
             m.fechaRealAsignadaText = "";
             m.horaRealAsignada = "";
             m.vocalAsignado = "";
             m.veedorAsignado = "";
-            // Los partidos nuevos por jugar SIEMPRE arrancan sin marcador
             m.golesLocal = null;
             m.golesVisitor = null;
             m.isFinalized = false;
@@ -935,90 +1682,213 @@
             delete m.vocalReport;
             delete m.refereeReport;
             delete m.vedorReport;
-            all.push(m);
+            allMatches.push(m);
           });
         });
 
-        if (all.length === 0)
+        if (allMatches.length === 0) {
           return Swal.fire("Aviso", "No hay partidos en esta jornada.", "info");
-
-        // 1. Mezcla Fair-Play
-        for (let i = all.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [all[i], all[j]] = [all[j], all[i]];
         }
 
-        const duration = 100;
-        const slotsConf = [
-          { day: "Viernes", times: ["18:20", "20:00"] },
-          { day: "Sábado", start: "08:00", end: "21:00" },
-          { day: "Domingo", start: "08:00", end: "19:00" },
+        const duration = parseInt(document.getElementById("progDurationMinutes")?.value, 10) || 100;
+        const daysConfig = [
+          {
+            id: "Viernes",
+            name: "Viernes",
+            checked: document.getElementById("check_day_Viernes")?.checked,
+            start: document.getElementById("start_day_Viernes")?.value,
+            end: document.getElementById("end_day_Viernes")?.value,
+          },
+          {
+            id: "Sabado",
+            name: "Sábado",
+            checked: document.getElementById("check_day_Sabado")?.checked,
+            start: document.getElementById("start_day_Sabado")?.value,
+            end: document.getElementById("end_day_Sabado")?.value,
+          },
+          {
+            id: "Domingo",
+            name: "Domingo",
+            checked: document.getElementById("check_day_Domingo")?.checked,
+            start: document.getElementById("start_day_Domingo")?.value,
+            end: document.getElementById("end_day_Domingo")?.value,
+          },
         ];
 
+        saveProgConfig({ duration, days: daysConfig });
+
+        // 1. Separar partidos según su modo configurado
+        let noProgMatches = [];
+        let prefMatches = [];
+        let autoMatches = [];
+
+        allMatches.forEach((m) => {
+          const mKey = getMatchKey(m._fixId, m.local, m.visitor, m.jornada);
+          const cfg = partidosEspecialesConfig[mKey] || { mode: "auto" };
+
+          if (cfg.mode === "no_programar") {
+            m.fechaRealAsignadaText = "No Programado";
+            m.horaRealAsignada = "";
+            m.observacionProgramacion = cfg.motivo || "No programado por petición / oficio";
+            noProgMatches.push(m);
+          } else if (cfg.mode === "preferencial" && cfg.day && cfg.time) {
+            m.fechaRealAsignadaText = cfg.day;
+            m.horaRealAsignada = cfg.time;
+            m.observacionProgramacion = cfg.motivo || "Horario preferencial asignado";
+            prefMatches.push(m);
+          } else {
+            autoMatches.push(m);
+          }
+        });
+
+        // 2. Generar cupos para partidos automáticos
         let dayBuckets = { Viernes: [], Sábado: [], Domingo: [] };
+
+        // Colocar preferenciales en sus respectivos buckets
+        prefMatches.forEach((m) => {
+          const day = m.fechaRealAsignadaText;
+          if (!dayBuckets[day]) dayBuckets[day] = [];
+          dayBuckets[day].push(m);
+        });
+
+        // Construir slots disponibles por día, deduciendo colisiones con horarios preferenciales
+        let allAvailableSlots = [];
+        let activeDaysNames = [];
+
+        daysConfig.forEach((dayConf) => {
+          if (dayConf.checked && dayConf.start && dayConf.end) {
+            const rawSlots = calcularSlotsPorDia(dayConf.start, dayConf.end, duration);
+            if (rawSlots.length > 0) {
+              activeDaysNames.push(dayConf.name);
+              const dayPrefMatches = prefMatches.filter((p) => p.fechaRealAsignadaText === dayConf.name);
+
+              let slotsForThisDay = [...rawSlots];
+              dayPrefMatches.forEach((pMatch) => {
+                const exactIdx = slotsForThisDay.indexOf(pMatch.horaRealAsignada);
+                if (exactIdx !== -1) {
+                  slotsForThisDay.splice(exactIdx, 1);
+                } else if (slotsForThisDay.length > 0) {
+                  slotsForThisDay.pop();
+                }
+              });
+
+              slotsForThisDay.forEach((timeStr) => {
+                allAvailableSlots.push({ day: dayConf.name, time: timeStr });
+              });
+            }
+          }
+        });
+
+        if (autoMatches.length > 0 && allAvailableSlots.length === 0) {
+          return Swal.fire({
+            title: "Sin cupos automáticos",
+            text: "Hay partidos por sortear pero no se ha activado ningún día con horarios válidos.",
+            icon: "warning",
+            confirmButtonColor: "#2ecc71",
+            background: "#121212",
+            color: "#ffffff",
+          });
+        }
+
+        // 3. Mezcla Fair-Play aleatoria para los partidos automáticos
+        for (let i = autoMatches.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [autoMatches[i], autoMatches[j]] = [autoMatches[j], autoMatches[i]];
+        }
+
+        // 4. Asignar slots a los partidos automáticos
         let p = 0;
+        for (let s = 0; s < allAvailableSlots.length && p < autoMatches.length; s++) {
+          const slot = allAvailableSlots[s];
+          autoMatches[p].fechaRealAsignadaText = slot.day;
+          autoMatches[p].horaRealAsignada = slot.time;
+          if (!dayBuckets[slot.day]) dayBuckets[slot.day] = [];
+          dayBuckets[slot.day].push(autoMatches[p]);
+          p++;
+        }
 
-        // Viernes fijo
-        slotsConf[0].times.forEach((t) => {
-          if (p < all.length) {
-            all[p].fechaRealAsignadaText = "Viernes";
-            all[p].horaRealAsignada = t;
-            dayBuckets["Viernes"].push(all[p]);
-            p++;
-          }
-        });
+        // Partidos automáticos sobrantes sin cupo quedan Pendientes
+        while (p < autoMatches.length) {
+          autoMatches[p].fechaRealAsignadaText = "";
+          autoMatches[p].horaRealAsignada = "";
+          p++;
+        }
 
-        // Sábado y Domingo dinámico
-        [slotsConf[1], slotsConf[2]].forEach((conf) => {
-          let [h, m] = conf.start.split(":").map(Number);
-          const limMin = parseInt(conf.end.split(":")[0]) * 60 + parseInt(conf.end.split(":")[1]);
-
-          while (p < all.length) {
-            if (h * 60 + m + duration > limMin) break;
-
-            all[p].fechaRealAsignadaText = conf.day;
-            all[p].horaRealAsignada = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-            dayBuckets[conf.day].push(all[p]);
-
-            m += duration;
-            while (m >= 60) { h++; m -= 60; }
-            p++;
-          }
-        });
-
-        // 3. Mesa con Proximidad Máxima
+        // 5. Asignación de Mesa (Vocal & Veedor) por día en orden cronológico
         Object.keys(dayBuckets).forEach((day) => {
           const matches = dayBuckets[day];
+          matches.sort((a, b) => (a.horaRealAsignada || "99:99").localeCompare(b.horaRealAsignada || "99:99"));
+
           const count = matches.length;
           if (count < 2) return;
 
           let i = 0;
           if (count % 2 !== 0 && count >= 3) {
-            const m1 = matches[0]; const m2 = matches[1]; const m3 = matches[2];
-            m2.vocalAsignado = m1.local; m2.veedorAsignado = m1.visitor;
-            m3.vocalAsignado = m2.local; m3.veedorAsignado = m2.visitor;
-            m1.vocalAsignado = m3.local; m1.veedorAsignado = m3.visitor;
+            const m1 = matches[0];
+            const m2 = matches[1];
+            const m3 = matches[2];
+            m2.vocalAsignado = m1.local;
+            m2.veedorAsignado = m1.visitor;
+            m3.vocalAsignado = m2.local;
+            m3.veedorAsignado = m2.visitor;
+            m1.vocalAsignado = m3.local;
+            m1.veedorAsignado = m3.visitor;
             i = 3;
           }
           for (; i < count; i += 2) {
-            const mA = matches[i]; const mB = matches[i + 1];
+            const mA = matches[i];
+            const mB = matches[i + 1];
             if (mA && mB) {
-              mA.vocalAsignado = mB.local; mA.veedorAsignado = mB.visitor;
-              mB.vocalAsignado = mA.local; mB.veedorAsignado = mA.visitor;
+              mA.vocalAsignado = mB.local;
+              mA.veedorAsignado = mB.visitor;
+              mB.vocalAsignado = mA.local;
+              mB.veedorAsignado = mA.visitor;
             } else if (mA) {
-              const prev = matches[i-1];
-              mA.vocalAsignado = prev.local; mA.veedorAsignado = prev.visitor;
+              const prev = matches[i - 1];
+              mA.vocalAsignado = prev.local;
+              mA.veedorAsignado = prev.visitor;
             }
           }
         });
 
+        // Cerrar modal
+        const modalElem = document.getElementById("modalConfigProgramacion");
+        if (window.bootstrap && bootstrap.Modal) {
+          const modalInstance = bootstrap.Modal.getInstance(modalElem);
+          if (modalInstance) modalInstance.hide();
+        } else {
+          modalElem.classList.remove("show");
+          modalElem.style.display = "none";
+        }
+
         renderMatches();
+
+        const totalScheduled = prefMatches.length + Math.min(autoMatches.length, allAvailableSlots.length);
+        const unassignedCount = Math.max(0, autoMatches.length - allAvailableSlots.length);
+
+        let msgHtml = `<div class="text-start small">`;
+        msgHtml += `<p class="mb-1 text-white">✅ <strong>Partidos programados:</strong> ${totalScheduled} (${prefMatches.length} preferenciales + ${Math.min(autoMatches.length, allAvailableSlots.length)} por sorteo).</p>`;
+        if (noProgMatches.length > 0) {
+          msgHtml += `<p class="mb-1 text-danger">🚫 <strong>No programados (oficio):</strong> ${noProgMatches.length} partido(s).</p>`;
+        }
+        if (unassignedCount > 0) {
+          msgHtml += `<p class="mb-1 text-warning">⚠️ <strong>Pendientes sin cupo:</strong> ${unassignedCount} partido(s).</p>`;
+        }
+        msgHtml += `<p class="mt-2 text-white-50 italic mb-0">Recuerda presionar 'Guardar' para oficializar en el sistema.</p></div>`;
+
         Swal.fire({
-          title: "¡Listo!",
-          text: "Programación generada al 100% y sin marcadores.",
+          title: "¡Programación Generada!",
+          html: msgHtml,
           icon: "success",
-          confirmButtonColor: "#2ecc71"
+          confirmButtonColor: "#2ecc71",
+          background: "#121212",
+          color: "#ffffff",
         });
+      }
+
+      // Alias de compatibilidad
+      function autoScheduleMixed() {
+        openProgramacionModal();
       }
 
       function renderMatches() {
@@ -1042,7 +1912,7 @@
                   <button class="btn btn-outline-warning rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="cleanScoresCurrentJornada()" title="Poner en blanco los marcadores">
                     <i class="fas fa-eraser me-1"></i> Limpiar Marcadores
                   </button>
-                  <button class="btn-schedule-premium" onclick="autoScheduleMixed()">
+                  <button class="btn-schedule-premium" onclick="openProgramacionModal()">
                       <i class="fas fa-bolt"></i> Programar
                   </button>
                   <button class="btn-save-jornada-elite" onclick="saveAllSchedules()">
@@ -1071,7 +1941,7 @@
             });
         });
 
-        const dayRank = { Viernes: 1, Sábado: 2, Domingo: 3, undefined: 4 };
+        const dayRank = { Viernes: 1, Sábado: 2, Domingo: 3, "No Programado": 4, "": 5, undefined: 5 };
         matches.sort((a, b) => {
           if (
             dayRank[a.fechaRealAsignadaText] !==
@@ -1095,7 +1965,7 @@
               <table class="table-elite">
                 <thead>
                   <tr>
-                    <th style="width: 150px">Día</th>
+                    <th style="width: 165px">Día</th>
                     <th style="width: 120px">Hora</th>
                     <th style="width: 120px">Categoría</th>
                     <th>Encuentro / Resultados</th>
@@ -1111,32 +1981,37 @@
             const safeFecha = (m.fecha || "").replace(/'/g, "\\'");
             const valGL = m.golesLocal !== undefined && m.golesLocal !== null ? m.golesLocal : "";
             const valGV = m.golesVisitor !== undefined && m.golesVisitor !== null ? m.golesVisitor : "";
+            const isNoProg = m.fechaRealAsignadaText === "No Programado";
 
             tableHtml += `
-              <tr>
+              <tr style="${isNoProg ? 'opacity: 0.75; background: rgba(231, 76, 60, 0.05);' : ''}">
                 <td>
-                  <select class="input-elite-sm" onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'fechaRealAsignadaText', this.value)">
+                  <select class="input-elite-sm ${isNoProg ? 'border-danger text-danger' : ''}" onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'fechaRealAsignadaText', this.value)">
                     <option value="">Pendiente</option>
+                    <option value="No Programado" ${m.fechaRealAsignadaText === "No Programado" ? "selected" : ""}>🚫 No Programado</option>
                     <option value="Viernes" ${m.fechaRealAsignadaText === "Viernes" ? "selected" : ""}>Viernes</option>
                     <option value="Sábado" ${m.fechaRealAsignadaText === "Sábado" ? "selected" : ""}>Sábado</option>
                     <option value="Domingo" ${m.fechaRealAsignadaText === "Domingo" ? "selected" : ""}>Domingo</option>
                   </select>
                 </td>
                 <td>
-                  <input type="time" class="input-elite-sm" value="${m.horaRealAsignada || ""}" 
+                  <input type="time" class="input-elite-sm" value="${m.horaRealAsignada || ""}" ${isNoProg ? 'disabled' : ''}
                     onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'horaRealAsignada', this.value)">
                 </td>
-                <td><span class="badge-category-mini">${m._cat}</span></td>
+                <td>
+                  <span class="badge-category-mini">${m._cat}</span>
+                  ${isNoProg ? '<span class="badge bg-danger text-white ms-1" style="font-size:0.58rem; letter-spacing:0.5px;">OFICIO</span>' : ''}
+                </td>
                 <td>
                   <div class="d-flex align-items-center justify-content-center gap-3">
                     <div class="d-flex align-items-center gap-2 justify-content-end" style="width:40%">
                       <span class="team-name-elite-table text-end">${m.local}</span>
-                      <input type="number" class="input-elite-sm input-elite-score" value="${valGL}" placeholder="-" min="0"
+                      <input type="number" class="input-elite-sm input-elite-score" value="${valGL}" placeholder="-" min="0" ${isNoProg ? 'disabled' : ''}
                         onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'golesLocal', this.value)">
                     </div>
                     <span class="text-primary-glow fw-900" style="font-size:0.7rem">VS</span>
                     <div class="d-flex align-items-center gap-2 justify-content-start" style="width:40%">
-                      <input type="number" class="input-elite-sm input-elite-score" value="${valGV}" placeholder="-" min="0"
+                      <input type="number" class="input-elite-sm input-elite-score" value="${valGV}" placeholder="-" min="0" ${isNoProg ? 'disabled' : ''}
                         onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'golesVisitor', this.value)">
                       <span class="team-name-elite-table text-start">${m.visitor}</span>
                     </div>
@@ -1145,11 +2020,11 @@
                 <td>
                   <div class="row g-2">
                     <div class="col-6">
-                      <input type="text" class="input-elite-sm" value="${m.vocalAsignado || ""}" placeholder="Vocal..." 
+                      <input type="text" class="input-elite-sm" value="${m.vocalAsignado || ""}" placeholder="Vocal..." ${isNoProg ? 'disabled' : ''}
                         onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'vocalAsignado', this.value)">
                     </div>
                     <div class="col-6">
-                      <input type="text" class="input-elite-sm" value="${m.veedorAsignado || ""}" placeholder="Veedor..." 
+                      <input type="text" class="input-elite-sm" value="${m.veedorAsignado || ""}" placeholder="Veedor..." ${isNoProg ? 'disabled' : ''}
                         onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'veedorAsignado', this.value)">
                     </div>
                   </div>
