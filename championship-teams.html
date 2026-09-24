@@ -195,9 +195,8 @@
                 <label for="fileType" class="form-label">TIPO DE DOCUMENTO</label>
                 <select class="select-premium" id="fileType" required>
                   <option value="">Selecciona el tipo de documento</option>
-                  <option value="carta_pase">Carta de Pase</option>
-                  <option value="autorizacion">Autorización</option>
-                  <option value="otro">Otro Documento</option>
+                  <option value="carta_pase">Carta Pase</option>
+                  <option value="autorizacion">Autorización (Menor de 12 Años)</option>
                 </select>
               </div>
               <div class="mb-4">
@@ -463,16 +462,24 @@
             let pendingCount = 0;
             snapshot.forEach(doc => {
               const d = doc.data();
+              const typeLow = (d.type || '').toLowerCase();
+              const fileNameLow = (d.fileName || '').toLowerCase();
+              // Exclude payment vouchers and blank format templates
+              if (typeLow.startsWith('pago') || typeLow.includes('pago') || fileNameLow.startsWith('pago') || typeLow === 'formato') {
+                return;
+              }
               if (d.status !== "Aprobado" && d.status !== "Denegado") {
                 pendingCount++;
               }
             });
             const badge = document.getElementById("qualificationsBadgeCount");
-            if (pendingCount > 0) {
-              badge.textContent = pendingCount;
-              badge.style.display = "flex";
-            } else {
-              badge.style.display = "none";
+            if (badge) {
+              if (pendingCount > 0) {
+                badge.textContent = pendingCount;
+                badge.style.display = "flex";
+              } else {
+                badge.style.display = "none";
+              }
             }
           });
       }
@@ -1116,27 +1123,45 @@
           let pendingDocs = [];
           snapshot.forEach(doc => {
             const d = doc.data();
+            const typeLow = (d.type || '').toLowerCase();
+            const fileNameLow = (d.fileName || '').toLowerCase();
+            // Exclude payment vouchers and blank format templates
+            if (typeLow.startsWith('pago') || typeLow.includes('pago') || fileNameLow.startsWith('pago') || typeLow === 'formato') {
+              return;
+            }
             if (d.status !== 'Aprobado' && d.status !== 'Denegado') {
               pendingDocs.push({ id: doc.id, ...d });
             }
           });
           
           if (pendingDocs.length === 0) {
-            list.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-white-50">No hay documentos pendientes.</td></tr>';
+            list.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-white-50">No hay documentos pendientes de calificación.</td></tr>';
             return;
           }
           
           pendingDocs.forEach(d => {
             const date = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'N/A';
             const statusBadge = '<span class="badge bg-warning text-dark">Pendiente</span>';
+            const typeLow = (d.type || '').toLowerCase();
+            const fileNameLow = (d.fileName || '').toLowerCase();
+            let typeLabel = d.type || 'DOCUMENTO';
+            let typeBadge = '<span class="badge bg-secondary">DOCUMENTO</span>';
+            if (typeLow.includes('carta') || typeLow.includes('pase') || typeLow.includes('transferencia') || fileNameLow.includes('carta_pase') || fileNameLow.includes('pase')) {
+              typeLabel = 'CARTA PASE';
+              typeBadge = '<span class="badge" style="background: rgba(243, 156, 18, 0.2); color: #f39c12; border: 1px solid rgba(243, 156, 18, 0.4);"><i class="fas fa-exchange-alt me-1"></i>Carta Pase</span>';
+            } else if (typeLow.includes('autoriz') || typeLow.includes('padres') || fileNameLow.includes('autoriz')) {
+              typeLabel = 'AUTORIZACIÓN (MENOR DE 12 AÑOS)';
+              typeBadge = '<span class="badge" style="background: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.4);"><i class="fas fa-child me-1"></i>Autorización (Menor)</span>';
+            }
+
             list.insertAdjacentHTML('beforeend', `
               <tr style="border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.3s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
                 <td class="ps-4 py-3 fw-bold text-info fs-6 text-uppercase">${d.teamName}</td>
                 <td class="py-3 fs-6 text-uppercase">
-                  <span class="d-block text-white fw-bold mb-1">${d.type}</span>
-                  ${statusBadge}
+                  <span class="d-block text-white fw-bold mb-1">${typeLabel}</span>
+                  ${typeBadge} ${statusBadge}
                 </td>
-                <td class="py-3 text-white-50 fs-6 text-uppercase">${d.notes || '-'}</td>
+                <td class="py-3 text-white-50 fs-6">${d.playerName ? `<strong class="text-white">${d.playerName}</strong><br>` : ''}${d.notes || '-'}</td>
                 <td class="py-3 text-white-50 fs-6 text-uppercase">${date}</td>
                 <td class="text-center pe-4 py-3">
                   <div class="d-flex justify-content-center gap-2">
@@ -1593,12 +1618,28 @@
 
           teamFilesSnap.forEach((doc) => {
             const data = doc.data();
-            const key = (data.fileName || '') + '_' + (data.fileBase64 ? data.fileBase64.substring(0, 50) : doc.id);
-            allFilesMap.set(key, { id: doc.id, collection: 'teamFiles', ...data });
+            const typeLower = (data.fileType || data.tipoDocumento || data.type || '').toLowerCase();
+            const fileNameLower = (data.fileName || data.name || '').toLowerCase();
+            // Exclude championship blank format templates and payment receipts
+            if (typeLower === 'formato' || typeLower.startsWith('pago') || typeLower.includes('pago') || fileNameLower.startsWith('pago') || fileNameLower.includes('pago_cartas_pases')) {
+              return;
+            }
+            const key = (data.fileName || data.name || '') + '_' + (data.fileBase64 || data.data ? (data.fileBase64 || data.data).substring(0, 50) : doc.id);
+            allFilesMap.set(key, { id: doc.id, collection: 'teamFiles', ...data, fileName: data.fileName || data.name, fileBase64: data.fileBase64 || data.data });
           });
 
           teamDocSnap.forEach((doc) => {
             const data = doc.data();
+            const typeLower = (data.type || '').toLowerCase();
+            const fileNameLower = (data.fileName || '').toLowerCase();
+            // Clean up / ignore payments and formats from team_documentation
+            if (typeLower.startsWith('pago') || typeLower.includes('pago') || fileNameLower.startsWith('pago') || fileNameLower.includes('pago_cartas_pases')) {
+              try { db.collection("team_documentation").doc(doc.id).delete(); } catch(e){}
+              return;
+            }
+            if (typeLower === 'formato') {
+              return;
+            }
             const key = (data.fileName || '') + '_' + (data.file ? data.file.substring(0, 50) : doc.id);
             if (!allFilesMap.has(key)) {
               allFilesMap.set(key, {
@@ -1626,7 +1667,7 @@
           filesList.innerHTML = "";
           if (allFilesMap.size === 0) {
             filesList.innerHTML =
-              '<div class="text-center text-white-50 py-4"><i class="fas fa-folder-open mb-2 d-block fs-3 opacity-50"></i>No hay archivos subidos para este equipo</div>';
+              '<div class="text-center text-white-50 py-4"><i class="fas fa-folder-open mb-2 d-block fs-3 opacity-50"></i>No hay documentos de calificación subidos para este equipo</div>';
             return;
           }
 
@@ -1643,12 +1684,13 @@
             const isImage = fileData.startsWith("data:image");
             const icon = isPdf ? '<i class="fas fa-file-pdf text-danger fs-4 me-3"></i>' : (isImage ? '<i class="fas fa-file-image text-info fs-4 me-3"></i>' : '<i class="fas fa-file-alt text-warning fs-4 me-3"></i>');
             
-            const typeRaw = (file.fileType || file.type || "").toLowerCase();
+            const typeRaw = (file.fileType || file.tipoDocumento || file.type || "").toLowerCase();
+            const fileNameRaw = (file.fileName || "").toLowerCase();
             let typeBadge = '';
-            if (typeRaw.includes("carta") || typeRaw.includes("pase") || typeRaw.includes("transferencia")) {
+            if (typeRaw.includes("carta") || typeRaw.includes("pase") || typeRaw.includes("transferencia") || fileNameRaw.includes("carta_pase") || fileNameRaw.includes("pase")) {
               typeBadge = '<span class="badge" style="background: rgba(243, 156, 18, 0.2); color: #f39c12; border: 1px solid rgba(243, 156, 18, 0.4);"><i class="fas fa-exchange-alt me-1"></i>Carta Pase</span>';
-            } else if (typeRaw.includes("autoriz") || typeRaw.includes("padres")) {
-              typeBadge = '<span class="badge" style="background: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.4);"><i class="fas fa-child me-1"></i>Autorización (Menor)</span>';
+            } else if (typeRaw.includes("autoriz") || typeRaw.includes("padres") || fileNameRaw.includes("autoriz")) {
+              typeBadge = '<span class="badge" style="background: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.4);"><i class="fas fa-child me-1"></i>Autorización (Menor de 12 Años)</span>';
             } else {
               typeBadge = `<span class="badge bg-secondary">${(file.fileType || 'DOCUMENTO').replace('_', ' ').toUpperCase()}</span>`;
             }

@@ -1106,28 +1106,47 @@
           const snapshot = await db.collection("team_documentation").orderBy("timestamp", "desc").get();
           list.innerHTML = "";
           
-          if (snapshot.empty) {
-            list.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-white-50">No hay documentos pendientes.</td></tr>';
+          let pendingDocs = [];
+          snapshot.forEach(doc => {
+            const d = doc.data();
+            const typeLow = (d.type || '').toLowerCase();
+            const fileNameLow = (d.fileName || '').toLowerCase();
+            if (typeLow.startsWith('pago') || typeLow.includes('pago') || fileNameLow.startsWith('pago') || typeLow === 'formato') {
+              return;
+            }
+            pendingDocs.push({ id: doc.id, ...d });
+          });
+          
+          if (pendingDocs.length === 0) {
+            list.innerHTML = '<tr><td colspan="5" class="text-center py-5 text-white-50">No hay documentos de calificación pendientes.</td></tr>';
             return;
           }
           
-          snapshot.forEach(doc => {
-            const d = doc.data();
+          pendingDocs.forEach(doc => {
+            const d = doc;
             const date = d.timestamp ? d.timestamp.toDate().toLocaleString() : 'N/A';
             const statusBadge = d.status === 'Aprobado' ? '<span class="badge bg-success">Aprobado</span>' : '<span class="badge bg-warning text-dark">Pendiente</span>';
+            const typeLow = (d.type || '').toLowerCase();
+            const fileNameLow = (d.fileName || '').toLowerCase();
+            let typeLabel = d.type || 'DOCUMENTO';
+            if (typeLow.includes('carta') || typeLow.includes('pase') || typeLow.includes('transferencia') || fileNameLow.includes('carta_pase') || fileNameLow.includes('pase')) {
+              typeLabel = 'Carta Pase';
+            } else if (typeLow.includes('autoriz') || typeLow.includes('padres') || fileNameLow.includes('autoriz')) {
+              typeLabel = 'Autorización (Menor de 12 Años)';
+            }
             list.insertAdjacentHTML('beforeend', `
               <tr>
                 <td class="ps-4 fw-bold text-primary">${d.teamName}</td>
-                <td class="text-uppercase small">${d.type} <br>${statusBadge}</td>
-                <td class="small opacity-75">${d.notes || '-'}</td>
+                <td class="text-uppercase small"><span class="fw-bold">${typeLabel}</span><br>${statusBadge}</td>
+                <td class="small opacity-75">${d.playerName ? `<strong>${d.playerName}</strong><br>` : ''}${d.notes || '-'}</td>
                 <td class="small text-white-50">${date}</td>
                 <td class="text-end pe-4">
                   <div class="btn-group">
-                    ${d.status !== 'Aprobado' ? `<button class="btn btn-sm btn-outline-success" onclick="approveTeamDoc('${doc.id}', '${d.type}')" title="Aprobar"><i class="fas fa-check"></i></button>` : ''}
-                    <button class="btn btn-sm btn-outline-info" onclick="viewTeamDoc('${doc.id}')" title="Ver">
+                    ${d.status !== 'Aprobado' ? `<button class="btn btn-sm btn-outline-success" onclick="approveTeamDoc('${d.id}', '${d.type}')" title="Aprobar"><i class="fas fa-check"></i></button>` : ''}
+                    <button class="btn btn-sm btn-outline-info" onclick="viewTeamDoc('${d.id}')" title="Ver">
                       <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTeamDoc('${doc.id}')" title="Eliminar">
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteTeamDoc('${d.id}')" title="Eliminar">
                       <i class="fas fa-trash"></i>
                     </button>
                   </div>
