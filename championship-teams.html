@@ -201,8 +201,8 @@
                 </select>
               </div>
               <div class="mb-4">
-                <label for="fileUpload" class="form-label">ARCHIVO PDF</label>
-                <input type="file" class="input-premium" id="fileUpload" accept=".pdf" required />
+                <label for="fileUpload" class="form-label">ARCHIVO (PDF o Imagen)</label>
+                <input type="file" class="input-premium" id="fileUpload" accept=".pdf,image/*" required />
               </div>
               <button type="submit" class="btn-premium w-100 justify-content-center py-3">
                 <i class="fas fa-upload me-2"></i> SUBIR ARCHIVO
@@ -1022,29 +1022,56 @@
             return;
           }
 
-          const reader = new FileReader();
-          reader.onload = function (event) {
-            const base64PDF = event.target.result; // PDF en base64
+          Swal.fire({
+            title: "Subiendo archivo...",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+          });
 
-            db.collection("teamFiles")
-              .add({
+          const reader = new FileReader();
+          reader.onload = async function (event) {
+            const base64Data = event.target.result;
+            try {
+              const now = firebase.firestore.FieldValue.serverTimestamp();
+              const ext = file.name && file.name.includes('.') ? file.name.substring(file.name.lastIndexOf('.')) : '.pdf';
+              let formattedType = fileType;
+              let displayFileName = file.name;
+
+              // Guardar en team_documentation
+              const docRef = await db.collection("team_documentation").add({
                 teamId: teamId,
-                fileName: file.name,
-                fileType: fileType,
-                fileBase64: base64PDF,
-                uploadedAt: firebase.firestore.FieldValue.serverTimestamp(),
-              })
-              .then(() => {
-                Swal.fire("Éxito", "Archivo subido correctamente", "success");
-                document.getElementById("fileUploadForm").reset();
-                loadTeamFiles(teamId); // Recarga la lista de archivos
-              })
-              .catch((error) => {
-                console.error("Error al subir archivo:", error);
-                Swal.fire("Error", "No se pudo subir el archivo", "error");
+                teamName: teamName,
+                type: formattedType,
+                file: base64Data,
+                fileName: displayFileName,
+                status: 'Aprobado',
+                notes: `Subido desde Gestor de Archivos por administración`,
+                timestamp: now,
+                notified: false
               });
+
+              // Guardar en teamFiles
+              await db.collection("teamFiles").add({
+                teamId: teamId,
+                fileName: displayFileName,
+                fileType: formattedType,
+                fileBase64: base64Data,
+                status: 'Aprobado',
+                notes: `Subido por administración`,
+                docRefId: docRef.id,
+                uploadedAt: now,
+              });
+
+              Swal.fire("Éxito", "Archivo subido y registrado correctamente", "success");
+              document.getElementById("fileUploadForm").reset();
+              loadTeamFiles(teamId);
+              if (typeof checkPendingDocs === 'function') checkPendingDocs();
+            } catch (error) {
+              console.error("Error al subir archivo:", error);
+              Swal.fire("Error", "No se pudo subir el archivo", "error");
+            }
           };
-          reader.readAsDataURL(file); // Convierte el PDF a base64
+          reader.readAsDataURL(file);
         };
 
         modal.show();
@@ -1359,7 +1386,9 @@
 
       async function approveTeamDoc(id, type) {
         const updatedDoc = await db.collection("team_documentation").doc(id).get();
+        if (!updatedDoc.exists) return;
         const data = updatedDoc.data();
+        const now = firebase.firestore.FieldValue.serverTimestamp();
         
         if (type === 'transferencia') {
             // Show progress indicator
@@ -1381,170 +1410,600 @@
             const extracted = await extractTransferData(data.file);
             Swal.close();
 
-             const num = (extracted.num || 'CARTA_PASE').toUpperCase();
+            const num = (extracted.num || 'CARTA_PASE').toUpperCase();
 
-             const result = await Swal.fire({
-                 title: '<h4 class="text-white fw-bold mb-0"><i class="fas fa-check-circle text-success me-2 animate__animated animate__bounceIn"></i>¿APROBAR Y REGISTRAR?</h4>',
-                 html: `
-                     <div class="py-3 text-start text-white-50">
-                         <p class="mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">SE REGISTRARÁ LA CARTA PASE DE FORMA AUTOMÁTICA CON EL NÚMERO DETECTADO POR IA:</p>
-                         <div class="bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-10 mb-2">
-                             <div class="mb-0"><strong class="text-white-50 small">Nº CARTA PASE:</strong> <span class="text-success fw-bold font-monospace">${num}</span></div>
-                         </div>
-                     </div>
-                 `,
-                 showCancelButton: true,
-                 confirmButtonText: '<i class="fas fa-check me-2"></i>APROBAR Y REGISTRAR',
-                 cancelButtonText: '<i class="fas fa-times me-2"></i>CANCELAR',
-                 confirmButtonColor: '#2ecc71',
-                 cancelButtonColor: '#e74c3c',
-                 background: '#1a1a1a',
-                 target: document.getElementById('qualificationsModal'),
-                 customClass: {
-                     popup: 'rounded-4 border border-white border-opacity-10',
-                     confirmButton: 'btn btn-success rounded-pill px-4 py-2 text-uppercase fw-bold m-1',
-                     cancelButton: 'btn btn-danger rounded-pill px-4 py-2 text-uppercase fw-bold m-1'
-                 }
-             });
+            const result = await Swal.fire({
+                title: '<h4 class="text-white fw-bold mb-0"><i class="fas fa-check-circle text-success me-2 animate__animated animate__bounceIn"></i>¿APROBAR Y HABILITAR?</h4>',
+                html: `
+                    <div class="py-3 text-start text-white-50">
+                        <p class="mb-3" style="font-size: 0.85rem; letter-spacing: 0.5px;">SE REGISTRARÁ LA CARTA PASE DE FORMA OFICIAL Y SE HABILITARÁ AL JUGADOR:</p>
+                        <div class="bg-black bg-opacity-25 p-3 rounded-4 border border-white border-opacity-10 mb-2">
+                            <div class="mb-1"><strong class="text-white-50 small">Nº CARTA PASE:</strong> <span class="text-success fw-bold font-monospace">${num}</span></div>
+                            ${data.playerName ? `<div><strong class="text-white-50 small">JUGADOR:</strong> <span class="text-white fw-bold">${data.playerName}</span></div>` : ''}
+                            ${data.cedula ? `<div><strong class="text-white-50 small">CÉDULA:</strong> <span class="text-warning fw-bold">${data.cedula}</span></div>` : ''}
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-check me-2"></i>APROBAR Y HABILITAR',
+                cancelButtonText: '<i class="fas fa-times me-2"></i>CANCELAR',
+                confirmButtonColor: '#2ecc71',
+                cancelButtonColor: '#e74c3c',
+                background: '#1a1a1a',
+                target: document.getElementById('qualificationsModal'),
+                customClass: {
+                    popup: 'rounded-4 border border-white border-opacity-10',
+                    confirmButton: 'btn btn-success rounded-pill px-4 py-2 text-uppercase fw-bold m-1',
+                    cancelButton: 'btn btn-danger rounded-pill px-4 py-2 text-uppercase fw-bold m-1'
+                }
+            });
 
-             if (result.isConfirmed) {
-                 await db.collection("team_documentation").doc(id).update({
-                     status: 'Aprobado',
-                     numeroCartaPase: num,
-                     playerName: "",
-                     fechaAprobacion: firebase.firestore.FieldValue.serverTimestamp(),
-                     notified: false
-                 });
-                 
-                 // Dynamic Extension detection based on original file name
-                 const originalExt = data.fileName && data.fileName.includes('.') 
-                   ? data.fileName.substring(data.fileName.lastIndexOf('.')).toLowerCase() 
-                   : '.pdf';
-                 
-                 // Guardar en Gestor de Archivos del equipo
-                 await db.collection("teamFiles").add({
-                     teamId: data.teamId,
-                     fileName: num + originalExt,
-                     fileType: data.type.toUpperCase(),
-                     fileBase64: data.file,
-                     uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-                 });
-                 
-                 Swal.fire('¡APROBADO!', 'LA CARTA PASE HA SIDO APROBADA Y REGISTRADA EN LOS ARCHIVOS DEL EQUIPO.', 'success');
-                 showQualifications();
-             }
+            if (result.isConfirmed) {
+                await db.collection("team_documentation").doc(id).update({
+                    status: 'Aprobado',
+                    numeroCartaPase: num,
+                    fechaAprobacion: now,
+                    notified: false
+                });
+                
+                // Dynamic Extension detection based on original file name
+                const originalExt = data.fileName && data.fileName.includes('.') 
+                  ? data.fileName.substring(data.fileName.lastIndexOf('.')).toLowerCase() 
+                  : '.pdf';
+                
+                // Actualizar o Guardar en Gestor de Archivos del equipo
+                const teamFileSnap = await db.collection("teamFiles")
+                  .where("teamId", "==", data.teamId)
+                  .where("docRefId", "==", id)
+                  .get();
+
+                if (!teamFileSnap.empty) {
+                  teamFileSnap.forEach(async (tfDoc) => {
+                    await db.collection("teamFiles").doc(tfDoc.id).update({
+                      status: 'Aprobado',
+                      fechaAprobacion: now
+                    });
+                  });
+                } else {
+                  await db.collection("teamFiles").add({
+                    teamId: data.teamId,
+                    fileName: num + originalExt,
+                    fileType: data.type ? data.type.toUpperCase() : 'CARTA_PASE',
+                    fileBase64: data.file,
+                    status: 'Aprobado',
+                    docRefId: id,
+                    cedula: data.cedula || '',
+                    playerName: data.playerName || '',
+                    uploadedAt: now
+                  });
+                }
+
+                // Habilitar al jugador en la colección 'players'
+                if (data.cedula) {
+                  const pSnap = await db.collection("players")
+                    .where("teamId", "==", data.teamId)
+                    .where("cedula", "==", data.cedula)
+                    .get();
+
+                  pSnap.forEach(async (pDoc) => {
+                    await db.collection("players").doc(pDoc.id).update({
+                      status: 'activo',
+                      requiereRevision: false,
+                      fechaAprobacion: now
+                    });
+                  });
+                }
+
+                // Si se transfirió de un jugador previo
+                if (data.playerId) {
+                  try {
+                    await db.collection("players").doc(data.playerId).update({
+                      status: 'recalificado',
+                      recalificadoFecha: now
+                    });
+                  } catch(e) {}
+                }
+                
+                Swal.fire('¡APROBADO!', 'LA CARTA PASE HA SIDO APROBADA Y EL JUGADOR HA QUEDADO TOTALMENTE REGISTRADO Y HABILITADO.', 'success');
+                showQualifications();
+                loadTeams();
+              }
         } else {
             const result = await Swal.fire({
-                title: '¿Aprobar documento?',
-                text: 'Se marcará como aprobado por la comisión y se guardará en los archivos del equipo.',
+                title: '¿Aprobar y Habilitar Documento?',
+                text: 'Se marcará como aprobado por la comisión y el jugador quedará totalmente habilitado en el campeonato.',
                 icon: 'question',
                 showCancelButton: true,
-                confirmButtonText: 'Aprobar',
+                confirmButtonText: 'Aprobar y Habilitar',
+                cancelButtonText: 'Cancelar',
+                confirmButtonColor: '#2ecc71',
+                cancelButtonColor: '#6c757d'
             });
             if (result.isConfirmed) {
                 await db.collection("team_documentation").doc(id).update({
                     status: 'Aprobado',
-                    fechaAprobacion: firebase.firestore.FieldValue.serverTimestamp(),
+                    fechaAprobacion: now,
                     notified: false
                 });
                 
-                // Guardar en Gestor de Archivos del equipo
-                await db.collection("teamFiles").add({
+                // Actualizar o Guardar en Gestor de Archivos del equipo
+                const teamFileSnap = await db.collection("teamFiles")
+                  .where("teamId", "==", data.teamId)
+                  .where("docRefId", "==", id)
+                  .get();
+
+                if (!teamFileSnap.empty) {
+                  teamFileSnap.forEach(async (tfDoc) => {
+                    await db.collection("teamFiles").doc(tfDoc.id).update({
+                      status: 'Aprobado',
+                      fechaAprobacion: now
+                    });
+                  });
+                } else {
+                  await db.collection("teamFiles").add({
                     teamId: data.teamId,
-                    fileName: "Documento - " + data.type.toUpperCase() + ".pdf",
-                    fileType: data.type.toUpperCase(),
+                    fileName: data.fileName || ("Documento - " + (data.type ? data.type.toUpperCase() : 'DOC') + ".pdf"),
+                    fileType: data.type ? data.type.toUpperCase() : 'DOCUMENTO',
                     fileBase64: data.file,
-                    uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
+                    status: 'Aprobado',
+                    docRefId: id,
+                    cedula: data.cedula || '',
+                    playerName: data.playerName || '',
+                    uploadedAt: now
+                  });
+                }
+
+                // Habilitar jugadores pendientes del equipo
+                if (data.cedula) {
+                  const pSnap = await db.collection("players")
+                    .where("teamId", "==", data.teamId)
+                    .where("cedula", "==", data.cedula)
+                    .get();
+
+                  pSnap.forEach(async (pDoc) => {
+                    await db.collection("players").doc(pDoc.id).update({
+                      status: 'activo',
+                      requiereRevision: false,
+                      fechaAprobacion: now
+                    });
+                  });
+                }
                 
-                Swal.fire('¡Aprobado!', 'El documento ha sido aprobado y guardado en archivos.', 'success');
+                Swal.fire('¡Aprobado!', 'El documento ha sido aprobado y el jugador ha quedado totalmente habilitado.', 'success');
                 showQualifications();
+                loadTeams();
             }
         }
       }
       // --- END COMISIÓN DE CALIFICACIONES ---
 
-      // Función para cargar archivos del equipo
-      function loadTeamFiles(teamId) {
+      // Función para cargar archivos del equipo (unificado de teamFiles y team_documentation)
+      async function loadTeamFiles(teamId) {
         const filesList = document.getElementById("filesList");
         filesList.innerHTML =
-          '<div class="text-center"><div class="spinner-border text-success" role="status"></div></div>';
+          '<div class="text-center py-4"><div class="spinner-border text-success" role="status"></div></div>';
 
-        db.collection("teamFiles")
-          .where("teamId", "==", teamId)
-          .orderBy("uploadedAt", "desc")
-          .get()
-          .then((querySnapshot) => {
-            filesList.innerHTML = "";
-            if (querySnapshot.empty) {
-              filesList.innerHTML =
-                '<p class="text-center">No hay archivos subidos</p>';
-              return;
+        try {
+          const [teamFilesSnap, teamDocSnap] = await Promise.all([
+            db.collection("teamFiles").where("teamId", "==", teamId).get(),
+            db.collection("team_documentation").where("teamId", "==", teamId).get()
+          ]);
+
+          const allFilesMap = new Map();
+
+          teamFilesSnap.forEach((doc) => {
+            const data = doc.data();
+            const key = (data.fileName || '') + '_' + (data.fileBase64 ? data.fileBase64.substring(0, 50) : doc.id);
+            allFilesMap.set(key, { id: doc.id, collection: 'teamFiles', ...data });
+          });
+
+          teamDocSnap.forEach((doc) => {
+            const data = doc.data();
+            const key = (data.fileName || '') + '_' + (data.file ? data.file.substring(0, 50) : doc.id);
+            if (!allFilesMap.has(key)) {
+              allFilesMap.set(key, {
+                id: doc.id,
+                collection: 'team_documentation',
+                fileName: data.fileName || `${data.type ? data.type.toUpperCase() : 'DOCUMENTO'}.pdf`,
+                fileType: data.type || 'otro',
+                fileBase64: data.file,
+                notes: data.notes || '',
+                status: data.status || 'Pendiente',
+                cedula: data.cedula || '',
+                playerName: data.playerName || '',
+                uploadedAt: data.timestamp
+              });
+            } else {
+              const existing = allFilesMap.get(key);
+              if (data.status) existing.status = data.status;
+              if (data.playerName && !existing.playerName) existing.playerName = data.playerName;
+              if (data.cedula && !existing.cedula) existing.cedula = data.cedula;
+              if (data.notes && !existing.notes) existing.notes = data.notes;
+              existing.docRefId = doc.id;
+            }
+          });
+
+          filesList.innerHTML = "";
+          if (allFilesMap.size === 0) {
+            filesList.innerHTML =
+              '<div class="text-center text-white-50 py-4"><i class="fas fa-folder-open mb-2 d-block fs-3 opacity-50"></i>No hay archivos subidos para este equipo</div>';
+            return;
+          }
+
+          const filesArray = Array.from(allFilesMap.values());
+          filesArray.sort((a, b) => {
+            const timeA = a.uploadedAt ? (a.uploadedAt.toDate ? a.uploadedAt.toDate().getTime() : new Date(a.uploadedAt).getTime()) : 0;
+            const timeB = b.uploadedAt ? (b.uploadedAt.toDate ? b.uploadedAt.toDate().getTime() : new Date(b.uploadedAt).getTime()) : 0;
+            return timeB - timeA;
+          });
+
+          filesArray.forEach((file) => {
+            const fileData = file.fileBase64 || file.file || "";
+            const isPdf = fileData.startsWith("data:application/pdf") || (file.fileName && file.fileName.toLowerCase().endsWith(".pdf"));
+            const isImage = fileData.startsWith("data:image");
+            const icon = isPdf ? '<i class="fas fa-file-pdf text-danger fs-4 me-3"></i>' : (isImage ? '<i class="fas fa-file-image text-info fs-4 me-3"></i>' : '<i class="fas fa-file-alt text-warning fs-4 me-3"></i>');
+            
+            const typeRaw = (file.fileType || file.type || "").toLowerCase();
+            let typeBadge = '';
+            if (typeRaw.includes("carta") || typeRaw.includes("pase") || typeRaw.includes("transferencia")) {
+              typeBadge = '<span class="badge" style="background: rgba(243, 156, 18, 0.2); color: #f39c12; border: 1px solid rgba(243, 156, 18, 0.4);"><i class="fas fa-exchange-alt me-1"></i>Carta Pase</span>';
+            } else if (typeRaw.includes("autoriz") || typeRaw.includes("padres")) {
+              typeBadge = '<span class="badge" style="background: rgba(52, 152, 219, 0.2); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.4);"><i class="fas fa-child me-1"></i>Autorización (Menor)</span>';
+            } else {
+              typeBadge = `<span class="badge bg-secondary">${(file.fileType || 'DOCUMENTO').replace('_', ' ').toUpperCase()}</span>`;
             }
 
-            querySnapshot.forEach((doc) => {
-              const file = doc.data();
-              const fileItem = document.createElement("div");
-              fileItem.className =
-                "list-group-item d-flex justify-content-between align-items-center";
-              fileItem.innerHTML = `
-                <div>
-                  <strong>${file.fileName}</strong>
-                  <br>
-                  <small class="text-muted">Tipo: ${file.fileType
-                    .replace("_", " ")
-                    .toUpperCase()}</small>
+            const status = file.status || "Pendiente";
+            let statusBadge = '';
+            if (status === "Aprobado") {
+              statusBadge = '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 small fw-bold"><i class="fas fa-check-circle me-1"></i>APROBADO</span>';
+            } else if (status === "Denegado") {
+              statusBadge = '<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-1 small fw-bold"><i class="fas fa-times-circle me-1"></i>DENEGADO</span>';
+            } else {
+              statusBadge = '<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-1 small fw-bold"><i class="fas fa-clock me-1"></i>PENDIENTE DE REVISIÓN</span>';
+            }
+
+            const dateStr = file.uploadedAt ? (file.uploadedAt.toDate ? file.uploadedAt.toDate().toLocaleString() : new Date(file.uploadedAt).toLocaleString()) : '';
+
+            const cedulaParam = file.cedula || (file.fileName || '').match(/\d{10}/)?.[0] || '';
+
+            const fileItem = document.createElement("div");
+            fileItem.className = "list-group-item bg-dark-glass text-white border border-white border-opacity-10 mb-3 rounded-4 p-3 shadow-sm";
+            fileItem.innerHTML = `
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="d-flex align-items-center">
+                  ${icon}
+                  <div>
+                    <strong class="text-white text-uppercase" style="font-size: 0.95rem;">${file.fileName || 'Archivo Adjunto'}</strong>
+                    <div class="mt-1 d-flex gap-2 align-items-center flex-wrap">
+                      ${typeBadge}
+                      ${statusBadge}
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <button class="btn btn-info btn-sm me-2" onclick="verArchivo('${
-                    file.fileBase64
-                  }')">
-                    <i class="fas fa-eye"></i> Ver
-                  </button>
-                  <button class="btn btn-danger btn-sm" onclick="deleteFile('${
-                    doc.id
-                  }', '${teamId}')">
-                    <i class="fas fa-trash"></i>
-                  </button>
+                <span class="text-white-50 font-monospace small" style="font-size: 0.75rem;">${dateStr}</span>
+              </div>
+
+              ${file.playerName || cedulaParam ? `
+                <div class="bg-black bg-opacity-25 p-2 rounded-3 mb-2 border border-white border-opacity-10 small">
+                  ${file.playerName ? `<div><span class="text-white-50">Jugador:</span> <strong class="text-white">${file.playerName}</strong></div>` : ''}
+                  ${cedulaParam ? `<div><span class="text-white-50">Cédula:</span> <strong class="text-warning">${cedulaParam}</strong></div>` : ''}
                 </div>
-              `;
-              filesList.appendChild(fileItem);
-            });
-          })
-          .catch((error) => {
-            console.error("Error al cargar archivos:", error);
-            filesList.innerHTML =
-              '<p class="text-center text-danger">Error al cargar los archivos</p>';
+              ` : ''}
+
+              ${file.notes ? `<p class="mb-2 small text-white-50 fst-italic"><i class="fas fa-sticky-note me-1 text-info"></i>${file.notes}</p>` : ''}
+
+              <div class="d-flex justify-content-end gap-2 pt-2 border-top border-white border-opacity-10 flex-wrap">
+                <button class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="verArchivoPreview('${encodeURIComponent(JSON.stringify({ fileBase64: file.fileBase64 || file.file, fileName: file.fileName, fileType: file.fileType || file.type }))}')">
+                  <i class="fas fa-eye me-1"></i> Ver
+                </button>
+                ${status !== 'Aprobado' ? `
+                  <button class="btn btn-sm btn-success rounded-pill px-3 fw-bold" onclick="approveTeamFileDirect('${file.id}', '${file.collection || 'teamFiles'}', '${teamId}', '${cedulaParam}', '${file.docRefId || ''}', '${file.fileName || ''}')">
+                    <i class="fas fa-check me-1"></i> Aceptar y Habilitar
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="denyTeamFileDirect('${file.id}', '${file.collection || 'teamFiles'}', '${teamId}', '${file.docRefId || ''}')">
+                    <i class="fas fa-times me-1"></i> Denegar
+                  </button>
+                ` : ''}
+                <button class="btn btn-sm btn-outline-danger border-0 rounded-circle" style="width: 32px; height: 32px;" onclick="deleteFile('${file.id}', '${teamId}', '${file.collection || 'teamFiles'}', '${file.docRefId || ''}')" title="Eliminar Archivo">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            `;
+            filesList.appendChild(fileItem);
           });
+        } catch (error) {
+          console.error("Error al cargar archivos:", error);
+          filesList.innerHTML = '<p class="text-center text-danger py-4">Error al cargar los archivos</p>';
+        }
       }
 
+      // Función para ver archivo preview (PDF o Imagen)
+      function verArchivoPreview(fileDataEncoded) {
+        let fileObj = {};
+        try {
+          fileObj = JSON.parse(decodeURIComponent(fileDataEncoded));
+        } catch (e) {
+          console.error(e);
+        }
+
+        const base64Data = fileObj.fileBase64 || fileObj.file || "";
+        const frame = document.getElementById('docViewerFrame');
+        const img = document.getElementById('docViewerImg');
+        const title = document.getElementById('viewDocTitle');
+
+        if (title) title.textContent = fileObj.fileName || "Visualizador de Documento";
+
+        if (base64Data.startsWith('data:application/pdf') || (fileObj.fileName && fileObj.fileName.toLowerCase().endsWith('.pdf'))) {
+          if (frame) {
+            frame.src = base64Data;
+            frame.style.display = 'block';
+          }
+          if (img) img.style.display = 'none';
+        } else {
+          if (img) {
+            img.src = base64Data;
+            img.style.display = 'inline-block';
+          }
+          if (frame) frame.style.display = 'none';
+        }
+
+        const modal = new bootstrap.Modal(document.getElementById('viewDocModal'));
+        modal.show();
+      }
+      window.verArchivoPreview = verArchivoPreview;
+
+      // Función para aprobar archivo directamente y habilitar al jugador
+      async function approveTeamFileDirect(fileId, collectionName, teamId, cedula, docRefId, fileName) {
+        const targetCedula = cedula || (fileName || '').match(/\d{10}/)?.[0] || '';
+
+        const result = await Swal.fire({
+          title: '<h4 class="text-white fw-bold mb-0"><i class="fas fa-check-circle text-success me-2"></i>¿APROBAR Y HABILITAR?</h4>',
+          html: `
+            <div class="text-start p-3 text-white-50 small rounded-3" style="background: rgba(255,255,255,0.05);">
+              <p class="mb-2">El documento será marcado como <strong class="text-success">Aprobado</strong>.</p>
+              ${targetCedula ? `<p class="mb-2 text-warning"><i class="fas fa-id-card me-1"></i> Cédula asociada: <b>${targetCedula}</b></p>` : ''}
+              <p class="mb-0 text-white"><i class="fas fa-user-check text-success me-1"></i> El jugador asociado quedará <strong>oficialmente calificado y habilitado</strong> para jugar.</p>
+            </div>
+          `,
+          showCancelButton: true,
+          confirmButtonText: '<i class="fas fa-check me-2"></i>Aprobar y Habilitar',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#2ecc71',
+          cancelButtonColor: '#6c757d',
+          background: '#1a1a1a',
+          target: document.getElementById('manageFilesModal') || undefined
+        });
+
+        if (result.isConfirmed) {
+          Swal.fire({
+            title: 'Habilitando Jugador...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+          });
+
+          try {
+            const now = firebase.firestore.FieldValue.serverTimestamp();
+
+            // 1. Actualizar estado del documento en ambas colecciones
+            if (collectionName === 'team_documentation') {
+              await db.collection("team_documentation").doc(fileId).update({
+                status: 'Aprobado',
+                fechaAprobacion: now,
+                notified: false
+              });
+              // Sincronizar en teamFiles si existe
+              const tfSnap = await db.collection("teamFiles").where("teamId", "==", teamId).get();
+              tfSnap.forEach(async (tfDoc) => {
+                const tfData = tfDoc.data();
+                if (tfData.docRefId === fileId || (targetCedula && tfData.cedula === targetCedula)) {
+                  await db.collection("teamFiles").doc(tfDoc.id).update({
+                    status: 'Aprobado',
+                    fechaAprobacion: now
+                  }).catch(() => {});
+                }
+              });
+            } else {
+              await db.collection("teamFiles").doc(fileId).update({
+                status: 'Aprobado',
+                fechaAprobacion: now
+              });
+              if (docRefId) {
+                try {
+                  await db.collection("team_documentation").doc(docRefId).update({
+                    status: 'Aprobado',
+                    fechaAprobacion: now,
+                    notified: false
+                  });
+                } catch(e){}
+              } else if (targetCedula) {
+                const tdSnap = await db.collection("team_documentation").where("cedula", "==", targetCedula).get();
+                tdSnap.forEach(async (tdDoc) => {
+                  await db.collection("team_documentation").doc(tdDoc.id).update({
+                    status: 'Aprobado',
+                    fechaAprobacion: now,
+                    notified: false
+                  }).catch(() => {});
+                });
+              }
+            }
+
+            // 2. Activar al jugador en la colección 'players'
+            let playerUpdated = false;
+            if (targetCedula) {
+              let playerSnap = await db.collection("players")
+                .where("teamId", "==", teamId)
+                .where("cedula", "==", targetCedula)
+                .get();
+
+              if (playerSnap.empty) {
+                playerSnap = await db.collection("players")
+                  .where("cedula", "==", targetCedula)
+                  .get();
+              }
+
+              const updatePromises = [];
+              playerSnap.forEach(pDoc => {
+                playerUpdated = true;
+                const pData = pDoc.data();
+                updatePromises.push(db.collection("players").doc(pDoc.id).update({
+                  status: 'activo',
+                  requiereRevision: false,
+                  calificadoPor: 'Administración / Directiva',
+                  fechaAprobacion: now
+                }));
+
+                const prevId = pData.reemplazoDe || pData.originalPlayerId;
+                if (prevId) {
+                  updatePromises.push(db.collection("players").doc(prevId).update({
+                    status: 'recalificado',
+                    recalificadoPor: pDoc.id,
+                    recalificadoFecha: now
+                  }).catch(() => {}));
+                }
+              });
+              await Promise.all(updatePromises);
+            }
+
+            if (!playerUpdated) {
+              const pendingSnap = await db.collection("players")
+                .where("teamId", "==", teamId)
+                .where("status", "==", "pendiente_aprobacion")
+                .get();
+
+              const updatePromises = [];
+              pendingSnap.forEach(pDoc => {
+                const pData = pDoc.data();
+                updatePromises.push(db.collection("players").doc(pDoc.id).update({
+                  status: 'activo',
+                  requiereRevision: false,
+                  calificadoPor: 'Administración / Directiva',
+                  fechaAprobacion: now
+                }));
+                const prevId = pData.reemplazoDe || pData.originalPlayerId;
+                if (prevId) {
+                  updatePromises.push(db.collection("players").doc(prevId).update({
+                    status: 'recalificado',
+                    recalificadoPor: pDoc.id,
+                    recalificadoFecha: now
+                  }).catch(() => {}));
+                }
+              });
+              await Promise.all(updatePromises);
+            }
+
+            Swal.fire({
+              icon: 'success',
+              title: '¡DOCUMENTO APROBADO!',
+              text: 'La documentación ha sido aprobada y el jugador ha quedado oficialmente calificado y habilitado.',
+              confirmButtonColor: '#28a745'
+            });
+
+            loadTeamFiles(teamId);
+            loadTeams();
+            if (typeof checkPendingDocs === 'function') checkPendingDocs();
+          } catch (err) {
+            console.error(err);
+            Swal.fire('Error', 'No se pudo aprobar el documento.', 'error');
+          }
+        }
+      }
+      window.approveTeamFileDirect = approveTeamFileDirect;
+
+      // Función para denegar archivo
+      async function denyTeamFileDirect(fileId, collectionName, teamId, docRefId) {
+        const { value: reason } = await Swal.fire({
+          title: 'Denegar Documento',
+          input: 'textarea',
+          inputLabel: 'Motivo del rechazo',
+          inputPlaceholder: 'Escribe el motivo por el cual no se acepta el documento...',
+          showCancelButton: true,
+          confirmButtonColor: '#e74c3c',
+          confirmButtonText: 'Denegar',
+          cancelButtonText: 'Cancelar',
+          target: document.getElementById('manageFilesModal') || undefined,
+          customClass: {
+            input: 'text-uppercase'
+          },
+          inputValidator: (value) => {
+            if (!value) {
+              return '¡Debes escribir un motivo!';
+            }
+          }
+        });
+
+        if (reason) {
+          try {
+            const now = firebase.firestore.FieldValue.serverTimestamp();
+            if (collectionName === 'team_documentation') {
+              await db.collection("team_documentation").doc(fileId).update({
+                status: 'Denegado',
+                motivo: reason.toUpperCase(),
+                fechaAprobacion: now,
+                notified: false
+              });
+            } else {
+              await db.collection("teamFiles").doc(fileId).update({
+                status: 'Denegado',
+                motivo: reason.toUpperCase(),
+                fechaAprobacion: now
+              });
+              if (docRefId) {
+                try {
+                  await db.collection("team_documentation").doc(docRefId).update({
+                    status: 'Denegado',
+                    motivo: reason.toUpperCase(),
+                    fechaAprobacion: now,
+                    notified: false
+                  });
+                } catch(e){}
+              }
+            }
+            Swal.fire("Denegado", "El documento ha sido marcado como denegado.", "success");
+            loadTeamFiles(teamId);
+            if (typeof checkPendingDocs === 'function') checkPendingDocs();
+          } catch (err) {
+            console.error(err);
+            Swal.fire("Error", "No se pudo denegar el documento.", "error");
+          }
+        }
+      }
+      window.denyTeamFileDirect = denyTeamFileDirect;
+
       // Función para eliminar archivo
-      function deleteFile(fileId, teamId) {
+      function deleteFile(fileId, teamId, collectionName, docRefId) {
         Swal.fire({
           title: "¿Eliminar archivo?",
-          text: "Esta acción no se puede deshacer",
+          text: "Esta acción eliminará el archivo de los registros.",
           icon: "warning",
           showCancelButton: true,
           confirmButtonText: "Sí, eliminar",
           cancelButtonText: "Cancelar",
-        }).then((result) => {
+          confirmButtonColor: "#e74c3c",
+          cancelButtonColor: "#6c757d",
+          target: document.getElementById('manageFilesModal') || undefined
+        }).then(async (result) => {
           if (result.isConfirmed) {
-            // Eliminar la referencia de Firestore
-            db.collection("teamFiles")
-              .doc(fileId)
-              .delete()
-              .then(() => {
-                Swal.fire(
-                  "Eliminado",
-                  "El archivo ha sido eliminado",
-                  "success",
-                );
-                loadTeamFiles(teamId);
-              })
-              .catch((error) => {
-                console.error("Error al eliminar archivo:", error);
-                Swal.fire("Error", "No se pudo eliminar el archivo", "error");
-              });
+            try {
+              if (collectionName === 'team_documentation') {
+                await db.collection("team_documentation").doc(fileId).delete();
+              } else {
+                await db.collection("teamFiles").doc(fileId).delete();
+                if (docRefId) {
+                  try { await db.collection("team_documentation").doc(docRefId).delete(); } catch(e){}
+                }
+              }
+              Swal.fire(
+                "Eliminado",
+                "El archivo ha sido eliminado",
+                "success",
+              );
+              loadTeamFiles(teamId);
+              if (typeof checkPendingDocs === 'function') checkPendingDocs();
+            } catch (error) {
+              console.error("Error al eliminar archivo:", error);
+              Swal.fire("Error", "No se pudo eliminar el archivo", "error");
+            }
           }
         });
       }

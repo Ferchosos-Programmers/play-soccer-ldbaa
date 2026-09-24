@@ -2157,7 +2157,7 @@
         const reader = new FileReader();
         reader.onload = async (ev) => {
           try {
-            await db.collection("team_documentation").add({
+            const newDocRef = await db.collection("team_documentation").add({
               teamId: currentTeam.id,
               teamName: currentTeam.name,
               type: type,
@@ -2166,7 +2166,21 @@
               notes: notes,
               numeroCartaPase: "",
               playerName: "",
+              status: "Pendiente",
               timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+            // Sincronizar en teamFiles para la gestión administrativa
+            await db.collection("teamFiles").add({
+              teamId: currentTeam.id,
+              teamName: currentTeam.name,
+              name: file.name,
+              data: ev.target.result,
+              tipoDocumento: type === 'transferencia' ? 'carta_pase' : (type === 'cedula' ? 'autorizacion' : 'otro'),
+              descripcion: notes || 'Documentación subida por delegado',
+              status: "Pendiente",
+              docRefId: newDocRef.id,
+              uploadedAt: new Date().toISOString(),
+              timestamp: firebase.firestore.FieldValue.serverTimestamp()
             });
             Swal.fire(
               "¡ENVIADO!",

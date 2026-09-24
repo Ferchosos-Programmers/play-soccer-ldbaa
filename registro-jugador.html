@@ -588,6 +588,7 @@
             ></button>
           </div>
           <div class="modal-body">
+            <div id="modalPlayerStatusBanner" class="w-100 mb-3 px-2"></div>
             <div
               class="document-container d-flex justify-content-center align-items-center flex-wrap gap-4"
             >
@@ -1044,6 +1045,10 @@
           });
       }
 
+      // Variables para rastrear documentos adjuntos pendientes de calificación
+      let pendingTransferDoc = null;
+      let pendingAutorizacionDoc = null;
+
       // Cargar lista de jugadores
       function loadPlayers() {
         console.log("Iniciando carga de jugadores para el equipo:", teamId);
@@ -1175,6 +1180,15 @@
                 });
               } else {
                 jugadoresFiltrados.forEach((player) => {
+                  let statusBadge = "";
+                  if (player.status === "recalificado") {
+                    statusBadge = '<br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>';
+                  } else if (player.status === "pendiente_aprobacion") {
+                    statusBadge = '<br><small class="text-warning fw-bold"><i class="fas fa-clock me-1"></i>Calificación por Aceptar</small>';
+                  } else {
+                    statusBadge = '<br><small class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Calificado</small>';
+                  }
+
                   const playerCard = document.createElement("div");
                   playerCard.className = "player-item-glass mb-3";
                   playerCard.innerHTML = `
@@ -1182,15 +1196,15 @@
                     <div class="flex-grow-1">
                       <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
                       <small class="text-white-50">Cédula: ${player.cedula}</small>
-                      ${player.status === "recalificado" ? '<br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>' : ""}
+                      ${statusBadge}
                     </div>
-                    <div class="ms-3">
-                      <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')">
+                    <div class="ms-3 d-flex align-items-center">
+                      <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')" title="Ver Detalles y Carnet">
                         <i class="fas fa-eye text-primary"></i>
                       </button>
                       ${
                         player.status !== "recalificado"
-                          ? `<button class="btn btn-sm btn-secondary-glass text-danger" onclick="deletePlayer('${player.docId}')">
+                          ? `<button class="btn btn-sm btn-secondary-glass text-danger" onclick="deletePlayer('${player.docId}')" title="Eliminar Jugador">
                         <i class="fas fa-trash"></i>
                       </button>`
                           : ""
@@ -1313,23 +1327,92 @@
                           didOpen: () => { Swal.showLoading(); }
                         });
 
-                        // Guardar la carta pase en team_documentation
-                        await db.collection("team_documentation").add({
+                        const ext = fileData.name && fileData.name.includes('.') ? fileData.name.substring(fileData.name.lastIndexOf('.')) : '.pdf';
+                        const fileName = `Carta_Pase_${numCedula}${ext}`;
+                        const playerName = `${originalPlayerDoc.nombres} ${originalPlayerDoc.apellidos}`;
+                        const currentTeamNameVal = document.getElementById("teamName").value || "";
+
+                        // 1. Guardar la carta pase en team_documentation
+                        const docRef = await db.collection("team_documentation").add({
                           teamId: teamId,
-                          teamName: document.getElementById("teamName").value,
+                          teamName: currentTeamNameVal,
                           type: 'transferencia',
                           file: e.target.result,
+                          fileName: fileName,
                           status: 'Pendiente',
-                          notes: `Carta pase para transferencia del jugador con cédula ${numCedula}`,
+                          notes: `Carta pase para transferencia de ${playerName} (CI: ${numCedula}) del club ${originalPlayerDoc.teamName || 'Anterior'} a ${currentTeamNameVal}`,
                           playerId: originalPlayerDoc.id,
+                          cedula: numCedula,
+                          playerName: playerName,
+                          clubAnterior: originalPlayerDoc.teamName || '',
                           timestamp: firebase.firestore.FieldValue.serverTimestamp()
                         });
+
+                        // 2. Guardar en teamFiles para que aparezca de inmediato en Gestionar Archivos del equipo
+                        await db.collection("teamFiles").add({
+                          teamId: teamId,
+                          fileName: fileName,
+                          fileType: 'carta_pase',
+                          fileBase64: e.target.result,
+                          status: 'Pendiente',
+                          cedula: numCedula,
+                          playerName: playerName,
+                          notes: `Carta pase para transferencia del club ${originalPlayerDoc.teamName || 'Anterior'}`,
+                          docRefId: docRef.id,
+                          uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+
+                        // Guardar referencia en memoria para asociar al guardar el jugador
+                        pendingTransferDoc = {
+                          type: 'carta_pase',
+                          docRefId: docRef.id,
+                          fileName: fileName,
+                          numCedula: numCedula,
+                          originalPlayerDoc: originalPlayerDoc
+                        };
+
+                        // Autollenar datos disponibles
+                        if (originalPlayerDoc.nombres && !document.getElementById("nombres").value) {
+                          document.getElementById("nombres").value = originalPlayerDoc.nombres;
+                        }
+                        if (originalPlayerDoc.apellidos && !document.getElementById("apellidos").value) {
+                          document.getElementById("apellidos").value = originalPlayerDoc.apellidos;
+                        }
+                        if (originalPlayerDoc.fechaNacimiento && !document.getElementById("fechaNacimiento").value) {
+                          document.getElementById("fechaNacimiento").value = originalPlayerDoc.fechaNacimiento;
+                        }
+                        if (originalPlayerDoc.playerPhoto) {
+                          const pPreview = document.getElementById("playerPhotoPreview");
+                          if (pPreview) {
+                            pPreview.src = originalPlayerDoc.playerPhoto;
+                            pPreview.classList.remove("d-none");
+                            const pText = document.getElementById("playerPhotoText");
+                            if (pText) pText.classList.add("d-none");
+                            document.getElementById("playerPhoto").removeAttribute("required");
+                          }
+                        }
+                        if (originalPlayerDoc.cedulaPhoto) {
+                          const cPreview = document.getElementById("cedulaPhotoPreview");
+                          if (cPreview) {
+                            cPreview.src = originalPlayerDoc.cedulaPhoto;
+                            cPreview.classList.remove("d-none");
+                            const cText = document.getElementById("cedulaPhotoText");
+                            if (cText) cText.classList.add("d-none");
+                            document.getElementById("cedulaPhoto").removeAttribute("required");
+                          }
+                        }
 
                         Swal.fire({
                           icon: 'success',
                           title: 'Carta Pase Subida',
-                          text: 'La carta pase ha sido registrada y está pendiente de aprobación por la comisión de calificaciones.',
-                          confirmButtonText: 'Entendido'
+                          html: `
+                            <div class="text-start p-2 text-white">
+                              <p class="mb-2">La Carta Pase ha sido subida correctamente y vinculada a los archivos del equipo.</p>
+                              <p class="text-white-50 small mb-0">Puedes continuar completando el formulario. Al presionar <strong>Calificar Jugador</strong>, se registrará en estado de revisión.</p>
+                            </div>
+                          `,
+                          confirmButtonText: 'Continuar Registro',
+                          confirmButtonColor: '#28a745'
                         });
                       } catch (err) {
                         console.error(err);
@@ -1360,9 +1443,13 @@
             if (edad <= 12) {
               // Pedir autorización de padres obligatoria
               const { value: fileData } = await Swal.fire({
-                title: 'Jugador de 12 Años o Menor',
-                text: 'Para registrar un jugador de 12 años o menor, es obligatorio subir la Autorización firmada por los padres de familia (PDF o Imagen).',
-                icon: 'info',
+                title: '<span style="color: #3498db;"><i class="fas fa-child me-2"></i>Jugador de 12 Años o Menor</span>',
+                html: `
+                  <div class="text-start p-2 text-white" style="font-size: 0.95rem;">
+                    <p class="mb-2">Para registrar un jugador de <strong>${edad} años</strong> (12 años o menor), es obligatorio subir la <strong>Autorización firmada por los padres de familia</strong> (PDF o Imagen).</p>
+                    <label class="form-label text-white-50 mt-2 small">Selecciona el archivo de la Autorización:</label>
+                  </div>
+                `,
                 input: 'file',
                 inputAttributes: {
                   accept: 'image/*,application/pdf',
@@ -1376,7 +1463,7 @@
                   input: 'form-control bg-dark text-white border-secondary'
                 },
                 showCancelButton: true,
-                confirmButtonText: 'Subir Autorización',
+                confirmButtonText: '<i class="fas fa-upload me-2"></i>Subir Autorización',
                 cancelButtonText: 'Cancelar',
                 allowOutsideClick: false,
                 allowEscapeKey: false,
@@ -1399,22 +1486,61 @@
                       didOpen: () => { Swal.showLoading(); }
                     });
 
-                    // Guardar la autorización en team_documentation
-                    await db.collection("team_documentation").add({
+                    const ext = fileData.name && fileData.name.includes('.') ? fileData.name.substring(fileData.name.lastIndexOf('.')) : '.pdf';
+                    const currentCedula = (document.getElementById("cedula").value || "").trim() || "MENOR";
+                    const currentNombres = (document.getElementById("nombres").value || "").trim();
+                    const currentApellidos = (document.getElementById("apellidos").value || "").trim();
+                    const playerName = (currentNombres || currentApellidos) ? `${currentNombres} ${currentApellidos}`.trim() : "";
+                    const fileName = `Autorizacion_${currentCedula}${ext}`;
+                    const currentTeamNameVal = document.getElementById("teamName").value || "";
+
+                    // 1. Guardar la autorización en team_documentation
+                    const docRef = await db.collection("team_documentation").add({
                       teamId: teamId,
-                      teamName: document.getElementById("teamName").value,
+                      teamName: currentTeamNameVal,
                       type: 'autorizacion_padres',
                       file: e.target.result,
+                      fileName: fileName,
                       status: 'Pendiente',
-                      notes: `Autorización de padres de familia para jugador de 12 años o menor`,
+                      notes: `Autorización de padres de familia para jugador de 12 años o menor (Edad: ${edad} años${playerName ? ' - ' + playerName : ''})`,
+                      cedula: currentCedula,
+                      playerName: playerName,
                       timestamp: firebase.firestore.FieldValue.serverTimestamp()
                     });
+
+                    // 2. Guardar en teamFiles
+                    await db.collection("teamFiles").add({
+                      teamId: teamId,
+                      fileName: fileName,
+                      fileType: 'autorizacion',
+                      fileBase64: e.target.result,
+                      status: 'Pendiente',
+                      cedula: currentCedula,
+                      playerName: playerName,
+                      notes: `Autorización de padres de familia para jugador de 12 años o menor (Edad: ${edad} años)`,
+                      docRefId: docRef.id,
+                      uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+
+                    pendingAutorizacionDoc = {
+                      type: 'autorizacion',
+                      docRefId: docRef.id,
+                      fileName: fileName,
+                      cedula: currentCedula,
+                      edad: edad
+                    };
 
                     Swal.fire({
                       icon: 'success',
                       title: 'Autorización Subida',
-                      text: 'La autorización se ha guardado correctamente.',
-                      confirmButtonText: 'Entendido'
+                      html: `
+                        <div class="text-start p-2 text-white">
+                          <p class="mb-2">La autorización de padres de familia ha sido subida y guardada en los archivos del equipo.</p>
+                          <p class="text-white-50 small mb-0">Puedes continuar completando el formulario. Al presionar <strong>Calificar Jugador</strong>, el jugador quedará en estado de revisión.</p>
+                        </div>
+                      `,
+                      confirmButtonText: 'Continuar Registro',
+                      confirmButtonColor: '#28a745'
                     });
                   } catch (err) {
                     console.error(err);
@@ -1954,6 +2080,10 @@
               }
             }
 
+            const playerAge = calcularEdad(fechaNacimiento);
+            const isPendingApproval = Boolean(pendingTransferDoc || pendingAutorizacionDoc || (playerAge <= 12));
+            const docTipo = pendingTransferDoc ? 'carta_pase' : (pendingAutorizacionDoc || (playerAge <= 12) ? 'autorizacion' : null);
+
             // Crear el objeto con los datos del jugador
             const playerData = {
               teamId: teamId,
@@ -1967,6 +2097,11 @@
               playerPhoto: playerPhotoSrc,
               cedulaPhoto: cedulaPhotoSrc,
               campeonatoId: campeonatoId,
+              status: isPendingApproval ? "pendiente_aprobacion" : "activo",
+              requiereRevision: isPendingApproval,
+              documentoTipo: docTipo,
+              clubAnterior: pendingTransferDoc ? (pendingTransferDoc.originalPlayerDoc?.teamName || '') : '',
+              originalPlayerId: pendingTransferDoc ? (pendingTransferDoc.originalPlayerDoc?.id || '') : '',
               createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             };
 
@@ -1987,56 +2122,139 @@
                   firebase.firestore.FieldValue.serverTimestamp(),
               });
 
-              Swal.fire({
-                title: "¡Recalificación exitosa!",
-                text: "El jugador ha sido recalificado correctamente. El nuevo jugador ha sido registrado.",
-                icon: "success",
-                confirmButtonColor: "#28a745",
-              }).then(() => {
-                loadPlayers();
-                document.getElementById("playerForm").reset();
-                document
-                  .getElementById("playerPhotoPreview")
-                  .classList.add("d-none");
-                document
-                  .getElementById("playerPhotoText")
-                  .classList.remove("d-none");
-                document
-                  .getElementById("cedulaPhotoPreview")
-                  .classList.add("d-none");
-                document
-                  .getElementById("cedulaPhotoText")
-                  .classList.remove("d-none");
-                document.getElementById("currentPlayerForm").style.display =
-                  "none";
-                document.getElementById("newPlayerForm").style.display = "none";
-                document.getElementById("playerSelector").value = "";
-              });
+              if (isPendingApproval) {
+                Swal.fire({
+                  icon: "info",
+                  title: "Calificación por Aceptar",
+                  html: `
+                    <div class="text-start p-2 text-white">
+                      <p class="mb-3">El jugador <strong>${nombres} ${apellidos}</strong> ha sido enviado a la nómina de recalificación.</p>
+                      <div class="p-3 rounded-3" style="background: rgba(243, 156, 18, 0.15); border-left: 4px solid #f39c12;">
+                        <p class="mb-1 fw-bold text-warning"><i class="fas fa-file-signature me-2"></i>Calificación en Revisión</p>
+                        <p class="mb-0 text-white-50 small">Debemos revisar sus documentos (${docTipo === 'carta_pase' ? 'Carta Pase' : 'Autorización de Padres'}) en el panel administrativo antes de la habilitación final.</p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: "Entendido",
+                  confirmButtonColor: "#28a745",
+                  customClass: {
+                    popup: 'swal-premium',
+                    confirmButton: 'btn btn-success px-4 py-2 rounded-3'
+                  }
+                }).then(() => {
+                  pendingTransferDoc = null;
+                  pendingAutorizacionDoc = null;
+                  loadPlayers();
+                  document.getElementById("playerForm").reset();
+                  document
+                    .getElementById("playerPhotoPreview")
+                    .classList.add("d-none");
+                  document
+                    .getElementById("playerPhotoText")
+                    .classList.remove("d-none");
+                  document
+                    .getElementById("cedulaPhotoPreview")
+                    .classList.add("d-none");
+                  document
+                    .getElementById("cedulaPhotoText")
+                    .classList.remove("d-none");
+                  document.getElementById("currentPlayerForm").style.display =
+                    "none";
+                  document.getElementById("newPlayerForm").style.display = "none";
+                  document.getElementById("playerSelector").value = "";
+                });
+              } else {
+                Swal.fire({
+                  title: "¡Recalificación exitosa!",
+                  text: "El jugador ha sido recalificado correctamente. El nuevo jugador ha sido registrado.",
+                  icon: "success",
+                  confirmButtonColor: "#28a745",
+                }).then(() => {
+                  loadPlayers();
+                  document.getElementById("playerForm").reset();
+                  document
+                    .getElementById("playerPhotoPreview")
+                    .classList.add("d-none");
+                  document
+                    .getElementById("playerPhotoText")
+                    .classList.remove("d-none");
+                  document
+                    .getElementById("cedulaPhotoPreview")
+                    .classList.add("d-none");
+                  document
+                    .getElementById("cedulaPhotoText")
+                    .classList.remove("d-none");
+                  document.getElementById("currentPlayerForm").style.display =
+                    "none";
+                  document.getElementById("newPlayerForm").style.display = "none";
+                  document.getElementById("playerSelector").value = "";
+                });
+              }
             } else {
               // Modo 'register'
               const docRef = await db.collection("players").add(playerData);
               console.log("Jugador registrado con ID:", docRef.id);
-              Swal.fire({
-                title: "¡Registro exitoso!",
-                text: "El jugador ha sido registrado correctamente",
-                icon: "success",
-                confirmButtonColor: "#28a745",
-              }).then(() => {
-                loadPlayers();
-                document.getElementById("playerForm").reset();
-                document
-                  .getElementById("playerPhotoPreview")
-                  .classList.add("d-none");
-                document
-                  .getElementById("playerPhotoText")
-                  .classList.remove("d-none");
-                document
-                  .getElementById("cedulaPhotoPreview")
-                  .classList.add("d-none");
-                document
-                  .getElementById("cedulaPhotoText")
-                  .classList.remove("d-none");
-              });
+
+              if (isPendingApproval) {
+                Swal.fire({
+                  icon: "info",
+                  title: "Calificación por Aceptar",
+                  html: `
+                    <div class="text-start p-2 text-white">
+                      <p class="mb-3">El jugador <strong>${nombres} ${apellidos}</strong> ha sido enviado a calificación.</p>
+                      <div class="p-3 rounded-3" style="background: rgba(243, 156, 18, 0.15); border-left: 4px solid #f39c12;">
+                        <p class="mb-1 fw-bold text-warning"><i class="fas fa-file-signature me-2"></i>Calificación en Revisión</p>
+                        <p class="mb-0 text-white-50 small">Debemos revisar sus documentos (${docTipo === 'carta_pase' ? 'Carta Pase oficial' : 'Autorización de Padres'}) en el panel administrativo antes de la habilitación final.</p>
+                      </div>
+                    </div>
+                  `,
+                  confirmButtonText: "Entendido",
+                  confirmButtonColor: "#28a745",
+                  customClass: {
+                    popup: 'swal-premium',
+                    confirmButton: 'btn btn-success px-4 py-2 rounded-3'
+                  }
+                }).then(() => {
+                  pendingTransferDoc = null;
+                  pendingAutorizacionDoc = null;
+                  loadPlayers();
+                  document.getElementById("playerForm").reset();
+                  document
+                    .getElementById("playerPhotoPreview")
+                    .classList.add("d-none");
+                  document
+                    .getElementById("playerPhotoText")
+                    .classList.remove("d-none");
+                  document
+                    .getElementById("cedulaPhotoPreview")
+                    .classList.add("d-none");
+                  document
+                    .getElementById("cedulaPhotoText")
+                    .classList.remove("d-none");
+                });
+              } else {
+                Swal.fire({
+                  title: "¡Registro exitoso!",
+                  text: "El jugador ha sido registrado correctamente",
+                  icon: "success",
+                  confirmButtonColor: "#28a745",
+                }).then(() => {
+                  loadPlayers();
+                  document.getElementById("playerForm").reset();
+                  document
+                    .getElementById("playerPhotoPreview")
+                    .classList.add("d-none");
+                  document
+                    .getElementById("playerPhotoText")
+                    .classList.remove("d-none");
+                  document
+                    .getElementById("cedulaPhotoPreview")
+                    .classList.add("d-none");
+                  document
+                    .getElementById("cedulaPhotoText")
+                    .classList.remove("d-none");
+                });
+              }
             }
           } catch (error) {
             console.error("Error al registrar/recalificar jugador:", error);
@@ -2125,6 +2343,42 @@
                     }
                   })
                   .catch((err) => console.error("Error al obtener campeonato del jugador:", err));
+              }
+
+              // Actualizar banner de estado del jugador en el modal
+              const statusBanner = document.getElementById("modalPlayerStatusBanner");
+              if (statusBanner) {
+                if (player.status === "pendiente_aprobacion") {
+                  statusBanner.innerHTML = `
+                    <div class="alert alert-warning text-dark d-flex align-items-center justify-content-between p-3 rounded-3 shadow-sm mb-0">
+                      <div>
+                        <div class="fw-bold mb-1"><i class="fas fa-clock me-2"></i>Calificación por Aceptar - Documentación en Revisión</div>
+                        <div class="small">El jugador cuenta con documentación adjunta (${player.documentoTipo === 'carta_pase' ? 'Carta Pase' : 'Autorización de Padres'}) que debe ser revisada y aprobada por la administración en el <b>Panel de Equipos</b> para quedar oficialmente calificado.</div>
+                      </div>
+                      <span class="badge bg-dark text-warning px-3 py-2 text-uppercase font-monospace">Por Aceptar</span>
+                    </div>
+                  `;
+                } else if (player.status === "recalificado") {
+                  statusBanner.innerHTML = `
+                    <div class="alert alert-danger text-white d-flex align-items-center justify-content-between p-3 rounded-3 shadow-sm mb-0" style="background: rgba(231, 76, 60, 0.2); border: 1px solid rgba(231, 76, 60, 0.4);">
+                      <div>
+                        <div class="fw-bold mb-1"><i class="fas fa-exclamation-triangle me-2"></i>Jugador Recalificado</div>
+                        <div class="small">Este jugador ha sido reemplazado en la nómina del equipo.</div>
+                      </div>
+                      <span class="badge bg-danger px-3 py-2 text-uppercase">Recalificado</span>
+                    </div>
+                  `;
+                } else {
+                  statusBanner.innerHTML = `
+                    <div class="alert alert-success d-flex align-items-center justify-content-between p-3 rounded-3 shadow-sm mb-0" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.3); color: #2ecc71;">
+                      <div>
+                        <div class="fw-bold mb-1"><i class="fas fa-check-circle me-2"></i>Jugador Calificado y Habilitado</div>
+                        <div class="small text-white-50">Registro completo y oficial en la Liga Barrial Argelia Alta.</div>
+                      </div>
+                      <span class="badge bg-success px-3 py-2 text-uppercase">Habilitado</span>
+                    </div>
+                  `;
+                }
               }
 
               // Mostrar el modal

@@ -3020,7 +3020,7 @@
 
           const registerPlayer = (doc) => {
             const p = doc.data();
-            if (p.status && p.status.toUpperCase() === "RECALIFICADO") return;
+            if (p.status && (p.status.toUpperCase() === "RECALIFICADO" || p.status.toLowerCase() === "pendiente_aprobacion")) return;
 
             const tMeta = p.teamId ? teamIdToMeta.get(p.teamId) : null;
             const tName = (p.teamName || tMeta?.name || "").trim();
@@ -3203,8 +3203,8 @@
               if (addedPlayerDocIds.has(doc.id)) return;
               const p = doc.data();
 
-              // Descartar solo si el estado es RECALIFICADO
-              if (p.status && p.status.toUpperCase() === "RECALIFICADO") return;
+              // Descartar si el estado es RECALIFICADO o PENDIENTE_APROBACION
+              if (p.status && (p.status.toUpperCase() === "RECALIFICADO" || p.status.toLowerCase() === "pendiente_aprobacion")) return;
 
               // Validar que pertenezca a este club
               const pTeamNorm = normalizeTeamName(p.teamName);
