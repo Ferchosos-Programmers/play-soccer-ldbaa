@@ -321,8 +321,8 @@
                     </select>
                   </div>
                   <div class="col-md-5">
-                    <label class="text-white-50 small text-uppercase mb-2 d-block fw-bold" style="letter-spacing: 0.5px;">ID del Documento (Dejar vacío para listar últimos 15)</label>
-                    <input type="text" id="direct-doc-id" class="form-control bg-dark border-secondary text-white py-2 rounded-3" placeholder="Ej: ID de Firestore o código de factura">
+                    <label class="text-white-50 small text-uppercase mb-2 d-block fw-bold" style="letter-spacing: 0.5px;">Cédula, ID, Nombre o Término (Dejar vacío para listar últimos 15)</label>
+                    <input type="text" id="direct-doc-id" class="form-control bg-dark border-secondary text-white py-2 rounded-3" placeholder="Ej: Cédula (1751314657), ID, Nombre de jugador o equipo" onkeydown="if(event.key==='Enter') searchOrListDocuments()">
                   </div>
                   <div class="col-md-3">
                     <button class="btn btn-warning w-100 py-2 rounded-3 fw-bold text-dark d-flex align-items-center justify-content-center" style="height: calc(2.25rem + 10px);" onclick="searchOrListDocuments()">
@@ -991,7 +991,7 @@
 
       async function searchOrListDocuments() {
         const colName = document.getElementById("direct-collection").value;
-        const docId = document.getElementById("direct-doc-id").value.trim();
+        const searchTerm = document.getElementById("direct-doc-id").value.trim();
         const resultsContainer = document.getElementById("direct-results-container");
         const resultsBody = document.getElementById("direct-results-body");
 
@@ -1000,16 +1000,104 @@
 
         try {
           currentSearchedDocs = [];
-          if (docId) {
-            // Buscar documento específico por ID
-            const docRef = await db.collection(colName).doc(docId).get();
-            if (!docRef.exists) {
-              resultsBody.innerHTML = '<tr><td colspan="3" class="text-center py-4 text-warning">No se encontró ningún documento con ese ID.</td></tr>';
+          const seenIds = new Set();
+
+          const addDoc = (docSnap) => {
+            if (!docSnap) return;
+            const id = docSnap.id || docSnap._docId;
+            if (!id || seenIds.has(id)) return;
+            seenIds.add(id);
+            const data = typeof docSnap.data === 'function' ? docSnap.data() : { ...docSnap };
+            data._docId = id;
+            currentSearchedDocs.push(data);
+          };
+
+          if (searchTerm) {
+            // 1. Intentar por ID directo de documento
+            try {
+              const directDoc = await db.collection(colName).doc(searchTerm).get();
+              if (directDoc.exists) {
+                addDoc(directDoc);
+              }
+            } catch (e) { /* ignore */ }
+
+            // 2. Búsquedas específicas por campos según la colección
+            if (colName === "players") {
+              // Buscar por cédula exacta (string y número)
+              try {
+                const snapCedula = await db.collection("players").where("cedula", "==", searchTerm).get();
+                snapCedula.forEach(addDoc);
+              } catch (e) { }
+
+              if (!isNaN(searchTerm)) {
+                try {
+                  const snapCedulaNum = await db.collection("players").where("cedula", "==", Number(searchTerm)).get();
+                  snapCedulaNum.forEach(addDoc);
+                } catch (e) { }
+              }
+
+              // Buscar por dorsal
+              try {
+                const snapDorsal = await db.collection("players").where("numeroJugador", "==", searchTerm).get();
+                snapDorsal.forEach(addDoc);
+              } catch (e) { }
+            } else if (colName === "invoices") {
+              try {
+                const s1 = await db.collection("invoices").where("invoiceId", "==", searchTerm).get();
+                s1.forEach(addDoc);
+                const s2 = await db.collection("invoices").where("sequence", "==", searchTerm).get();
+                s2.forEach(addDoc);
+              } catch (e) { }
+            } else if (colName === "cartas_pases") {
+              try {
+                const s1 = await db.collection("cartas_pases").where("numeroCartaPase", "==", searchTerm).get();
+                s1.forEach(addDoc);
+                if (!isNaN(searchTerm)) {
+                  const s2 = await db.collection("cartas_pases").where("seqNum", "==", Number(searchTerm)).get();
+                  s2.forEach(addDoc);
+                }
+              } catch (e) { }
+            } else if (colName === "sanciones") {
+              try {
+                const s1 = await db.collection("sanciones").where("cedula", "==", searchTerm).get();
+                s1.forEach(addDoc);
+              } catch (e) { }
+            }
+
+            // 3. Búsqueda flexible / substring si no encontró por búsqueda directa o para complementar
+            if (currentSearchedDocs.length === 0) {
+              const allSnap = await db.collection(colName).limit(300).get();
+              const termLower = searchTerm.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+              allSnap.forEach(docSnap => {
+                if (seenIds.has(docSnap.id)) return;
+                const d = docSnap.data();
+
+                let match = false;
+                if (docSnap.id.toLowerCase().includes(termLower)) match = true;
+
+                for (let k in d) {
+                  if (match) break;
+                  const val = d[k];
+                  if (val !== null && val !== undefined) {
+                    const strVal = String(val).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    if (strVal.includes(termLower)) {
+                      match = true;
+                      break;
+                    }
+                  }
+                }
+
+                if (match) {
+                  addDoc(docSnap);
+                }
+              });
+            }
+
+            if (currentSearchedDocs.length === 0) {
+              resultsBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-warning"><i class="fas fa-exclamation-circle me-2"></i>No se encontró ningún documento con el término "<strong>${searchTerm}</strong>" en '${colName}'.</td></tr>`;
               return;
             }
-            const data = docRef.data();
-            data._docId = docRef.id;
-            currentSearchedDocs.push(data);
           } else {
             // Listar últimos 15 documentos
             const snapshot = await db.collection(colName).limit(15).get();
@@ -1018,9 +1106,7 @@
               return;
             }
             snapshot.forEach(doc => {
-              const data = doc.data();
-              data._docId = doc.id;
-              currentSearchedDocs.push(data);
+              addDoc(doc);
             });
           }
 
@@ -1035,26 +1121,75 @@
         const resultsBody = document.getElementById("direct-results-body");
         resultsBody.innerHTML = "";
 
+        const colName = document.getElementById("direct-collection").value;
+
         currentSearchedDocs.forEach((doc) => {
-          const colName = document.getElementById("direct-collection").value;
           const tr = document.createElement("tr");
 
           // Formatear campos principales del documento para visualizarlo
           let summary = "";
           try {
-            const keys = Object.keys(doc).filter(k => k !== '_docId');
-            summary = keys.slice(0, 4).map(k => {
-              let val = doc[k];
-              if (val && typeof val.toDate === 'function') val = val.toDate().toLocaleDateString();
-              else if (typeof val === 'object') val = JSON.stringify(val).substring(0, 40) + "...";
-              return `<strong>${k}:</strong> ${String(val).substring(0, 60)}`;
-            }).join(" | ");
-          } catch(e) { summary = "Error al resumir objeto"; }
+            if (colName === "players") {
+              const statusColor = doc.status === "activo" ? "text-success" : (doc.status === "recalificado" ? "text-danger" : "text-warning");
+              summary = `
+                <div>
+                  <span class="badge bg-primary me-2"><i class="fas fa-id-card me-1"></i>CI: ${doc.cedula || 'S/N'}</span>
+                  <strong class="text-white">${doc.nombres || ''} ${doc.apellidos || ''}</strong>
+                  <span class="text-white-50 ms-2">| Club: <b>${doc.teamName || 'N/A'}</b></span>
+                  <span class="text-white-50 ms-2">| Dorsal: <b>#${doc.numeroJugador || '-'}</b></span>
+                  <span class="ms-2 fw-bold ${statusColor}">(${doc.status || 'activo'})</span>
+                </div>
+              `;
+            } else if (colName === "invoices") {
+              summary = `
+                <div>
+                  <span class="badge bg-warning text-dark me-2">Nº ${doc.invoiceId || doc.sequence || 'S/N'}</span>
+                  <strong class="text-white">${doc.teamName || doc.entidad || ''}</strong>
+                  <span class="text-success fw-bold ms-2">$${Number(doc.total || doc.totalValue || 0).toFixed(2)}</span>
+                  <span class="text-white-50 ms-2">| ${doc.concept || doc.source || ''}</span>
+                </div>
+              `;
+            } else if (colName === "cartas_pases") {
+              summary = `
+                <div>
+                  <span class="badge bg-success me-2">Nº ${doc.seqNum || doc.startSeq || 'S/N'}</span>
+                  <strong class="text-white">${doc.teamName || ''}</strong>
+                  <span class="text-white-50 ms-2">| Cant: <b>${doc.quantity || 1}</b></span>
+                  <span class="text-white-50 ms-2">| Estado: <b>${doc.status || 'N/A'}</b></span>
+                </div>
+              `;
+            } else if (colName === "sanciones") {
+              summary = `
+                <div>
+                  <span class="badge bg-danger me-2">CI: ${doc.cedula || 'S/N'}</span>
+                  <strong class="text-white">${doc.jugadorNombre || doc.playerName || ''}</strong>
+                  <span class="text-white-50 ms-2">| Club: <b>${doc.teamName || 'N/A'}</b></span>
+                  <span class="text-warning ms-2">${doc.tipo || doc.motivo || ''}</span>
+                </div>
+              `;
+            } else if (colName === "teams") {
+              summary = `
+                <div>
+                  <strong class="text-white fs-6">${doc.name || ''}</strong>
+                  <span class="badge bg-secondary ms-2">${doc.category || 'Sin Categoría'}</span>
+                  <span class="text-white-50 ms-2">| Serie: <b>${doc.serie || 'N/A'}</b></span>
+                </div>
+              `;
+            } else {
+              const keys = Object.keys(doc).filter(k => k !== '_docId' && k !== '_tsMs' && k !== '_dateObj');
+              summary = keys.slice(0, 4).map(k => {
+                let val = doc[k];
+                if (val && typeof val.toDate === 'function') val = val.toDate().toLocaleDateString();
+                else if (typeof val === 'object') val = JSON.stringify(val).substring(0, 40) + "...";
+                return `<strong>${k}:</strong> ${String(val).substring(0, 60)}`;
+              }).join(" | ");
+            }
+          } catch (e) { summary = "Error al resumir objeto"; }
 
           tr.innerHTML = `
-            <td class="font-monospace text-warning small">${doc._docId}</td>
-            <td class="small text-white-50">${summary || 'Sin campos adicionales'}</td>
-            <td class="text-end">
+            <td class="font-monospace text-warning small align-middle" style="min-width: 140px;">${doc._docId}</td>
+            <td class="small text-white-50 align-middle">${summary || 'Sin campos adicionales'}</td>
+            <td class="text-end align-middle" style="min-width: 160px;">
               <div class="d-inline-flex gap-2">
                 <button class="btn btn-sm btn-outline-warning" onclick="editDocumentDirectly('${colName}', '${doc._docId}')" title="Editar Campos">
                   <i class="fas fa-edit"></i> Editar

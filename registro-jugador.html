@@ -557,6 +557,15 @@
                 </div>
               </div>
 
+              <!-- Buscador de jugadores registrados -->
+              <div class="mb-3 px-1">
+                <div class="input-group">
+                  <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-search"></i></span>
+                  <input type="text" id="searchRegisteredPlayers" class="form-control bg-dark text-white border-secondary" placeholder="🔍 Buscar por cédula, nombre o dorsal..." oninput="filterRegisteredPlayers()">
+                  <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('searchRegisteredPlayers').value=''; filterRegisteredPlayers();" title="Limpiar"><i class="fas fa-times"></i></button>
+                </div>
+              </div>
+
               <div id="playersList" class="player-list">
                 <!-- Los jugadores se cargarán aquí dinámicamente -->
               </div>
@@ -1049,6 +1058,145 @@
       let pendingTransferDoc = null;
       let pendingAutorizacionDoc = null;
 
+      let cachedAllPlayers = [];
+      let cachedFilteredPlayers = [];
+
+      function filterRegisteredPlayers() {
+        const query = (document.getElementById("searchRegisteredPlayers")?.value || "").trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+        renderFilteredPlayersList(query);
+      }
+
+      function renderFilteredPlayersList(query = "") {
+        const playersList = document.getElementById("playersList");
+        playersList.innerHTML = "";
+
+        let listToDisplay = cachedFilteredPlayers;
+        if (query) {
+          listToDisplay = cachedFilteredPlayers.filter(p => {
+            const ced = String(p.cedula || "").toLowerCase();
+            const nom = `${p.nombres || ""} ${p.apellidos || ""}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const num = String(p.numeroJugador || "");
+            return ced.includes(query) || nom.includes(query) || num === query;
+          });
+        }
+
+        if (listToDisplay.length === 0) {
+          if (query) {
+            playersList.innerHTML = `<div class="text-center text-warning p-4"><i class="fas fa-search me-2"></i>No se encontraron jugadores con "${query}"</div>`;
+          } else if (mode === "reclassify") {
+            playersList.innerHTML = '<div class="text-center text-muted">No hay jugadores recalificados</div>';
+          } else {
+            playersList.innerHTML = '<div class="text-center text-muted">No hay jugadores calificados</div>';
+          }
+          return;
+        }
+
+        if (mode === "reclassify") {
+          listToDisplay.forEach((player) => {
+            let nueva = cachedAllPlayers.find(
+              (j) => j.reemplazoDe === player.docId,
+            );
+            if (!nueva && player.recalificadoPor) {
+              nueva = cachedAllPlayers.find(
+                (j) => j.docId === player.recalificadoPor,
+              );
+            }
+
+            if (nueva) {
+              const flexRow = document.createElement("div");
+              flexRow.className = "d-flex gap-3 mb-3 align-items-stretch";
+              flexRow.innerHTML = `
+                <div class="player-item-glass flex-fill">
+                  <div class="d-flex align-items-center h-100">
+                    <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
+                      <small class="text-white-50"><i class="fas fa-id-card me-1"></i>Cédula: <b>${player.cedula || 'N/A'}</b></small>
+                      <br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>
+                    </div>
+                    <div class="ms-3">
+                      <button class="btn btn-sm btn-secondary-glass" onclick="viewPlayerDetails('${player.docId}')">
+                        <i class="fas fa-eye text-primary"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div class="player-item-glass flex-fill" style="border-color: var(--primary-color);">
+                  <div class="d-flex align-items-center h-100">
+                    <img src="${nueva.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-bold">${nueva.nombres} ${nueva.apellidos}</h6>
+                      <small class="text-white-50"><i class="fas fa-id-card me-1"></i>Cédula: <b>${nueva.cedula || 'N/A'}</b></small>
+                      <br><small class="text-success fw-bold"><i class="fas fa-user-plus me-1"></i>Nuevo</small>
+                    </div>
+                    <div class="ms-3">
+                      <button class="btn btn-sm btn-secondary-glass" onclick="viewPlayerDetails('${nueva.docId}')">
+                        <i class="fas fa-eye text-primary"></i>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              `;
+              playersList.appendChild(flexRow);
+            } else {
+              const playerCard = document.createElement("div");
+              playerCard.className = "player-item-glass mb-3";
+              playerCard.innerHTML = `
+                <div class="d-flex align-items-center w-100">
+                  <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
+                    <small class="text-white-50"><i class="fas fa-id-card me-1"></i>Cédula: <b>${player.cedula || 'N/A'}</b></small>
+                    <br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>
+                  </div>
+                  <div class="ms-3">
+                    <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')">
+                      <i class="fas fa-eye text-primary"></i>
+                    </button>
+                  </div>
+                </div>
+              `;
+              playersList.appendChild(playerCard);
+            }
+          });
+        } else {
+          listToDisplay.forEach((player) => {
+            let statusBadge = "";
+            if (player.status === "recalificado") {
+              statusBadge = '<br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>';
+            } else if (player.status === "pendiente_aprobacion") {
+              statusBadge = '<br><small class="text-warning fw-bold"><i class="fas fa-clock me-1"></i>Calificación por Aceptar</small>';
+            } else {
+              statusBadge = '<br><small class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Calificado</small>';
+            }
+
+            const playerCard = document.createElement("div");
+            playerCard.className = "player-item-glass mb-3";
+            playerCard.innerHTML = `
+              <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
+              <div class="flex-grow-1">
+                <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
+                <small class="text-white-50"><i class="fas fa-id-card me-1"></i>Cédula: <b>${player.cedula || 'N/A'}</b> | Dorsal: #${player.numeroJugador || '-'}</small>
+                ${statusBadge}
+              </div>
+              <div class="ms-3 d-flex align-items-center">
+                <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')" title="Ver Detalles y Carnet">
+                  <i class="fas fa-eye text-primary"></i>
+                </button>
+                ${
+                  player.status !== "recalificado"
+                    ? `<button class="btn btn-sm btn-secondary-glass text-danger" onclick="deletePlayer('${player.docId}')" title="Eliminar Jugador">
+                  <i class="fas fa-trash"></i>
+                </button>`
+                    : ""
+                }
+              </div>
+            `;
+            playersList.appendChild(playerCard);
+          });
+        }
+      }
+
       // Cargar lista de jugadores
       function loadPlayers() {
         console.log("Iniciando carga de jugadores para el equipo:", teamId);
@@ -1064,7 +1212,8 @@
               if (querySnapshot.empty) {
                 playersList.innerHTML =
                   '<div class="text-center text-muted">No hay jugadores registrados</div>';
-                // Actualizar contador con lista vacía
+                cachedAllPlayers = [];
+                cachedFilteredPlayers = [];
                 actualizarContadorCupo([]);
                 return;
               }
@@ -1078,142 +1227,22 @@
 
                 // Filtrar jugadores según el modo
                 if (mode === "reclassify") {
-                  // En modo reclassify, solo mostrar jugadores recalificados
                   if (player.status === "recalificado") {
                     jugadoresFiltrados.push({ ...player, docId: doc.id });
                   }
                 } else {
-                  // En modo register, mostrar todos menos los nuevos que reemplazaron a recalificados
                   if (!player.reemplazoDe) {
                     jugadoresFiltrados.push({ ...player, docId: doc.id });
                   }
                 }
               });
 
-              // Mostrar mensaje si no hay jugadores según el filtro
-              if (jugadoresFiltrados.length === 0) {
-                if (mode === "reclassify") {
-                  playersList.innerHTML =
-                    '<div class="text-center text-muted">No hay jugadores recalificados</div>';
-                } else {
-                  playersList.innerHTML =
-                    '<div class="text-center text-muted">No hay jugadores calificados</div>';
-                }
-                // Actualizar contador con lista vacía pero mantener todos los jugadores para el cálculo
-                actualizarContadorCupo(jugadores);
-                return;
-              }
+              cachedAllPlayers = jugadores;
+              cachedFilteredPlayers = jugadoresFiltrados;
 
-              // Mostrar jugadores filtrados
-              if (mode === "reclassify") {
-                jugadoresFiltrados.forEach((player) => {
-                  // Buscar la jugadora nueva que reemplazó a esta recalificada
-                  let nueva = jugadores.find(
-                    (j) => j.reemplazoDe === player.docId,
-                  );
-
-                  // Si no la encuentra por reemplazoDe, intenta buscar por recalificadoPor
-                  if (!nueva && player.recalificadoPor) {
-                    nueva = jugadores.find(
-                      (j) => j.docId === player.recalificadoPor,
-                    );
-                  }
-
-                  if (nueva) {
-                    // Contenedor flex para ambas tarjetas
-                    const flexRow = document.createElement("div");
-                    flexRow.className = "d-flex gap-3 mb-3 align-items-stretch";
-                    flexRow.innerHTML = `
-                      <div class="player-item-glass flex-fill">
-                        <div class="d-flex align-items-center h-100">
-                          <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
-                          <div class="flex-grow-1">
-                            <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
-                            <small class="text-white-50">Cédula: ${player.cedula}</small>
-                            <br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>
-                          </div>
-                          <div class="ms-3">
-                            <button class="btn btn-sm btn-secondary-glass" onclick="viewPlayerDetails('${player.docId}')">
-                              <i class="fas fa-eye text-primary"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="player-item-glass flex-fill" style="border-color: var(--primary-color);">
-                        <div class="d-flex align-items-center h-100">
-                          <img src="${nueva.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
-                          <div class="flex-grow-1">
-                            <h6 class="mb-1 fw-bold">${nueva.nombres} ${nueva.apellidos}</h6>
-                            <small class="text-white-50">Cédula: ${nueva.cedula}</small>
-                            <br><small class="text-success fw-bold"><i class="fas fa-user-plus me-1"></i>Nuevo</small>
-                          </div>
-                          <div class="ms-3">
-                            <button class="btn btn-sm btn-secondary-glass" onclick="viewPlayerDetails('${nueva.docId}')">
-                              <i class="fas fa-eye text-primary"></i>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    `;
-                    playersList.appendChild(flexRow);
-                  } else {
-                    // Solo recalificado si no hay nuevo
-                    const playerCard = document.createElement("div");
-                    playerCard.className = "player-item-glass mb-3";
-                    playerCard.innerHTML = `
-                      <div class="d-flex align-items-center w-100">
-                        <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
-                        <div class="flex-grow-1">
-                          <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
-                          <small class="text-white-50">Cédula: ${player.cedula}</small>
-                          <br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>
-                        </div>
-                        <div class="ms-3">
-                          <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')">
-                            <i class="fas fa-eye text-primary"></i>
-                          </button>
-                        </div>
-                      </div>
-                    `;
-                    playersList.appendChild(playerCard);
-                  }
-                });
-              } else {
-                jugadoresFiltrados.forEach((player) => {
-                  let statusBadge = "";
-                  if (player.status === "recalificado") {
-                    statusBadge = '<br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>';
-                  } else if (player.status === "pendiente_aprobacion") {
-                    statusBadge = '<br><small class="text-warning fw-bold"><i class="fas fa-clock me-1"></i>Calificación por Aceptar</small>';
-                  } else {
-                    statusBadge = '<br><small class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Calificado</small>';
-                  }
-
-                  const playerCard = document.createElement("div");
-                  playerCard.className = "player-item-glass mb-3";
-                  playerCard.innerHTML = `
-                    <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
-                    <div class="flex-grow-1">
-                      <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
-                      <small class="text-white-50">Cédula: ${player.cedula}</small>
-                      ${statusBadge}
-                    </div>
-                    <div class="ms-3 d-flex align-items-center">
-                      <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')" title="Ver Detalles y Carnet">
-                        <i class="fas fa-eye text-primary"></i>
-                      </button>
-                      ${
-                        player.status !== "recalificado"
-                          ? `<button class="btn btn-sm btn-secondary-glass text-danger" onclick="deletePlayer('${player.docId}')" title="Eliminar Jugador">
-                        <i class="fas fa-trash"></i>
-                      </button>`
-                          : ""
-                      }
-                    </div>
-                  `;
-                  playersList.appendChild(playerCard);
-                });
-              }
+              const searchInput = document.getElementById("searchRegisteredPlayers");
+              const query = searchInput ? searchInput.value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : "";
+              renderFilteredPlayersList(query);
 
               // Actualizar contador de cupo
               actualizarContadorCupo(jugadores);
@@ -3098,16 +3127,16 @@
 
             let optionsHtml = '<option value="" style="padding: 8px; margin-bottom: 5px; color: #888;">Seleccione un jugador...</option>';
             playerList.forEach(p => {
-              optionsHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} [${p.teamCategory || 'Sin Categoría'}]</option>`;
+              optionsHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} - CI: ${p.cedula || 'S/N'} [${p.teamCategory || 'Sin Categoría'}]</option>`;
             });
 
             Swal.fire({
               title: '<span style="color: #ffc107; font-weight: 800; font-size: 1.5rem;"><i class="fas fa-history me-2"></i>Jugadores del Club</span>',
               html: `
                 <div class="text-start mb-2 text-white-50" style="font-size: 0.85rem;">
-                  Busca por nombre o apellido para cargar sus datos automáticamente:
+                  Busca por número de cédula, nombre o apellido para cargar sus datos:
                 </div>
-                <input type="text" id="swalSearchInput" class="form-control bg-dark text-white border-secondary mb-3 py-2 px-3" placeholder="🔍 Escribe nombre o apellido..." style="border-radius: 8px; font-size: 0.95rem;">
+                <input type="text" id="swalSearchInput" class="form-control bg-dark text-white border-secondary mb-3 py-2 px-3" placeholder="🔍 Cédula, nombre o apellido..." style="border-radius: 8px; font-size: 0.95rem;">
                 <select id="swalPlayerSelect" class="form-select bg-dark text-white border-secondary mb-2" size="6" style="height: 220px; border-radius: 8px; font-size: 0.9rem; padding: 8px; line-height: 2;">
                   ${optionsHtml}
                 </select>
@@ -3124,15 +3153,15 @@
                 const searchInput = document.getElementById("swalSearchInput");
                 const selectElement = document.getElementById("swalPlayerSelect");
                 
-                // Evento de filtrado en tiempo real por Nombre o Apellido únicamente
+                // Evento de filtrado en tiempo real por Cédula, Nombre o Apellido
                 searchInput.addEventListener("input", function() {
-                  const query = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                  const query = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
                   let filteredHtml = '<option value="" style="padding: 8px; margin-bottom: 5px; color: #888;">Seleccione un jugador...</option>';
                   
                   playerList.forEach(p => {
-                    const text = `${p.nombres} ${p.apellidos}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                    const text = `${p.nombres || ''} ${p.apellidos || ''} ${p.cedula || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
                     if (text.includes(query)) {
-                      filteredHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} [${p.teamCategory || 'Sin Categoría'}]</option>`;
+                      filteredHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} - CI: ${p.cedula || 'S/N'} [${p.teamCategory || 'Sin Categoría'}]</option>`;
                     }
                   });
                   selectElement.innerHTML = filteredHtml;
