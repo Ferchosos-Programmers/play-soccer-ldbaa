@@ -365,7 +365,7 @@
       .receipt-paper {
         background: linear-gradient(145deg, #1e1e1e, #141414);
         color: #e0e0e0;
-        padding: 40px;
+        /* padding: 40px; */
         border-radius: 20px;
         border: 1px solid rgba(255, 255, 255, 0.05);
         max-width: 800px;
@@ -450,25 +450,25 @@
       }
       #carta-pase-pdf-template {
         width: 210mm;
-        height: 296mm;
-        padding: 15mm 25mm;
+        min-height: 296mm;
+        padding: 35mm 22mm 15mm 22mm;
         background: white !important;
         color: #1a1a1a !important;
-        font-family: 'Times New Roman', Times, serif;
+        font-family: "Times New Roman", Times, serif;
         box-sizing: border-box;
         overflow: hidden;
         position: relative;
       }
       .pdf-header-container {
         border-bottom: 2px solid #2ecc71;
-        padding-bottom: 15px;
-        margin-bottom: 20px;
+        padding-bottom: 8px;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
       }
       .pdf-logo-box {
-        width: 70px;
-        margin-right: 20px;
+        width: 58px;
+        margin-right: 15px;
       }
       .pdf-logo-box img {
         width: 100%;
@@ -479,46 +479,46 @@
       }
       .pdf-header-text h2 {
         margin: 0;
-        font-size: 18px;
+        font-size: 16px;
         font-weight: 900;
-        letter-spacing: 1px;
+        letter-spacing: 0.5px;
         color: #2c3e50;
       }
       .pdf-header-text p {
         margin: 1px 0;
-        font-size: 10px;
+        font-size: 9.5px;
         color: #7f8c8d;
         text-transform: uppercase;
       }
       .pdf-main-title {
         text-align: center;
-        font-size: 24px;
+        font-size: 21px;
         font-weight: bold;
-        margin: 15px 0;
-        letter-spacing: 5px;
+        margin: 8px 0 10px 0;
+        letter-spacing: 4px;
         color: #1a1a1a;
         border-bottom: 1px solid #eee;
-        padding-bottom: 5px;
+        padding-bottom: 3px;
       }
       .pdf-date-row {
         text-align: right;
-        margin-bottom: 25px;
-        font-size: 13px;
+        margin-bottom: 12px;
+        font-size: 12.5px;
       }
       .pdf-content-body {
-        font-size: 14px;
-        line-height: 1.8;
+        font-size: 13px;
+        line-height: 1.65;
         text-align: justify;
       }
       .pdf-field-line {
         border-bottom: 1px solid #333;
         display: inline-block;
-        padding: 0 8px;
+        padding: 0 6px;
         font-weight: bold;
         color: #000;
       }
       .pdf-signature-grid {
-        margin-top: 40px;
+        margin-top: 20px;
         display: flex;
         justify-content: space-between;
         text-align: center;
@@ -532,50 +532,50 @@
       .pdf-sig-line-box {
         width: 100%;
         border-top: 1px solid #000;
-        padding-top: 5px;
-        font-size: 11px;
+        padding-top: 4px;
+        font-size: 10.5px;
         font-weight: bold;
-        margin-top: 35px;
+        margin-top: 24px;
       }
       .pdf-seq-box {
         position: absolute;
-        top: 20mm;
-        right: 25mm;
+        top: 35mm;
+        right: 22mm;
         border-bottom: 2px solid #2ecc71;
         padding: 2px 10px;
-        font-family: 'Times New Roman', Times, serif;
+        font-family: "Times New Roman", Times, serif;
         font-weight: bold;
         color: #333;
-        font-size: 16px;
+        font-size: 15px;
       }
       .pdf-register-section {
-        margin-top: 25px;
+        margin-top: 14px;
         border: 1px solid #ddd;
-        padding: 12px 25px;
-        border-radius: 10px;
+        padding: 8px 20px;
+        border-radius: 8px;
         background: #fafafa;
       }
       .pdf-register-title {
         text-align: center;
-        font-size: 15px;
+        font-size: 13.5px;
         font-weight: bold;
         text-transform: uppercase;
-        margin-bottom: 10px;
+        margin-bottom: 6px;
         color: #2c3e50;
         border-bottom: 2px solid #2ecc71;
         display: inline-block;
-        padding-bottom: 3px;
+        padding-bottom: 2px;
       }
       .pdf-final-signature {
-        margin-top: 55px;
+        margin-top: 18px;
         width: 250px;
       }
       .pdf-footer-info {
-        margin-top: 30px;
+        margin-top: 15px;
         text-align: center;
         border-top: 1px solid #eee;
-        padding-top: 8px;
-        font-size: 10px;
+        padding-top: 6px;
+        font-size: 9.5px;
         color: #95a5a6;
       }
       .pdf-line {
@@ -584,7 +584,7 @@
         height: 14px;
         margin-bottom: -2px;
       }
-      
+
       /* Notifications Styles */
       .glass-toast {
         position: fixed;
@@ -598,7 +598,9 @@
         padding: 20px;
         width: 320px;
         z-index: 1050;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 0 1px rgba(255,255,255,0.05);
+        box-shadow:
+          0 10px 30px rgba(0, 0, 0, 0.5),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.05);
         transform: translateY(150%);
         transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       }
@@ -611,7 +613,7 @@
         right: 15px;
         background: none;
         border: none;
-        color: rgba(255,255,255,0.5);
+        color: rgba(255, 255, 255, 0.5);
         cursor: pointer;
         transition: color 0.3s;
       }
@@ -624,11 +626,11 @@
         color: white;
         margin-bottom: 15px;
         padding-bottom: 10px;
-        border-bottom: 1px solid rgba(255,255,255,0.1);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
       }
       .notification-item {
         padding: 12px;
-        background: rgba(255,255,255,0.03);
+        background: rgba(255, 255, 255, 0.03);
         border-radius: 8px;
         margin-bottom: 10px;
         border-left: 3px solid #e74c3c;
@@ -641,7 +643,11 @@
         width: 60px;
         height: 60px;
         border-radius: 50%;
-        background: linear-gradient(135deg, rgba(231, 76, 60, 0.2), rgba(231, 76, 60, 0.05));
+        background: linear-gradient(
+          135deg,
+          rgba(231, 76, 60, 0.2),
+          rgba(231, 76, 60, 0.05)
+        );
         border: 1px solid rgba(231, 76, 60, 0.3);
         color: #e74c3c;
         font-size: 24px;
@@ -683,17 +689,28 @@
 
     <!-- Toast de Notificaciones -->
     <div id="notificationsToast" class="glass-toast">
-      <button class="toast-close" onclick="document.getElementById('notificationsToast').classList.remove('show')">
+      <button
+        class="toast-close"
+        onclick="
+          document.getElementById('notificationsToast').classList.remove('show')
+        "
+      >
         <i class="fas fa-times"></i>
       </button>
       <div class="toast-title">
-        <i class="fas fa-exclamation-circle me-2" style="color: #e74c3c;"></i>Notificaciones
+        <i class="fas fa-exclamation-circle me-2" style="color: #e74c3c"></i
+        >Notificaciones
       </div>
       <div id="notificationsToastBody"></div>
     </div>
 
     <!-- Botón flotante de notificaciones -->
-    <button id="notificationsBtn" class="floating-btn-premium-danger" style="display: none;" onclick="showNotificationsModal()">
+    <button
+      id="notificationsBtn"
+      class="floating-btn-premium-danger"
+      style="display: none"
+      onclick="showNotificationsModal()"
+    >
       <i class="fas fa-bell"></i>
       <span class="badge-count" id="notificationsBadge">0</span>
     </button>
@@ -776,18 +793,44 @@
           <!-- Dashboard Overview -->
           <div id="section-dashboard" class="content-section">
             <!-- Warning Banner: Tarjetas -->
-            <div id="cardWarningBanner" class="mb-4" style="display: none;">
-              <div class="glass-card border border-warning border-opacity-25 p-3 d-flex align-items-center justify-content-between">
+            <div id="cardWarningBanner" class="mb-4" style="display: none">
+              <div
+                class="glass-card border border-warning border-opacity-25 p-3 d-flex align-items-center justify-content-between"
+              >
                 <div class="d-flex align-items-center">
-                  <div class="stat-icon-mini text-warning me-3" style="background: rgba(255, 204, 0, 0.1); width: 45px; height: 45px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.25rem;">
+                  <div
+                    class="stat-icon-mini text-warning me-3"
+                    style="
+                      background: rgba(255, 204, 0, 0.1);
+                      width: 45px;
+                      height: 45px;
+                      border-radius: 12px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      font-size: 1.25rem;
+                    "
+                  >
                     <i class="fas fa-exclamation-triangle text-warning"></i>
                   </div>
                   <div>
-                    <h6 class="text-white fw-bold mb-1 small text-uppercase" style="letter-spacing: 0.5px;">Advertencia de Acumulación</h6>
-                    <p class="text-white-50 mb-0 small" id="cardWarningText">Tienes jugadores a una tarjeta amarilla de ser suspendidos.</p>
+                    <h6
+                      class="text-white fw-bold mb-1 small text-uppercase"
+                      style="letter-spacing: 0.5px"
+                    >
+                      Advertencia de Acumulación
+                    </h6>
+                    <p class="text-white-50 mb-0 small" id="cardWarningText">
+                      Tienes jugadores a una tarjeta amarilla de ser
+                      suspendidos.
+                    </p>
                   </div>
                 </div>
-                <button class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold" onclick="showSection('sanciones')" style="font-size: 0.75rem;">
+                <button
+                  class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold"
+                  onclick="showSection('sanciones')"
+                  style="font-size: 0.75rem"
+                >
                   Ver Control
                 </button>
               </div>
@@ -890,7 +933,13 @@
               >
                 <div>
                   <h5 class="text-white fw-bold mb-1">Historial de Facturas</h5>
-                  <p class="text-white-50 small mb-0">Aquí aparecerán automáticamente todas las facturas generadas por tus pagos: cartas pases, partidos (derecho de cancha, arbitraje, cementina), multas y cobros adicionales. Cada factura incluye el detalle completo del gasto para tu control financiero.</p>
+                  <p class="text-white-50 small mb-0">
+                    Aquí aparecerán automáticamente todas las facturas generadas
+                    por tus pagos: cartas pases, partidos (derecho de cancha,
+                    arbitraje, cementina), multas y cobros adicionales. Cada
+                    factura incluye el detalle completo del gasto para tu
+                    control financiero.
+                  </p>
                 </div>
                 <i
                   class="fas fa-file-invoice-dollar fa-2x text-primary opacity-50 mt-1"
@@ -917,17 +966,37 @@
           <!-- Cartas Pases Section -->
           <div id="section-cartas" class="content-section d-none">
             <div class="glass-card mb-4">
-              <div class="d-flex justify-content-between align-items-center mb-4">
+              <div
+                class="d-flex justify-content-between align-items-center mb-4"
+              >
                 <h5 class="text-white fw-bold mb-0">Adquirir Cartas Pases</h5>
-                <button class="btn btn-save-invoice px-4 py-2" style="width: auto; background: var(--primary); border: 0; border-radius: 12px; font-weight: bold; color: white;" onclick="solicitarCartasPasesModal()">
-                  <i class="fas fa-shopping-cart me-2"></i> Solicitar Cartas Pases
+                <button
+                  class="btn btn-save-invoice px-4 py-2"
+                  style="
+                    width: auto;
+                    background: var(--primary);
+                    border: 0;
+                    border-radius: 12px;
+                    font-weight: bold;
+                    color: white;
+                  "
+                  onclick="solicitarCartasPasesModal()"
+                >
+                  <i class="fas fa-shopping-cart me-2"></i> Solicitar Cartas
+                  Pases
                 </button>
               </div>
-              <p class="text-white-50 small mb-0">Desde este apartado puedes solicitar nuevos lotes de cartas pases en blanco al tesorero de la liga para futuras transferencias de jugadores.</p>
+              <p class="text-white-50 small mb-0">
+                Desde este apartado puedes solicitar nuevos lotes de cartas
+                pases en blanco al tesorero de la liga para futuras
+                transferencias de jugadores.
+              </p>
             </div>
 
             <div class="glass-card">
-              <h5 class="text-white fw-bold mb-4">Mis Solicitudes y Cartas Adquiridas</h5>
+              <h5 class="text-white fw-bold mb-4">
+                Mis Solicitudes y Cartas Adquiridas
+              </h5>
               <div class="table-responsive">
                 <table class="table table-premium">
                   <thead>
@@ -965,8 +1034,6 @@
                 </table>
               </div>
             </div>
-
-
           </div>
 
           <!-- Documentación Section -->
@@ -1046,9 +1113,14 @@
           <!-- Formatos del Campeonato Section -->
           <div id="section-formatos" class="content-section d-none">
             <div class="glass-card">
-              <h5 class="text-white fw-bold mb-1">Formatos de Documentos del Campeonato</h5>
-              <p class="text-white-50 small mb-4">Descarga o visualiza los formatos oficiales asignados por el administrador para este campeonato.</p>
-              
+              <h5 class="text-white fw-bold mb-1">
+                Formatos de Documentos del Campeonato
+              </h5>
+              <p class="text-white-50 small mb-4">
+                Descarga o visualiza los formatos oficiales asignados por el
+                administrador para este campeonato.
+              </p>
+
               <div class="table-responsive">
                 <table class="table table-premium">
                   <thead>
@@ -1367,77 +1439,96 @@
 
     <!-- Hidden PDF Template Container -->
     <div id="pdf-render-container">
-        <div id="carta-pase-pdf-template">
-            <div class="pdf-seq-box">Nº <span class="pdf-seq-val">0000</span></div>
-            <div class="pdf-header-container">
-                <div class="pdf-logo-box">
-                    <img src="img/logo.png">
-                </div>
-                <div class="pdf-header-text">
-                    <h2>LIGA DEPORTIVA BARRIAL "ARGELIA ALTA"</h2>
-                    <p>FUNDADA EL 9 DE JULIO DE 1996</p>
-                    <p>FILIAL A LA ASOCIACIÓN DE LIGAS DE MICROFÚTBOL DE QUITO</p>
-                    <p>ACUERDO MINISTERIAL 0049</p>
-                </div>
-            </div>
-
-            <h1 class="pdf-main-title">CARTA PASE</h1>
-
-            <div class="pdf-date-row">
-                Quito, <span class="pdf-line" style="width: 40px;"></span> de <span class="pdf-line" style="width: 120px;"></span> del 20<span class="pdf-line" style="width: 30px;"></span>
-            </div>
-
-            <div class="pdf-content-body">
-                <p>
-                    Yo <span class="pdf-line" style="width: 320px;"></span> 
-                    con Nro. de cedula <span class="pdf-line" style="width: 160px;"></span>, me 
-                    encuentro registrado(a) en el Club " <span class="pdf-line" style="width: 250px;"></span> " 
-                    perteneciente a la Liga Deportiva Barrial Argelia Alta, en virtud de que es mi voluntad seguir 
-                    participando en el Deporte Barrial solicito a usted señor <span class="pdf-line" style="width: 250px;"></span> 
-                    con C.C. <span class="pdf-line" style="width: 160px;"></span> presidente del Club " <span class="pdf-line" style="width: 250px;"></span> " 
-                    me conceda el PASE a préstamo <span class="pdf-line" style="width: 40px;"></span>, libre <span class="pdf-line" style="width: 40px;"></span> o compra definitiva <span class="pdf-line" style="width: 40px;"></span>
-                </p>
-
-                <p style="margin-top: 20px;">
-                    El mencionado deportista puede hacer uso del presente documento para los fines requeridos en el deporte barrial.
-                </p>
-
-                <div class="pdf-signature-grid">
-                    <div class="pdf-sig-item">
-                        <div class="pdf-sig-line-box">Presidente del Club</div>
-                    </div>
-                    <div class="pdf-sig-item">
-                        <div class="pdf-sig-line-box">Jugador</div>
-                    </div>
-                    <div class="pdf-sig-item">
-                        <div class="pdf-sig-line-box">Presidente del Club</div>
-                    </div>
-                </div>
-
-                <div class="pdf-register-section">
-                    <div style="text-align: center;"><span class="pdf-register-title">Registro del Pase</span></div>
-                    <p style="margin-top: 10px;">
-                        Certifico el registro del pase del deportista <span class="pdf-line" style="width: 380px;"></span>, 
-                        dejando constancia en nuestro archivo, el interesado participará o actuará desde la presente fecha en donde en el Club 
-                        " <span class="pdf-line" style="width: 300px;"></span> "
-                    </p>
-                    <p style="margin-top: 10px;">
-                        Fecha de Registro: <span class="pdf-line" style="width: 300px;"></span>
-                    </p>
-                </div>
-
-                <div class="pdf-final-signature">
-                    <strong style="font-size: 15px;">Sr. Javier Miño</strong><br>
-                    <span style="font-size: 12px;">Presidente L.B.A.A.</span><br>
-                    <span style="font-size: 11px; color: #7f8c8d;">Gestión 2025 - 2029</span>
-                </div>
-            </div>
-
-            <div class="pdf-footer-info">
-                Dir: Argelia Alta calle Cuyuja y Majúa altos de la casa barrial. / Telf.: 0984613518<br>
-                <strong>QUITO - ECUADOR</strong>
-            </div>
+      <div id="carta-pase-pdf-template">
+        <div class="pdf-seq-box">Nº <span class="pdf-seq-val">0000</span></div>
+        <div class="pdf-header-container">
+          <div class="pdf-logo-box">
+            <img src="img/logo.png" />
+          </div>
+          <div class="pdf-header-text">
+            <h2>LIGA DEPORTIVA BARRIAL "ARGELIA ALTA"</h2>
+            <p>FUNDADA EL 9 DE JULIO DE 1996</p>
+            <p>FILIAL A LA ASOCIACIÓN DE LIGAS DE MICROFÚTBOL DE QUITO</p>
+            <p>ACUERDO MINISTERIAL 0049</p>
+          </div>
         </div>
+
+        <h1 class="pdf-main-title">CARTA PASE</h1>
+
+        <div class="pdf-date-row">
+          Quito, <span class="pdf-line" style="width: 40px"></span> de
+          <span class="pdf-line" style="width: 120px"></span> del 20<span
+            class="pdf-line"
+            style="width: 30px"
+          ></span>
+        </div>
+
+        <div class="pdf-content-body">
+          <p>
+            Yo <span class="pdf-line" style="width: 320px"></span> con Nro. de
+            cedula <span class="pdf-line" style="width: 160px"></span>, me
+            encuentro registrado(a) en el Club "
+            <span class="pdf-line" style="width: 250px"></span> " perteneciente
+            a la Liga Deportiva Barrial Argelia Alta, en virtud de que es mi
+            voluntad seguir participando en el Deporte Barrial solicito a usted
+            señor <span class="pdf-line" style="width: 250px"></span> con C.C.
+            <span class="pdf-line" style="width: 160px"></span> presidente del
+            Club " <span class="pdf-line" style="width: 250px"></span> " me
+            conceda el PASE a préstamo
+            <span class="pdf-line" style="width: 40px"></span>, libre
+            <span class="pdf-line" style="width: 40px"></span> o compra
+            definitiva <span class="pdf-line" style="width: 40px"></span>
+          </p>
+
+          <p style="margin-top: 10px; margin-bottom: 8px">
+            El mencionado deportista puede hacer uso del presente documento para
+            los fines requeridos en el deporte barrial.
+          </p>
+
+          <div class="pdf-signature-grid">
+            <div class="pdf-sig-item">
+              <div class="pdf-sig-line-box">Presidente del Club</div>
+            </div>
+            <div class="pdf-sig-item">
+              <div class="pdf-sig-line-box">Jugador</div>
+            </div>
+            <div class="pdf-sig-item">
+              <div class="pdf-sig-line-box">Presidente del Club</div>
+            </div>
+          </div>
+
+          <div class="pdf-register-section">
+            <div style="text-align: center">
+              <span class="pdf-register-title">Registro del Pase</span>
+            </div>
+            <p style="margin-top: 6px; margin-bottom: 6px">
+              Certifico el registro del pase del deportista
+              <span class="pdf-line" style="width: 380px"></span>, dejando
+              constancia en nuestro archivo, el interesado participará o actuará
+              desde la presente fecha en donde en el Club "
+              <span class="pdf-line" style="width: 300px"></span> "
+            </p>
+            <p style="margin-top: 6px; margin-bottom: 4px">
+              Fecha de Registro:
+              <span class="pdf-line" style="width: 300px"></span>
+            </p>
+          </div>
+
+          <div class="pdf-final-signature">
+            <strong style="font-size: 14.5px">Sr. Javier Miño</strong><br />
+            <span style="font-size: 11.5px">Presidente L.B.A.A.</span><br />
+            <span style="font-size: 10.5px; color: #7f8c8d"
+              >Gestión 2025 - 2029</span
+            >
+          </div>
+        </div>
+
+        <div class="pdf-footer-info">
+          Dir: Argelia Alta calle Cuyuja y Majúa altos de la casa barrial. /
+          Telf.: 0984613518<br />
+          <strong>QUITO - ECUADOR</strong>
+        </div>
+      </div>
     </div>
     <script>
       const firebaseConfig = {
@@ -1546,7 +1637,7 @@
             .where("team", "==", currentTeam.name)
             .orderBy("timestamp", "desc")
             .get();
-            
+
           const invDocs = invSnapRaw.docs.filter((doc) => {
             const data = doc.data();
             // Filtrar por categoría para evitar mezclar clubes del mismo nombre en distinta categoría
@@ -1590,7 +1681,7 @@
               "beforeend",
               `
               <tr class="align-middle border-bottom border-white border-opacity-5">
-                <td class="fw-bold font-monospace text-warning" style="font-size: 13px;">${inv.invoiceId || '---'}</td>
+                <td class="fw-bold font-monospace text-warning" style="font-size: 13px;">${inv.invoiceId || "---"}</td>
                 <td class="text-white-50 small">${date}</td>
                 <td>
                   <div class="d-flex flex-column gap-1">
@@ -1611,54 +1702,74 @@
             .collection("cartas_pases")
             .where("teamId", "==", currentTeam.id)
             .get();
-            
+
           let passDocs = [];
-          passSnapRaw.forEach((doc) => { passDocs.push({id: doc.id, ...doc.data()}) });
+          passSnapRaw.forEach((doc) => {
+            passDocs.push({ id: doc.id, ...doc.data() });
+          });
           passDocs.sort((a, b) => {
             const tA = a.createdAt ? a.createdAt.toMillis() : 0;
             const tB = b.createdAt ? b.createdAt.toMillis() : 0;
             return tB - tA;
           });
- 
+
           // Solo contamos las aprobadas para la estadística superior
-          const approvedCount = passDocs.filter((d) => d.status === "completed" || d.status === "Aprobado").length;
+          const approvedCount = passDocs.filter(
+            (d) => d.status === "completed" || d.status === "Aprobado",
+          ).length;
           document.getElementById("stat-passes").textContent = approvedCount;
- 
+
           const passList = document.getElementById("passesList");
           passList.innerHTML = "";
           passDocs.forEach((cp) => {
             const date = cp.createdAt
               ? cp.createdAt.toDate().toLocaleDateString()
               : "N/A";
-            
-            const isApproved = cp.status === "completed" || cp.status === "Aprobado";
-            const isPending = cp.status === "pending" || cp.status === "Pendiente";
-            
-            let badge = '';
+
+            const isApproved =
+              cp.status === "completed" || cp.status === "Aprobado";
+            const isPending =
+              cp.status === "pending" || cp.status === "Pendiente";
+
+            let badge = "";
             if (isApproved) {
-                badge = '<span class="badge-premium bg-paid">APROBADO</span>';
+              badge = '<span class="badge-premium bg-paid">APROBADO</span>';
             } else if (isPending) {
-                badge = '<span class="badge-premium bg-active" style="color: #f39c12; border-color: rgba(243, 156, 18, 0.3); background: rgba(243, 156, 18, 0.1);">PENDIENTE DE VALIDACIÓN</span>';
+              badge =
+                '<span class="badge-premium bg-active" style="color: #f39c12; border-color: rgba(243, 156, 18, 0.3); background: rgba(243, 156, 18, 0.1);">PENDIENTE DE VALIDACIÓN</span>';
             } else {
-                badge = '<span class="badge-premium bg-unpaid" style="color: #e74c3c; border-color: rgba(231, 76, 60, 0.3); background: rgba(231, 76, 60, 0.1);">RECHAZADO</span>';
+              badge =
+                '<span class="badge-premium bg-unpaid" style="color: #e74c3c; border-color: rgba(231, 76, 60, 0.3); background: rgba(231, 76, 60, 0.1);">RECHAZADO</span>';
             }
 
-            const totalValueFormatted = cp.totalValue ? `$ ${parseFloat(cp.totalValue).toFixed(2)}` : `$ ${(cp.quantity * 1.00).toFixed(2)}`;
-            let prefix = '001';
+            const totalValueFormatted = cp.totalValue
+              ? `$ ${parseFloat(cp.totalValue).toFixed(2)}`
+              : `$ ${(cp.quantity * 1.0).toFixed(2)}`;
+            let prefix = "001";
             if (isApproved && cp.invoiceId) {
-              const parts = cp.invoiceId.split('-');
+              const parts = cp.invoiceId.split("-");
               if (parts.length > 0 && parts[0].length === 3) {
                 prefix = parts[0];
               }
             }
-            const start = String(cp.startSeq || cp.seqNum || 1).padStart(3, '0');
-            const end = String(cp.endSeq || cp.seqNum || 1).padStart(3, '0');
-            const isBatch = cp.isBatch || (cp.startSeq && cp.endSeq && cp.startSeq !== cp.endSeq);
-            const seqRange = isApproved ? (isBatch ? `Nº ${prefix}-${start} - ${prefix}-${end}` : `Nº ${prefix}-${start}`) : 'Sin Asignar';
-            const invoiceInfo = isApproved && cp.invoiceId
-              ? `<div class="small text-white-50 mt-1"><i class="fas fa-file-invoice me-1"></i> Factura: <span class="text-warning font-monospace">${cp.invoiceId}</span></div>`
-              : '';
- 
+            const start = String(cp.startSeq || cp.seqNum || 1).padStart(
+              3,
+              "0",
+            );
+            const end = String(cp.endSeq || cp.seqNum || 1).padStart(3, "0");
+            const isBatch =
+              cp.isBatch ||
+              (cp.startSeq && cp.endSeq && cp.startSeq !== cp.endSeq);
+            const seqRange = isApproved
+              ? isBatch
+                ? `Nº ${prefix}-${start} - ${prefix}-${end}`
+                : `Nº ${prefix}-${start}`
+              : "Sin Asignar";
+            const invoiceInfo =
+              isApproved && cp.invoiceId
+                ? `<div class="small text-white-50 mt-1"><i class="fas fa-file-invoice me-1"></i> Factura: <span class="text-warning font-monospace">${cp.invoiceId}</span></div>`
+                : "";
+
             passList.insertAdjacentHTML(
               "beforeend",
               `
@@ -1685,7 +1796,9 @@
           const playersMap = {};
           playersSnap.forEach((d) => {
             const data = d.data();
-            const pName = data.name || `${data.nombres || ""} ${data.apellidos || ""}`.trim();
+            const pName =
+              data.name ||
+              `${data.nombres || ""} ${data.apellidos || ""}`.trim();
             playersMap[d.id] = pName || "Jugador";
           });
 
@@ -1705,15 +1818,34 @@
           sancSnap.forEach((doc) => {
             const s = doc.data();
             // Incluir si es multa al equipo OR si es jugador de este equipo
-            if (s.teamId === currentTeam.id || (s.jugadorId && playersMap[s.jugadorId])) {
+            if (
+              s.teamId === currentTeam.id ||
+              (s.jugadorId && playersMap[s.jugadorId])
+            ) {
               filteredSancDocs.push({ id: doc.id, ...s });
             }
           });
 
           // Ordenar por fecha de forma segura (fecha o createdAt)
           filteredSancDocs.sort((a, b) => {
-            const dateA = a.fecha ? (a.fecha.toDate ? a.fecha.toDate() : new Date(a.fecha)) : (a.createdAt ? (a.createdAt.toDate ? a.createdAt.toDate() : new Date(a.createdAt)) : new Date(0));
-            const dateB = b.fecha ? (b.fecha.toDate ? b.fecha.toDate() : new Date(b.fecha)) : (b.createdAt ? (b.createdAt.toDate ? b.createdAt.toDate() : new Date(b.createdAt)) : new Date(0));
+            const dateA = a.fecha
+              ? a.fecha.toDate
+                ? a.fecha.toDate()
+                : new Date(a.fecha)
+              : a.createdAt
+                ? a.createdAt.toDate
+                  ? a.createdAt.toDate()
+                  : new Date(a.createdAt)
+                : new Date(0);
+            const dateB = b.fecha
+              ? b.fecha.toDate
+                ? b.fecha.toDate()
+                : new Date(b.fecha)
+              : b.createdAt
+                ? b.createdAt.toDate
+                  ? b.createdAt.toDate()
+                  : new Date(b.createdAt)
+                : new Date(0);
             return dateB - dateA;
           });
 
@@ -1721,12 +1853,20 @@
             (d) => d.estado === "activa",
           ).length;
           document.getElementById("stat-sanctions").textContent = activeSanc;
-          
+
           const sancList = document.getElementById("sanctionsList");
           sancList.innerHTML = "";
 
           filteredSancDocs.forEach((s) => {
-            const dateObj = s.fecha ? (s.fecha.toDate ? s.fecha.toDate() : new Date(s.fecha)) : (s.createdAt ? (s.createdAt.toDate ? s.createdAt.toDate() : new Date(s.createdAt)) : null);
+            const dateObj = s.fecha
+              ? s.fecha.toDate
+                ? s.fecha.toDate()
+                : new Date(s.fecha)
+              : s.createdAt
+                ? s.createdAt.toDate
+                  ? s.createdAt.toDate()
+                  : new Date(s.createdAt)
+                : null;
             const date = dateObj ? dateObj.toLocaleDateString() : "N/A";
             const playerName = playersMap[s.jugadorId] || "MULTA EQUIPO";
             const statusClass = s.estado === "activa" ? "bg-active" : "bg-paid";
@@ -1760,7 +1900,10 @@
           playersSnap.docs.forEach((doc) => {
             const p = doc.data();
             const pId = doc.id;
-            const pName = p.name || `${p.nombres || ""} ${p.apellidos || ""}`.trim() || "Jugador";
+            const pName =
+              p.name ||
+              `${p.nombres || ""} ${p.apellidos || ""}`.trim() ||
+              "Jugador";
             const dorsal = p.numeroJugador || "-";
 
             const pSanciones = playerSanctionsMap[pId] || [];
@@ -1784,7 +1927,7 @@
             if (playersOnVerge.length > 0) {
               banner.style.display = "block";
               warningText.innerHTML = `Tienes jugadores a una tarjeta amarilla de ser suspendidos: <span class="text-warning fw-bold">${playersOnVerge.join(", ")}</span>.`;
-              
+
               // Mostrar alerta SweetAlert2 una sola vez al cargar la sesión
               if (!window.hasShownYellowWarning) {
                 window.hasShownYellowWarning = true;
@@ -1795,7 +1938,7 @@
                       <div class="text-start small text-white-50">
                         <p class="text-white">Los siguientes jugadores de tu equipo tienen <strong>3 tarjetas amarillas acumuladas</strong> y están a una amonestación de recibir 1 partido de suspensión:</p>
                         <ul class="text-warning fw-bold mb-0">
-                          ${playersOnVerge.map(p => `<li>${p}</li>`).join('')}
+                          ${playersOnVerge.map((p) => `<li>${p}</li>`).join("")}
                         </ul>
                       </div>
                     `,
@@ -1804,8 +1947,9 @@
                     confirmButtonText: "ENTENDIDO",
                     confirmButtonColor: "#f1c40f",
                     customClass: {
-                      popup: 'rounded-4 border border-warning border-opacity-10'
-                    }
+                      popup:
+                        "rounded-4 border border-warning border-opacity-10",
+                    },
                   });
                 }, 800);
               }
@@ -1824,10 +1968,20 @@
               status: "Pagado",
             })),
             ...filteredSancDocs.map((s) => {
-              const dateObj = s.fecha ? (s.fecha.toDate ? s.fecha.toDate() : new Date(s.fecha)) : (s.createdAt ? (s.createdAt.toDate ? s.createdAt.toDate() : new Date(s.createdAt)) : null);
+              const dateObj = s.fecha
+                ? s.fecha.toDate
+                  ? s.fecha.toDate()
+                  : new Date(s.fecha)
+                : s.createdAt
+                  ? s.createdAt.toDate
+                    ? s.createdAt.toDate()
+                    : new Date(s.createdAt)
+                  : null;
               return {
                 type: "SANC",
-                date: dateObj ? firebase.firestore.Timestamp.fromDate(dateObj) : null,
+                date: dateObj
+                  ? firebase.firestore.Timestamp.fromDate(dateObj)
+                  : null,
                 concept: "Sanción: " + (playersMap[s.jugadorId] || "Equipo"),
                 val: s.valor,
                 status: s.estado,
@@ -1856,10 +2010,10 @@
 
           // 5. Recent Uploads
           loadRecentUploads();
-          
+
           // 6. Formatos del Campeonato
           loadChampionshipFormats();
-          
+
           // 7. Notifications (Denied Documents)
           setupNotifications();
         } catch (e) {
@@ -1870,9 +2024,10 @@
       function loadChampionshipFormats() {
         const list = document.getElementById("championshipFormatsList");
         if (!list) return;
-        
-        list.innerHTML = '<tr><td colspan="3" class="text-center py-3"><div class="spinner-border text-success" role="status"></div></td></tr>';
-        
+
+        list.innerHTML =
+          '<tr><td colspan="3" class="text-center py-3"><div class="spinner-border text-success" role="status"></div></td></tr>';
+
         db.collection("teamFiles")
           .where("teamId", "==", currentTeam.id)
           .where("fileType", "==", "FORMATO")
@@ -1880,14 +2035,16 @@
           .then((querySnapshot) => {
             list.innerHTML = "";
             if (querySnapshot.empty) {
-              list.innerHTML = '<tr><td colspan="3" class="text-center text-white-50 py-3">No tienes formatos asignados o disponibles.</td></tr>';
+              list.innerHTML =
+                '<tr><td colspan="3" class="text-center text-white-50 py-3">No tienes formatos asignados o disponibles.</td></tr>';
               return;
             }
-            
+
             querySnapshot.forEach((doc) => {
               const file = doc.data();
               const tr = document.createElement("tr");
-              tr.className = "align-middle border-bottom border-white border-opacity-5";
+              tr.className =
+                "align-middle border-bottom border-white border-opacity-5";
               tr.innerHTML = `
                 <td class="text-white fw-semibold" style="font-size: 13px;">${file.fileName.replace(/\.pdf$/i, "")}</td>
                 <td><span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-20" style="font-size: 10px; padding: 4px 10px;">PDF</span></td>
@@ -1905,7 +2062,8 @@
           })
           .catch((err) => {
             console.error(err);
-            list.innerHTML = '<tr><td colspan="3" class="text-center text-danger py-3">Error al cargar los formatos.</td></tr>';
+            list.innerHTML =
+              '<tr><td colspan="3" class="text-center text-danger py-3">Error al cargar los formatos.</td></tr>';
           });
       }
 
@@ -1920,7 +2078,7 @@
           Swal.fire("Error", "No se pudo iniciar la descarga.", "error");
         }
       }
-      
+
       let unreadNotifications = [];
 
       function setupNotifications() {
@@ -1929,129 +2087,175 @@
           .where("status", "in", ["Aprobado", "Denegado"])
           .onSnapshot((snapshot) => {
             unreadNotifications = [];
-            snapshot.forEach(doc => {
+            snapshot.forEach((doc) => {
               const data = doc.data();
-              const typeLow = (data.type || '').toLowerCase();
-              const fileNameLow = (data.fileName || '').toLowerCase();
-              if (typeLow.startsWith('pago') || typeLow.includes('pago') || fileNameLow.startsWith('pago') || typeLow === 'formato') {
+              const typeLow = (data.type || "").toLowerCase();
+              const fileNameLow = (data.fileName || "").toLowerCase();
+              if (
+                typeLow.startsWith("pago") ||
+                typeLow.includes("pago") ||
+                fileNameLow.startsWith("pago") ||
+                typeLow === "formato"
+              ) {
                 return;
               }
               if (data.notified === false) {
                 unreadNotifications.push({ id: doc.id, ...data });
               }
             });
-            
+
             const btn = document.getElementById("notificationsBtn");
             const badge = document.getElementById("notificationsBadge");
             const toast = document.getElementById("notificationsToast");
             const toastBody = document.getElementById("notificationsToastBody");
-            
+
             if (unreadNotifications.length > 0) {
               btn.style.display = "flex";
               badge.textContent = unreadNotifications.length;
-              
+
               // Premium Dynamic Theming based on mixed statuses
-              const hasDenied = unreadNotifications.some(n => n.status === 'Denegado');
+              const hasDenied = unreadNotifications.some(
+                (n) => n.status === "Denegado",
+              );
               if (hasDenied) {
-                btn.style.background = "linear-gradient(135deg, rgba(231, 76, 60, 0.25), rgba(231, 76, 60, 0.05))";
+                btn.style.background =
+                  "linear-gradient(135deg, rgba(231, 76, 60, 0.25), rgba(231, 76, 60, 0.05))";
                 btn.style.borderColor = "rgba(231, 76, 60, 0.4)";
                 btn.style.color = "#e74c3c";
                 btn.style.boxShadow = "0 8px 32px rgba(231, 76, 60, 0.25)";
               } else {
-                btn.style.background = "linear-gradient(135deg, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.05))";
+                btn.style.background =
+                  "linear-gradient(135deg, rgba(46, 204, 113, 0.25), rgba(46, 204, 113, 0.05))";
                 btn.style.borderColor = "rgba(46, 204, 113, 0.4)";
                 btn.style.color = "#2ecc71";
                 btn.style.boxShadow = "0 8px 32px rgba(46, 204, 113, 0.25)";
               }
-              
-              toastBody.innerHTML = unreadNotifications.map(n => {
-                const isApproved = n.status === 'Aprobado';
-                const color = isApproved ? '#2ecc71' : '#e74c3c';
-                const statusText = isApproved ? 'APROBADO' : 'DENEGADO';
-                const typeLow = (n.type || '').toLowerCase();
-                const fileNameLow = (n.fileName || '').toLowerCase();
-                const isTransfer = typeLow.includes('carta') || typeLow.includes('pase') || typeLow.includes('transferencia') || fileNameLow.includes('carta_pase') || fileNameLow.includes('pase');
-                const isAutoriz = typeLow.includes('autoriz') || typeLow.includes('padres') || fileNameLow.includes('autoriz');
-                const typeLabel = isTransfer ? 'CARTA PASE' : (isAutoriz ? 'AUTORIZACIÓN' : (n.type || 'DOCUMENTO').toUpperCase());
-                const desc = isApproved 
-                  ? 'Tu documento ha sido aprobado y calificado con éxito.'
-                  : 'Se ha rechazado tu documento por la Comisión.';
-                  
-                return `
+
+              toastBody.innerHTML = unreadNotifications
+                .map((n) => {
+                  const isApproved = n.status === "Aprobado";
+                  const color = isApproved ? "#2ecc71" : "#e74c3c";
+                  const statusText = isApproved ? "APROBADO" : "DENEGADO";
+                  const typeLow = (n.type || "").toLowerCase();
+                  const fileNameLow = (n.fileName || "").toLowerCase();
+                  const isTransfer =
+                    typeLow.includes("carta") ||
+                    typeLow.includes("pase") ||
+                    typeLow.includes("transferencia") ||
+                    fileNameLow.includes("carta_pase") ||
+                    fileNameLow.includes("pase");
+                  const isAutoriz =
+                    typeLow.includes("autoriz") ||
+                    typeLow.includes("padres") ||
+                    fileNameLow.includes("autoriz");
+                  const typeLabel = isTransfer
+                    ? "CARTA PASE"
+                    : isAutoriz
+                      ? "AUTORIZACIÓN"
+                      : (n.type || "DOCUMENTO").toUpperCase();
+                  const desc = isApproved
+                    ? "Tu documento ha sido aprobado y calificado con éxito."
+                    : "Se ha rechazado tu documento por la Comisión.";
+
+                  return `
                   <div class="notification-item" style="border-left: 3px solid ${color};">
                     <div class="d-flex justify-content-between mb-1">
                       <strong class="text-white text-uppercase" style="font-size: 0.75rem;">${typeLabel} ${statusText}</strong>
-                      <span class="text-white-50" style="font-size: 0.7rem;">${n.fechaAprobacion ? n.fechaAprobacion.toDate().toLocaleDateString() : ''}</span>
+                      <span class="text-white-50" style="font-size: 0.7rem;">${n.fechaAprobacion ? n.fechaAprobacion.toDate().toLocaleDateString() : ""}</span>
                     </div>
                     <div class="text-white-50 small mb-2" style="line-height: 1.2;">${desc.toUpperCase()}</div>
-                    <button class="btn btn-sm btn-outline-${isApproved ? 'success' : 'danger'} w-100 mt-1 rounded-pill text-uppercase fw-bold" onclick="viewMyDoc('${n.id}')">Ver Detalle</button>
+                    <button class="btn btn-sm btn-outline-${isApproved ? "success" : "danger"} w-100 mt-1 rounded-pill text-uppercase fw-bold" onclick="viewMyDoc('${n.id}')">Ver Detalle</button>
                   </div>
                 `;
-              }).join('');
-              
-              toast.classList.add('show');
+                })
+                .join("");
+
+              toast.classList.add("show");
             } else {
               btn.style.display = "none";
-              toast.classList.remove('show');
+              toast.classList.remove("show");
             }
           });
       }
 
       function showNotificationsModal() {
         if (unreadNotifications.length === 0) return;
-        
-        let htmlContent = unreadNotifications.map(n => {
-          const isApproved = n.status === 'Aprobado';
-          const typeLow = (n.type || '').toLowerCase();
-          const fileNameLow = (n.fileName || '').toLowerCase();
-          const isTransfer = typeLow.includes('carta') || typeLow.includes('pase') || typeLow.includes('transferencia') || fileNameLow.includes('carta_pase') || fileNameLow.includes('pase');
-          const isAutoriz = typeLow.includes('autoriz') || typeLow.includes('padres') || fileNameLow.includes('autoriz');
-          
-          let cardBorderClass = isApproved ? 'border-success border-opacity-25' : 'border-danger border-opacity-25';
-          let badgeClass = isApproved ? 'bg-success' : 'bg-danger';
-          let badgeText = isApproved 
-            ? (isTransfer ? 'CARTA PASE APROBADA' : (isAutoriz ? 'AUTORIZACIÓN APROBADA' : 'DOCUMENTO APROBADO'))
-            : (isTransfer ? 'CARTA PASE RECHAZADA' : (isAutoriz ? 'AUTORIZACIÓN RECHAZADA' : 'DOCUMENTO RECHAZADO'));
-          let displayTypeName = isTransfer ? 'CARTA PASE' : (isAutoriz ? 'AUTORIZACIÓN (MENOR DE 12 AÑOS)' : (n.type || 'DOCUMENTO').toUpperCase());
-            
-          let detailHTML = '';
-          if (isApproved) {
-            if (isTransfer) {
-              detailHTML = `
+
+        let htmlContent = unreadNotifications
+          .map((n) => {
+            const isApproved = n.status === "Aprobado";
+            const typeLow = (n.type || "").toLowerCase();
+            const fileNameLow = (n.fileName || "").toLowerCase();
+            const isTransfer =
+              typeLow.includes("carta") ||
+              typeLow.includes("pase") ||
+              typeLow.includes("transferencia") ||
+              fileNameLow.includes("carta_pase") ||
+              fileNameLow.includes("pase");
+            const isAutoriz =
+              typeLow.includes("autoriz") ||
+              typeLow.includes("padres") ||
+              fileNameLow.includes("autoriz");
+
+            let cardBorderClass = isApproved
+              ? "border-success border-opacity-25"
+              : "border-danger border-opacity-25";
+            let badgeClass = isApproved ? "bg-success" : "bg-danger";
+            let badgeText = isApproved
+              ? isTransfer
+                ? "CARTA PASE APROBADA"
+                : isAutoriz
+                  ? "AUTORIZACIÓN APROBADA"
+                  : "DOCUMENTO APROBADO"
+              : isTransfer
+                ? "CARTA PASE RECHAZADA"
+                : isAutoriz
+                  ? "AUTORIZACIÓN RECHAZADA"
+                  : "DOCUMENTO RECHAZADO";
+            let displayTypeName = isTransfer
+              ? "CARTA PASE"
+              : isAutoriz
+                ? "AUTORIZACIÓN (MENOR DE 12 AÑOS)"
+                : (n.type || "DOCUMENTO").toUpperCase();
+
+            let detailHTML = "";
+            if (isApproved) {
+              if (isTransfer) {
+                detailHTML = `
                 <div class="bg-black bg-opacity-25 p-3 rounded-3 mb-3 border-start border-3 border-success text-white small">
-                  <div class="mb-1"><strong>Nº CARTA PASE:</strong> ${(n.numeroCartaPase || '-').toUpperCase()}</div>
-                  <div><strong>JUGADOR:</strong> ${(n.playerName || '-').toUpperCase()}</div>
+                  <div class="mb-1"><strong>Nº CARTA PASE:</strong> ${(n.numeroCartaPase || "-").toUpperCase()}</div>
+                  <div><strong>JUGADOR:</strong> ${(n.playerName || "-").toUpperCase()}</div>
                 </div>
               `;
-            } else if (isAutoriz) {
-              detailHTML = `
+              } else if (isAutoriz) {
+                detailHTML = `
                 <div class="bg-black bg-opacity-25 p-3 rounded-3 mb-3 border-start border-3 border-success text-white-50 small">
                   LA AUTORIZACIÓN DE PADRES PARA EL JUGADOR HA SIDO APROBADA Y HABILITADA CON ÉXITO.
                 </div>
               `;
-            } else {
-              detailHTML = `
+              } else {
+                detailHTML = `
                 <div class="bg-black bg-opacity-25 p-3 rounded-3 mb-3 border-start border-3 border-success text-white-50 small">
                   EL DOCUMENTO HA SIDO CALIFICADO Y ARCHIVADO CORRECTAMENTE POR LA COMISIÓN.
                 </div>
               `;
-            }
-          } else {
-            detailHTML = `
+              }
+            } else {
+              detailHTML = `
               <div class="bg-black bg-opacity-25 p-3 rounded-3 mb-3 border-start border-3 border-danger">
                 <label class="text-white-50 small text-uppercase mb-1 fw-bold">Motivo del Rechazo:</label>
-                <p class="text-white mb-0 fst-italic">"${(n.motivo || 'NO ESPECIFICADO').toUpperCase()}"</p>
+                <p class="text-white mb-0 fst-italic">"${(n.motivo || "NO ESPECIFICADO").toUpperCase()}"</p>
               </div>
             `;
-          }
-          
-          let btnEntendidoClass = isApproved ? 'btn-success' : 'btn-danger';
-          
-          return `
+            }
+
+            let btnEntendidoClass = isApproved ? "btn-success" : "btn-danger";
+
+            return `
             <div class="p-3 mb-3 bg-dark bg-opacity-50 border ${cardBorderClass} rounded-4 text-start">
               <div class="d-flex justify-content-between mb-2">
                 <span class="badge ${badgeClass} text-uppercase font-monospace">${badgeText}</span>
-                <span class="text-white-50 small">${n.fechaAprobacion ? n.fechaAprobacion.toDate().toLocaleString() : ''}</span>
+                <span class="text-white-50 small">${n.fechaAprobacion ? n.fechaAprobacion.toDate().toLocaleString() : ""}</span>
               </div>
               <h6 class="text-white fw-bold text-uppercase mb-2">TIPO: ${displayTypeName}</h6>
               ${detailHTML}
@@ -2061,34 +2265,39 @@
               </div>
             </div>
           `;
-        }).join('');
-        
-        const hasDenied = unreadNotifications.some(n => n.status === 'Denegado');
-        const modalTitleIcon = hasDenied 
-          ? '<i class="fas fa-exclamation-triangle me-2 text-danger animate__animated animate__pulse animate__infinite"></i>' 
+          })
+          .join("");
+
+        const hasDenied = unreadNotifications.some(
+          (n) => n.status === "Denegado",
+        );
+        const modalTitleIcon = hasDenied
+          ? '<i class="fas fa-exclamation-triangle me-2 text-danger animate__animated animate__pulse animate__infinite"></i>'
           : '<i class="fas fa-bell me-2 text-success"></i>';
-        const modalTitleText = hasDenied ? 'NOTIFICACIONES PENDIENTES' : 'NOTIFICACIONES NUEVAS';
-        
+        const modalTitleText = hasDenied
+          ? "NOTIFICACIONES PENDIENTES"
+          : "NOTIFICACIONES NUEVAS";
+
         Swal.fire({
           title: `<h4 class="text-white fw-bold mb-0">${modalTitleIcon} ${modalTitleText}</h4>`,
           html: htmlContent,
-          background: '#1a1a1a',
+          background: "#1a1a1a",
           showConfirmButton: false,
           showCloseButton: true,
-          width: '600px',
+          width: "600px",
           customClass: {
-            popup: 'rounded-4 border border-white border-opacity-10'
-          }
+            popup: "rounded-4 border border-white border-opacity-10",
+          },
         });
       }
 
       async function markAsRead(docId) {
         try {
           await db.collection("team_documentation").doc(docId).update({
-            notified: true
+            notified: true,
           });
           Swal.close();
-          
+
           // Tiny delay to check if there are more unread notifications to keep the modal open nicely
           setTimeout(() => {
             if (unreadNotifications.length > 0) {
@@ -2119,17 +2328,20 @@
           const date = d.timestamp
             ? d.timestamp.toDate().toLocaleString()
             : "N/A";
-          
+
           const isApproved = d.status === "Aprobado";
           const isDenied = d.status === "Denegado";
-          
-          let badge = '';
+
+          let badge = "";
           if (isApproved) {
-              badge = '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 small fw-bold">APROBADO</span>';
+            badge =
+              '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-25 rounded-pill px-2 py-1 small fw-bold">APROBADO</span>';
           } else if (isDenied) {
-              badge = '<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-1 small fw-bold">DENEGADO</span>';
+            badge =
+              '<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-25 rounded-pill px-2 py-1 small fw-bold">DENEGADO</span>';
           } else {
-              badge = '<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-1 small fw-bold">PENDIENTE</span>';
+            badge =
+              '<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-25 rounded-pill px-2 py-1 small fw-bold">PENDIENTE</span>';
           }
 
           upList.insertAdjacentHTML(
@@ -2188,12 +2400,17 @@
               teamName: currentTeam.name,
               name: file.name,
               data: ev.target.result,
-              tipoDocumento: type === 'transferencia' ? 'carta_pase' : (type === 'cedula' ? 'autorizacion' : 'otro'),
-              descripcion: notes || 'Documentación subida por delegado',
+              tipoDocumento:
+                type === "transferencia"
+                  ? "carta_pase"
+                  : type === "cedula"
+                    ? "autorizacion"
+                    : "otro",
+              descripcion: notes || "Documentación subida por delegado",
               status: "Pendiente",
               docRefId: newDocRef.id,
               uploadedAt: new Date().toISOString(),
-              timestamp: firebase.firestore.FieldValue.serverTimestamp()
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             });
             Swal.fire(
               "¡ENVIADO!",
@@ -2213,26 +2430,36 @@
         Swal.fire({
           title: "Cargando Factura...",
           didOpen: () => Swal.showLoading(),
-          allowOutsideClick: false
+          allowOutsideClick: false,
         });
         let timeoutId;
         try {
           const timeoutPromise = new Promise((_, rej) => {
-            timeoutId = setTimeout(() => rej(new Error('Tiempo de espera agotado. Revisa tu conexión.')), 10000);
+            timeoutId = setTimeout(
+              () =>
+                rej(new Error("Tiempo de espera agotado. Revisa tu conexión.")),
+              10000,
+            );
           });
 
           const fetchPromise = (async () => {
             let doc = await db.collection("invoices").doc(id).get();
             if (doc.exists) return doc.data();
-            const querySnap = await db.collection("invoices").where("invoiceId", "==", id).get();
+            const querySnap = await db
+              .collection("invoices")
+              .where("invoiceId", "==", id)
+              .get();
             if (!querySnap.empty) return querySnap.docs[0].data();
-            throw new Error('Factura no encontrada');
+            throw new Error("Factura no encontrada");
           })();
 
           const data = await Promise.race([fetchPromise, timeoutPromise]);
           clearTimeout(timeoutId);
 
-          const setEl = (eid, val) => { const el = document.getElementById(eid); if (el) el.textContent = val; };
+          const setEl = (eid, val) => {
+            const el = document.getElementById(eid);
+            if (el) el.textContent = val;
+          };
 
           setEl("rec_number", data.invoiceId || "N/A");
           setEl("rec_client", data.team || "N/A");
@@ -2241,11 +2468,16 @@
           try {
             const ts = data.timestamp;
             let d;
-            if (ts && typeof ts.toDate === 'function') d = ts.toDate();
+            if (ts && typeof ts.toDate === "function") d = ts.toDate();
             else if (ts) d = new Date(ts);
             else d = new Date();
-            setEl("rec_date", isNaN(d.getTime()) ? "N/A" : d.toLocaleDateString());
-          } catch (e) { setEl("rec_date", "N/A"); }
+            setEl(
+              "rec_date",
+              isNaN(d.getTime()) ? "N/A" : d.toLocaleDateString(),
+            );
+          } catch (e) {
+            setEl("rec_date", "N/A");
+          }
 
           const totalVal = parseFloat(data.total || 0);
           setEl("rec_total", `$ ${totalVal.toFixed(2)}`);
@@ -2253,9 +2485,27 @@
 
           const items = [];
           try {
-            if (parseFloat(data.can || 0) > 0) items.push({ concept: "Derecho de Cancha", qty: 1, unit: data.can, total: parseFloat(data.can) });
-            if (parseFloat(data.arb || 0) > 0) items.push({ concept: "Vocalía / Arbitraje", qty: 1, unit: data.arb, total: parseFloat(data.arb) });
-            if (parseFloat(data.cem || 0) > 0) items.push({ concept: "Cementina", qty: 1, unit: data.cem, total: parseFloat(data.cem) });
+            if (parseFloat(data.can || 0) > 0)
+              items.push({
+                concept: "Derecho de Cancha",
+                qty: 1,
+                unit: data.can,
+                total: parseFloat(data.can),
+              });
+            if (parseFloat(data.arb || 0) > 0)
+              items.push({
+                concept: "Vocalía / Arbitraje",
+                qty: 1,
+                unit: data.arb,
+                total: parseFloat(data.arb),
+              });
+            if (parseFloat(data.cem || 0) > 0)
+              items.push({
+                concept: "Cementina",
+                qty: 1,
+                unit: data.cem,
+                total: parseFloat(data.cem),
+              });
 
             const formatCardPlayerList = (players) => {
               if (!players) return "";
@@ -2266,7 +2516,9 @@
                 try {
                   const parsed = JSON.parse(players);
                   arr = Array.isArray(parsed) ? parsed : [parsed];
-                } catch (e) { arr = [players]; }
+                } catch (e) {
+                  arr = [players];
+                }
               } else arr = [players];
               if (arr.length === 0) return "";
 
@@ -2276,16 +2528,30 @@
                 let numVal = "";
                 let nameVal = "";
                 if (typeof p === "object") {
-                  numVal = p.num || p.dorsal || p.numeroJugador || p.numero || p.number || "";
+                  numVal =
+                    p.num ||
+                    p.dorsal ||
+                    p.numeroJugador ||
+                    p.numero ||
+                    p.number ||
+                    "";
                   nameVal = p.name || p.nombre || p.jugador || "";
                 } else if (typeof p === "string") {
                   const trimmed = p.trim();
                   if (trimmed.startsWith("{") && trimmed.endsWith("}")) {
                     try {
                       const parsed = JSON.parse(trimmed);
-                      numVal = parsed.num || parsed.dorsal || parsed.numeroJugador || parsed.numero || "";
-                      nameVal = parsed.name || parsed.nombre || parsed.jugador || "";
-                    } catch (e) { nameVal = trimmed; }
+                      numVal =
+                        parsed.num ||
+                        parsed.dorsal ||
+                        parsed.numeroJugador ||
+                        parsed.numero ||
+                        "";
+                      nameVal =
+                        parsed.name || parsed.nombre || parsed.jugador || "";
+                    } catch (e) {
+                      nameVal = trimmed;
+                    }
                   } else nameVal = trimmed;
                 } else numVal = String(p);
 
@@ -2294,7 +2560,13 @@
                 if (numVal && !numVal.startsWith("{")) {
                   nums.push(numVal.startsWith("#") ? numVal : `#${numVal}`);
                 } else if (nameVal && !nameVal.startsWith("{")) {
-                  nums.push(nameVal.startsWith("#") ? nameVal : (nameVal.match(/^\d+$/) ? `#${nameVal}` : nameVal));
+                  nums.push(
+                    nameVal.startsWith("#")
+                      ? nameVal
+                      : nameVal.match(/^\d+$/)
+                        ? `#${nameVal}`
+                        : nameVal,
+                  );
                 }
               });
               if (nums.length === 0) return "";
@@ -2303,28 +2575,58 @@
 
             if (data.ta && parseInt(data.ta.count || 0) > 0) {
               const qty = parseInt(data.ta.count || 0);
-              const unit = parseFloat(data.ta.val !== undefined ? data.ta.val : 0.5);
+              const unit = parseFloat(
+                data.ta.val !== undefined ? data.ta.val : 0.5,
+              );
               const taPn = formatCardPlayerList(data.ta.players);
-              const title = qty === 1 ? `Tarjeta Amarilla${taPn}` : `Tarjetas Amarillas${taPn ? taPn : ` (${qty})`}`;
-              items.push({ concept: title, qty: qty, unit: unit, total: qty * unit });
+              const title =
+                qty === 1
+                  ? `Tarjeta Amarilla${taPn}`
+                  : `Tarjetas Amarillas${taPn ? taPn : ` (${qty})`}`;
+              items.push({
+                concept: title,
+                qty: qty,
+                unit: unit,
+                total: qty * unit,
+              });
             }
             if (data.tr && parseInt(data.tr.count || 0) > 0) {
               const qty = parseInt(data.tr.count || 0);
-              const unit = parseFloat(data.tr.val !== undefined ? data.tr.val : 1.0);
+              const unit = parseFloat(
+                data.tr.val !== undefined ? data.tr.val : 1.0,
+              );
               const trPn = formatCardPlayerList(data.tr.players);
-              const title = qty === 1 ? `Tarjeta Roja${trPn}` : `Tarjetas Rojas${trPn ? trPn : ` (${qty})`}`;
-              items.push({ concept: title, qty: qty, unit: unit, total: qty * unit });
+              const title =
+                qty === 1
+                  ? `Tarjeta Roja${trPn}`
+                  : `Tarjetas Rojas${trPn ? trPn : ` (${qty})`}`;
+              items.push({
+                concept: title,
+                qty: qty,
+                unit: unit,
+                total: qty * unit,
+              });
             }
-            if (data.extras && Array.isArray(data.extras) && data.extras.length > 0) {
+            if (
+              data.extras &&
+              Array.isArray(data.extras) &&
+              data.extras.length > 0
+            ) {
               data.extras.forEach((ex) => {
                 try {
                   const v = parseFloat(ex.val || 0);
                   if (v > 0) {
                     let desc = (ex.desc || "Extra").trim();
-                    if (/^AMARILLA(\s*\(\s*\))?$/i.test(desc) || /^TARJETA\s+AMARILLA/i.test(desc)) {
+                    if (
+                      /^AMARILLA(\s*\(\s*\))?$/i.test(desc) ||
+                      /^TARJETA\s+AMARILLA/i.test(desc)
+                    ) {
                       if (data.ta && parseInt(data.ta.count || 0) > 0) return;
                     }
-                    if (/^ROJA(\s*\(\s*\))?$/i.test(desc) || /^TARJETA\s+ROJA/i.test(desc)) {
+                    if (
+                      /^ROJA(\s*\(\s*\))?$/i.test(desc) ||
+                      /^TARJETA\s+ROJA/i.test(desc)
+                    ) {
                       if (data.tr && parseInt(data.tr.count || 0) > 0) return;
                     }
                     desc = desc
@@ -2339,7 +2641,9 @@
                 } catch (e) {}
               });
             }
-          } catch (ierr) { console.error(ierr); }
+          } catch (ierr) {
+            console.error(ierr);
+          }
 
           const itemsBody = document.getElementById("rec_items_body");
           if (itemsBody) {
@@ -2362,20 +2666,34 @@
             });
           }
 
-          try { Swal.close(); } catch (x) {}
+          try {
+            Swal.close();
+          } catch (x) {}
           const modalEl = document.getElementById("receiptModal");
           if (modalEl) {
             try {
               const existing = bootstrap.Modal.getInstance(modalEl);
               if (existing) existing.dispose();
-              document.querySelectorAll('.modal-backdrop').forEach(b => b.remove());
+              document
+                .querySelectorAll(".modal-backdrop")
+                .forEach((b) => b.remove());
             } catch (e) {}
-            try { document.body.classList.remove('modal-open'); } catch (e) {}
-            try { modalEl.classList.remove('fade'); } catch(e){}
-            try { modalEl.classList.remove('show'); } catch(e){}
-            try { modalEl.style.display = 'none'; } catch(e){}
+            try {
+              document.body.classList.remove("modal-open");
+            } catch (e) {}
+            try {
+              modalEl.classList.remove("fade");
+            } catch (e) {}
+            try {
+              modalEl.classList.remove("show");
+            } catch (e) {}
+            try {
+              modalEl.style.display = "none";
+            } catch (e) {}
             setTimeout(() => {
-              try { modalEl.classList.add('fade'); } catch(e){}
+              try {
+                modalEl.classList.add("fade");
+              } catch (e) {}
               const bsModal = new bootstrap.Modal(modalEl);
               bsModal.show();
             }, 30);
@@ -2383,12 +2701,15 @@
         } catch (err) {
           console.error(err);
           if (timeoutId) clearTimeout(timeoutId);
-          try { Swal.close(); } catch (x) {}
+          try {
+            Swal.close();
+          } catch (x) {}
           Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: (err && err.message) ? err.message : 'No se pudo cargar la factura',
-            confirmButtonText: 'Entendido'
+            icon: "error",
+            title: "Error",
+            text:
+              err && err.message ? err.message : "No se pudo cargar la factura",
+            confirmButtonText: "Entendido",
           });
         }
       }
@@ -2406,50 +2727,60 @@
         );
       }
 
-      async function generateAndDownloadCPPDF(teamName, quantity, startSeq, filename, prefix) {
-          const pdfContainer = document.createElement('div');
-          pdfContainer.style.margin = '0';
-          pdfContainer.style.padding = '0';
-          const originalTemplate = document.getElementById('carta-pase-pdf-template');
-          if (!originalTemplate) {
-            throw new Error('Plantilla PDF no encontrada');
+      async function generateAndDownloadCPPDF(
+        teamName,
+        quantity,
+        startSeq,
+        filename,
+        prefix,
+      ) {
+        const pdfContainer = document.createElement("div");
+        pdfContainer.style.margin = "0";
+        pdfContainer.style.padding = "0";
+        const originalTemplate = document.getElementById(
+          "carta-pase-pdf-template",
+        );
+        if (!originalTemplate) {
+          throw new Error("Plantilla PDF no encontrada");
+        }
+
+        let currentSeqNum = startSeq;
+        for (let i = 0; i < quantity; i++) {
+          const seqStr = `${prefix}-${String(currentSeqNum).padStart(3, "0")}`;
+          currentSeqNum++;
+
+          const page = originalTemplate.cloneNode(true);
+          page.style.display = "block";
+          page.querySelector(".pdf-seq-val").textContent = seqStr;
+
+          pdfContainer.appendChild(page);
+
+          if (i < quantity - 1) {
+            const pageBreak = document.createElement("div");
+            pageBreak.className = "html2pdf__page-break";
+            pdfContainer.appendChild(pageBreak);
           }
+        }
 
-          let currentSeqNum = startSeq;
-          for (let i = 0; i < quantity; i++) {
-              const seqStr = `${prefix}-${String(currentSeqNum).padStart(3, '0')}`;
-              currentSeqNum++;
+        await new Promise((resolve) => setTimeout(resolve, 800));
 
-              const page = originalTemplate.cloneNode(true);
-              page.style.display = 'block';
-              page.querySelector('.pdf-seq-val').textContent = seqStr;
+        const opt = {
+          margin: 0,
+          filename: filename,
+          image: { type: "jpeg", quality: 0.98 },
+          html2canvas: {
+            scale: 3,
+            useCORS: true,
+            letterRendering: true,
+            logging: false,
+            scrollY: 0,
+            scrollX: 0,
+          },
+          jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          pagebreak: { mode: ["avoid-all", "css"] },
+        };
 
-              pdfContainer.appendChild(page);
-
-              if (i < quantity - 1) {
-                  const pageBreak = document.createElement('div');
-                  pageBreak.className = 'html2pdf__page-break';
-                  pdfContainer.appendChild(pageBreak);
-              }
-          }
-
-          await new Promise(resolve => setTimeout(resolve, 800));
-
-          const opt = {
-              margin:       0,
-              filename:     filename,
-              image:        { type: 'jpeg', quality: 0.98 },
-              html2canvas:  {
-                  scale: 3,
-                  useCORS: true,
-                  letterRendering: true,
-                  logging: false
-              },
-              jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-              pagebreak:    { mode: ['avoid-all', 'css'] }
-          };
-
-          await html2pdf().set(opt).from(pdfContainer).save();
+        await html2pdf().set(opt).from(pdfContainer).save();
       }
 
       async function viewCP(id) {
@@ -2469,17 +2800,23 @@
           const endSeq = data.endSeq || startSeq;
           const teamName = data.teamName || "Equipo";
 
-          let prefix = '001';
+          let prefix = "001";
           if (data.invoiceId) {
-            const parts = data.invoiceId.split('-');
+            const parts = data.invoiceId.split("-");
             if (parts.length > 0 && parts[0].length === 3) {
               prefix = parts[0];
             }
           }
 
-          const filename = `Cartas_Pases_${teamName.replace(/\s+/g, '_')}_${prefix}-${String(startSeq).padStart(3, '0')}_a_${prefix}-${String(endSeq).padStart(3, '0')}.pdf`;
+          const filename = `Cartas_Pases_${teamName.replace(/\s+/g, "_")}_${prefix}-${String(startSeq).padStart(3, "0")}_a_${prefix}-${String(endSeq).padStart(3, "0")}.pdf`;
 
-          await generateAndDownloadCPPDF(teamName, quantity, startSeq, filename, prefix);
+          await generateAndDownloadCPPDF(
+            teamName,
+            quantity,
+            startSeq,
+            filename,
+            prefix,
+          );
           Swal.close();
         } catch (err) {
           console.error(err);
@@ -2492,11 +2829,11 @@
       function openBase64InNewTab(base64Data) {
         if (!base64Data) return;
         try {
-          if (!base64Data.startsWith('data:')) {
-            window.open(base64Data, '_blank');
+          if (!base64Data.startsWith("data:")) {
+            window.open(base64Data, "_blank");
             return;
           }
-          const arr = base64Data.split(',');
+          const arr = base64Data.split(",");
           const mime = arr[0].match(/:(.*?);/)[1];
           const bstr = atob(arr[1]);
           let n = bstr.length;
@@ -2506,32 +2843,42 @@
           }
           const file = new Blob([u8arr], { type: mime });
           const fileURL = URL.createObjectURL(file);
-          window.open(fileURL, '_blank');
+          window.open(fileURL, "_blank");
         } catch (e) {
           console.error(e);
           const win = window.open();
           if (win) {
-            win.document.write('<iframe src="' + base64Data + '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>');
+            win.document.write(
+              '<iframe src="' +
+                base64Data +
+                '" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>',
+            );
           }
         }
       }
 
       async function viewMyDoc(id) {
-        Swal.fire({ title: 'CARGANDO...', didOpen: () => Swal.showLoading() });
+        Swal.fire({ title: "CARGANDO...", didOpen: () => Swal.showLoading() });
         try {
           const doc = await db.collection("team_documentation").doc(id).get();
-          if (!doc.exists) return Swal.fire('ERROR', 'DOCUMENTO NO ENCONTRADO', 'error');
+          if (!doc.exists)
+            return Swal.fire("ERROR", "DOCUMENTO NO ENCONTRADO", "error");
           const d = doc.data();
           activeDocFile = d.file;
-          const isApproved = d.status === 'Aprobado';
-          const isDenied = d.status === 'Denegado';
-          const numCarta = d.numeroCartaPase || '-';
-          const valCarta = d.valor ? '$' + parseFloat(d.valor).toFixed(2) : '-';
-          
-          const badgeHTML = isApproved ? '<span class="badge bg-success">APROBADO</span>' : isDenied ? '<span class="badge bg-danger">DENEGADO</span>' : '<span class="badge bg-warning text-dark">PENDIENTE</span>';
-          
+          const isApproved = d.status === "Aprobado";
+          const isDenied = d.status === "Denegado";
+          const numCarta = d.numeroCartaPase || "-";
+          const valCarta = d.valor ? "$" + parseFloat(d.valor).toFixed(2) : "-";
+
+          const badgeHTML = isApproved
+            ? '<span class="badge bg-success">APROBADO</span>'
+            : isDenied
+              ? '<span class="badge bg-danger">DENEGADO</span>'
+              : '<span class="badge bg-warning text-dark">PENDIENTE</span>';
+
           Swal.fire({
-            title: '<h4 class="text-white fw-bold mb-0">DETALLES DEL DOCUMENTO</h4>',
+            title:
+              '<h4 class="text-white fw-bold mb-0">DETALLES DEL DOCUMENTO</h4>',
             html: `
               <div class="text-start p-3 bg-dark bg-opacity-50 border border-white border-opacity-10 rounded-4 mt-3">
                 <div class="row mb-3">
@@ -2541,10 +2888,12 @@
                   </div>
                   <div class="col-6 text-end">
                     <label class="text-white-50 small text-uppercase fw-bold">FECHA DE ENVÍO</label>
-                    <div class="text-white fw-bold">${d.timestamp ? d.timestamp.toDate().toLocaleDateString() : 'N/A'}</div>
+                    <div class="text-white fw-bold">${d.timestamp ? d.timestamp.toDate().toLocaleDateString() : "N/A"}</div>
                   </div>
                 </div>
-                ${isApproved ? `
+                ${
+                  isApproved
+                    ? `
                 <div class="row mb-3">
                   <div class="col-6">
                     <label class="text-white-50 small text-uppercase fw-bold">Nº CARTA PASE</label>
@@ -2554,29 +2903,35 @@
                     <label class="text-white-50 small text-uppercase fw-bold">VALOR</label>
                     <div class="text-success fw-bold fs-5">${valCarta}</div>
                   </div>
-                </div>` : ''}
-                ${isDenied && d.motivo ? `
+                </div>`
+                    : ""
+                }
+                ${
+                  isDenied && d.motivo
+                    ? `
                 <div class="mb-3 p-3 bg-danger bg-opacity-10 rounded-3 border border-danger border-opacity-25">
                   <label class="text-danger small text-uppercase fw-bold"><i class="fas fa-exclamation-circle me-1"></i>MOTIVO DE RECHAZO</label>
                   <div class="text-white mt-1">${d.motivo.toUpperCase()}</div>
-                </div>` : ''}
+                </div>`
+                    : ""
+                }
 
                 <div class="mb-3 mt-3">
                   <label class="text-white-50 small text-uppercase fw-bold">NOTAS DE ENVÍO</label>
-                  <p class="text-white small mb-0">${(d.notes || 'NINGUNA').toUpperCase()}</p>
+                  <p class="text-white small mb-0">${(d.notes || "NINGUNA").toUpperCase()}</p>
                 </div>
                 <div class="text-center mt-4">
                   <button class="btn btn-outline-info rounded-pill px-4 text-uppercase fw-bold" onclick="openBase64InNewTab(activeDocFile)"><i class="fas fa-external-link-alt me-2"></i> Ver Documento Original</button>
                 </div>
               </div>
             `,
-            background: '#1a1a1a',
+            background: "#1a1a1a",
             showConfirmButton: true,
-            confirmButtonText: 'CERRAR',
-            confirmButtonColor: '#2ecc71'
+            confirmButtonText: "CERRAR",
+            confirmButtonColor: "#2ecc71",
           });
         } catch (e) {
-          Swal.fire('ERROR', 'NO SE PUDIERON CARGAR LOS DETALLES', 'error');
+          Swal.fire("ERROR", "NO SE PUDIERON CARGAR LOS DETALLES", "error");
         }
       }
 
@@ -2594,42 +2949,45 @@
       }
 
       // Proceso de Solicitud de Cartas Pases con Pago QR
-      window.solicitarCartasPasesModal = async function() {
+      window.solicitarCartasPasesModal = async function () {
         const { value: quantity } = await Swal.fire({
-          title: 'Solicitar Cartas Pases',
-          text: '¿Cuántas cartas pases deseas solicitar? (Valor unitario: $1.00)',
-          input: 'number',
+          title: "Solicitar Cartas Pases",
+          text: "¿Cuántas cartas pases deseas solicitar? (Valor unitario: $1.00)",
+          input: "number",
           inputAttributes: {
             min: 1,
             step: 1,
             value: 5,
-            class: 'form-control bg-dark text-white border-secondary'
+            class: "form-control bg-dark text-white border-secondary",
           },
           showCancelButton: true,
-          confirmButtonText: 'Siguiente',
-          cancelButtonText: 'Cancelar',
-          background: '#1a1a1a',
+          confirmButtonText: "Siguiente",
+          cancelButtonText: "Cancelar",
+          background: "#1a1a1a",
           customClass: {
-            popup: 'rounded-4 border border-white border-opacity-10',
-            confirmButton: 'btn btn-success px-4 py-2',
-            cancelButton: 'btn btn-outline-light px-4 py-2'
+            popup: "rounded-4 border border-white border-opacity-10",
+            confirmButton: "btn btn-success px-4 py-2",
+            cancelButton: "btn btn-outline-light px-4 py-2",
           },
           preConfirm: (val) => {
             if (!val || val < 1) {
-              Swal.showValidationMessage('Por favor ingresa una cantidad válida.');
+              Swal.showValidationMessage(
+                "Por favor ingresa una cantidad válida.",
+              );
               return false;
             }
             return parseInt(val);
-          }
+          },
         });
 
         if (!quantity) return;
 
-        const totalValue = quantity * 1.00;
+        const totalValue = quantity * 1.0;
 
         // Mostrar detalles de transferencia, cuenta bancaria, código QR de pago, y pedir comprobante
         const { value: fileData } = await Swal.fire({
-          title: '<span style="color: #2ecc71;"><i class="fas fa-qrcode me-2"></i>Pagar Solicitud</span>',
+          title:
+            '<span style="color: #2ecc71;"><i class="fas fa-qrcode me-2"></i>Pagar Solicitud</span>',
           html: `
             <div class="text-start p-2" style="font-size: 0.95rem; color: #fff;">
               <p class="mb-3">Has solicitado <strong>${quantity}</strong> cartas pases. El total a pagar es:</p>
@@ -2652,30 +3010,33 @@
               <label class="form-label text-white-50 small mt-2">Sube el comprobante de pago (Imagen o PDF):</label>
             </div>
           `,
-          input: 'file',
+          input: "file",
           inputAttributes: {
-            accept: 'image/*,application/pdf',
-            required: 'required',
-            class: 'form-control text-white bg-dark border-secondary'
+            accept: "image/*,application/pdf",
+            required: "required",
+            class: "form-control text-white bg-dark border-secondary",
           },
           customClass: {
-            popup: 'swal-premium',
-            confirmButton: 'btn btn-success px-4 py-2 rounded-3',
-            cancelButton: 'btn btn-outline-light px-4 py-2 rounded-3',
-            input: 'form-control bg-dark text-white border-secondary'
+            popup: "swal-premium",
+            confirmButton: "btn btn-success px-4 py-2 rounded-3",
+            cancelButton: "btn btn-outline-light px-4 py-2 rounded-3",
+            input: "form-control bg-dark text-white border-secondary",
           },
           showCancelButton: true,
-          confirmButtonText: '<i class="fas fa-paper-plane me-2"></i>Enviar Solicitud',
-          cancelButtonText: 'Cancelar',
+          confirmButtonText:
+            '<i class="fas fa-paper-plane me-2"></i>Enviar Solicitud',
+          cancelButtonText: "Cancelar",
           allowOutsideClick: false,
           allowEscapeKey: false,
           preConfirm: (file) => {
             if (!file) {
-              Swal.showValidationMessage('Debe seleccionar un archivo de comprobante de pago.');
+              Swal.showValidationMessage(
+                "Debe seleccionar un archivo de comprobante de pago.",
+              );
               return false;
             }
             return file;
-          }
+          },
         });
 
         if (fileData) {
@@ -2683,9 +3044,11 @@
           reader.onload = async function (e) {
             try {
               Swal.fire({
-                title: 'Enviando Solicitud...',
+                title: "Enviando Solicitud...",
                 allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
+                didOpen: () => {
+                  Swal.showLoading();
+                },
               });
 
               // Registrar solicitud de cartas pases en la colección 'cartas_pases' como 'pending'
@@ -2693,25 +3056,29 @@
                 teamId: currentTeam.id,
                 teamName: currentTeam.name,
                 quantity: quantity,
-                value: 1.00,
+                value: 1.0,
                 totalValue: totalValue,
-                status: 'pending',
+                status: "pending",
                 comprobante: e.target.result, // Base64 del comprobante de pago
                 createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                isBatch: true
+                isBatch: true,
               });
 
               Swal.fire({
-                icon: 'success',
-                title: 'Solicitud Enviada',
+                icon: "success",
+                title: "Solicitud Enviada",
                 html: '<div class="text-start"><p class="mb-2">Tu solicitud y comprobante de pago han sido enviados correctamente.</p><p class="mb-0 small text-white-50"><i class="fas fa-info-circle me-1 text-primary"></i> Una vez que el tesorero valide el pago, se generará tu factura <b>automáticamente</b> y aparecerá en el apartado de <b>Facturas</b> del panel con el detalle completo del gasto.</p></div>',
-                confirmButtonText: 'Entendido'
+                confirmButtonText: "Entendido",
               }).then(() => {
                 loadData();
               });
             } catch (err) {
               console.error(err);
-              Swal.fire('Error', 'No se pudo registrar la solicitud de cartas pases.', 'error');
+              Swal.fire(
+                "Error",
+                "No se pudo registrar la solicitud de cartas pases.",
+                "error",
+              );
             }
           };
           reader.readAsDataURL(fileData);
