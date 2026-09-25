@@ -179,11 +179,21 @@
                   <h5 class="mb-3 mt-4">Datos del Nuevo Jugador</h5>
 
                   <div class="mb-3" id="prevYearAutofillContainer">
-                    <label class="form-label text-warning" style="font-weight: 600;">
-                      <i class="fas fa-history me-2"></i>¿Jugador de la Temporada Anterior?
+                    <label
+                      class="form-label text-warning"
+                      style="font-weight: 600"
+                    >
+                      <i class="fas fa-history me-2"></i>¿Jugador de la
+                      Temporada Anterior?
                     </label>
-                    <button type="button" class="btn btn-outline-warning w-100 py-2" id="btnAutofillPlayer" style="border-radius: 8px; font-weight: 600;">
-                      <i class="fas fa-search-plus me-2"></i>Buscar y Cargar Datos del Año Anterior
+                    <button
+                      type="button"
+                      class="btn btn-outline-warning w-100 py-2"
+                      id="btnAutofillPlayer"
+                      style="border-radius: 8px; font-weight: 600"
+                    >
+                      <i class="fas fa-search-plus me-2"></i>Buscar y Cargar
+                      Datos del Año Anterior
                     </button>
                   </div>
 
@@ -342,7 +352,11 @@
               </div>
 
               <!-- Banner de Estado del Período de Calificación -->
-              <div id="calificacionStatusBanner" class="mb-3" style="display: none;"></div>
+              <div
+                id="calificacionStatusBanner"
+                class="mb-3"
+                style="display: none"
+              ></div>
 
               <!-- Contador de jugadores y cupo -->
               <div class="cupo-info mb-4">
@@ -383,9 +397,7 @@
                       <div
                         class="d-flex justify-content-between align-items-center"
                       >
-                        <span
-                          class="h2 fw-bold mb-0"
-                          id="jugadoresMasterCount"
+                        <span class="h2 fw-bold mb-0" id="jugadoresMasterCount"
                           >0</span
                         >
                       </div>
@@ -557,14 +569,34 @@
                 </div>
               </div>
 
-              <!-- Buscador de jugadores registrados -->
+              <!-- Buscador de jugadores registrados
               <div class="mb-3 px-1">
                 <div class="input-group">
-                  <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-search"></i></span>
-                  <input type="text" id="searchRegisteredPlayers" class="form-control bg-dark text-white border-secondary" placeholder="🔍 Buscar por cédula, nombre o dorsal..." oninput="filterRegisteredPlayers()">
-                  <button class="btn btn-outline-secondary" type="button" onclick="document.getElementById('searchRegisteredPlayers').value=''; filterRegisteredPlayers();" title="Limpiar"><i class="fas fa-times"></i></button>
+                  <span
+                    class="input-group-text bg-dark border-secondary text-white-50"
+                    ><i class="fas fa-search"></i
+                  ></span>
+                  <input
+                    type="text"
+                    id="searchRegisteredPlayers"
+                    class="form-control bg-dark text-white border-secondary"
+                    placeholder="🔍 Buscar por cédula, nombre o dorsal..."
+                    oninput="filterRegisteredPlayers()"
+                  />
+                  <button
+                    class="btn btn-outline-secondary"
+                    type="button"
+                    onclick="
+                      document.getElementById('searchRegisteredPlayers').value =
+                        '';
+                      filterRegisteredPlayers();
+                    "
+                    title="Limpiar"
+                  >
+                    <i class="fas fa-times"></i>
+                  </button>
                 </div>
-              </div>
+              </div> -->
 
               <div id="playersList" class="player-list">
                 <!-- Los jugadores se cargarán aquí dinámicamente -->
@@ -606,7 +638,9 @@
                 <div class="carnet-content">
                   <div class="carnet-header">
                     <h3 class="carnet-title">LIGA BARRIAL ARGELIA ALTA</h3>
-                    <p class="carnet-subtitle" id="modalCarnetSubtitle">CAMPEONATO 2026</p>
+                    <p class="carnet-subtitle" id="modalCarnetSubtitle">
+                      CAMPEONATO 2026
+                    </p>
                   </div>
                   <div class="d-flex justify-content-center">
                     <img
@@ -801,7 +835,7 @@
       if (urlChampionshipName) {
         activeChampionshipData = {
           id: urlChampionshipId || null,
-          name: decodeURIComponent(urlChampionshipName)
+          name: decodeURIComponent(urlChampionshipName),
         };
         const initTitle = getChampionshipTitle(activeChampionshipData);
         const modalSub = document.getElementById("modalCarnetSubtitle");
@@ -876,9 +910,14 @@
       // Función para verificar estado del período de calificación y permisos
       function getQualificationStatus() {
         if (!activeChampionshipData) {
-          return { isOpen: true, canDelete: true, canRegister: true, reason: "" };
+          return {
+            isOpen: true,
+            canDelete: true,
+            canRegister: true,
+            reason: "",
+          };
         }
-        
+
         // 1. Verificar fecha límite (deadline)
         if (activeChampionshipData.deadline) {
           const deadlineDate = new Date(activeChampionshipData.deadline);
@@ -889,24 +928,27 @@
               month: "2-digit",
               year: "numeric",
               hour: "2-digit",
-              minute: "2-digit"
+              minute: "2-digit",
             });
             return {
               isOpen: false,
               canDelete: false,
               canRegister: false,
-              reason: activeChampionshipData.expiredMessage || `El período de calificación ha finalizado el ${formattedDate}. Ya no es posible registrar ni eliminar jugadores.`
+              reason:
+                activeChampionshipData.expiredMessage ||
+                `El período de calificación ha finalizado el ${formattedDate}. Ya no es posible registrar ni eliminar jugadores.`,
             };
           }
         }
-        
+
         // 2. Verificar switch explícito de eliminación configurado en dashboard
         if (activeChampionshipData.allowPlayerDeletion === false) {
           return {
             isOpen: true,
             canDelete: false,
             canRegister: activeChampionshipData.allowRegistration !== false,
-            reason: "La administración de la liga ha deshabilitado la eliminación de jugadores para este campeonato."
+            reason:
+              "La administración de la liga ha deshabilitado la eliminación de jugadores para este campeonato.",
           };
         }
 
@@ -917,7 +959,7 @@
           isOpen: true,
           canDelete: true,
           canRegister: canRegister,
-          reason: ""
+          reason: "",
         };
       }
 
@@ -925,7 +967,7 @@
       function actualizarBannerCalificacion() {
         const banner = document.getElementById("calificacionStatusBanner");
         if (!banner) return;
-        
+
         const qualStatus = getQualificationStatus();
         if (!activeChampionshipData || !activeChampionshipData.name) {
           banner.style.display = "none";
@@ -937,11 +979,14 @@
           if (activeChampionshipData.deadline) {
             const d = new Date(activeChampionshipData.deadline);
             if (!isNaN(d.getTime())) {
-              dateInfo = `Hasta el ${d.toLocaleDateString("es-ES")} a las ${d.toLocaleTimeString("es-ES", {hour: '2-digit', minute: '2-digit'})}`;
+              dateInfo = `Hasta el ${d.toLocaleDateString("es-ES")} a las ${d.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}`;
             }
           }
-          let deletionStatusText = qualStatus.canDelete ? "Eliminación de jugadores habilitada" : "Eliminación temporalmente bloqueada";
-          banner.className = "alert alert-success d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 shadow-sm border-0";
+          let deletionStatusText = qualStatus.canDelete
+            ? "Eliminación de jugadores habilitada"
+            : "Eliminación temporalmente bloqueada";
+          banner.className =
+            "alert alert-success d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 shadow-sm border-0";
           banner.style.background = "rgba(46, 204, 113, 0.15)";
           banner.style.border = "1px solid rgba(46, 204, 113, 0.3)";
           banner.innerHTML = `
@@ -957,7 +1002,8 @@
           `;
           banner.style.display = "flex";
         } else {
-          banner.className = "alert alert-danger d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 shadow-sm border-0";
+          banner.className =
+            "alert alert-danger d-flex align-items-center justify-content-between p-3 mb-4 rounded-3 shadow-sm border-0";
           banner.style.background = "rgba(231, 76, 60, 0.15)";
           banner.style.border = "1px solid rgba(231, 76, 60, 0.3)";
           banner.innerHTML = `
@@ -1015,11 +1061,21 @@
               const champId = teamData.championshipId || urlChampionshipId;
               if (champId) {
                 try {
-                  const champDoc = await db.collection("championships").doc(champId).get();
+                  const champDoc = await db
+                    .collection("championships")
+                    .doc(champId)
+                    .get();
                   if (champDoc.exists) {
-                    activeChampionshipData = { id: champDoc.id, ...champDoc.data() };
-                    const champTitle = getChampionshipTitle(activeChampionshipData);
-                    const modalSub = document.getElementById("modalCarnetSubtitle");
+                    activeChampionshipData = {
+                      id: champDoc.id,
+                      ...champDoc.data(),
+                    };
+                    const champTitle = getChampionshipTitle(
+                      activeChampionshipData,
+                    );
+                    const modalSub = document.getElementById(
+                      "modalCarnetSubtitle",
+                    );
                     if (modalSub) modalSub.textContent = champTitle;
                     actualizarBannerCalificacion();
                   }
@@ -1058,145 +1114,6 @@
       let pendingTransferDoc = null;
       let pendingAutorizacionDoc = null;
 
-      let cachedAllPlayers = [];
-      let cachedFilteredPlayers = [];
-
-      function filterRegisteredPlayers() {
-        const query = (document.getElementById("searchRegisteredPlayers")?.value || "").trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-        renderFilteredPlayersList(query);
-      }
-
-      function renderFilteredPlayersList(query = "") {
-        const playersList = document.getElementById("playersList");
-        playersList.innerHTML = "";
-
-        let listToDisplay = cachedFilteredPlayers;
-        if (query) {
-          listToDisplay = cachedFilteredPlayers.filter(p => {
-            const ced = String(p.cedula || "").toLowerCase();
-            const nom = `${p.nombres || ""} ${p.apellidos || ""}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            const num = String(p.numeroJugador || "");
-            return ced.includes(query) || nom.includes(query) || num === query;
-          });
-        }
-
-        if (listToDisplay.length === 0) {
-          if (query) {
-            playersList.innerHTML = `<div class="text-center text-warning p-4"><i class="fas fa-search me-2"></i>No se encontraron jugadores con "${query}"</div>`;
-          } else if (mode === "reclassify") {
-            playersList.innerHTML = '<div class="text-center text-muted">No hay jugadores recalificados</div>';
-          } else {
-            playersList.innerHTML = '<div class="text-center text-muted">No hay jugadores calificados</div>';
-          }
-          return;
-        }
-
-        if (mode === "reclassify") {
-          listToDisplay.forEach((player) => {
-            let nueva = cachedAllPlayers.find(
-              (j) => j.reemplazoDe === player.docId,
-            );
-            if (!nueva && player.recalificadoPor) {
-              nueva = cachedAllPlayers.find(
-                (j) => j.docId === player.recalificadoPor,
-              );
-            }
-
-            if (nueva) {
-              const flexRow = document.createElement("div");
-              flexRow.className = "d-flex gap-3 mb-3 align-items-stretch";
-              flexRow.innerHTML = `
-                <div class="player-item-glass flex-fill">
-                  <div class="d-flex align-items-center h-100">
-                    <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
-                    <div class="flex-grow-1">
-                      <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
-                      <small class="text-white-50"><i class="fas fa-id-card me-1"></i>Cédula: <b>${player.cedula || 'N/A'}</b></small>
-                      <br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>
-                    </div>
-                    <div class="ms-3">
-                      <button class="btn btn-sm btn-secondary-glass" onclick="viewPlayerDetails('${player.docId}')">
-                        <i class="fas fa-eye text-primary"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="player-item-glass flex-fill" style="border-color: var(--primary-color);">
-                  <div class="d-flex align-items-center h-100">
-                    <img src="${nueva.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
-                    <div class="flex-grow-1">
-                      <h6 class="mb-1 fw-bold">${nueva.nombres} ${nueva.apellidos}</h6>
-                      <small class="text-white-50"><i class="fas fa-id-card me-1"></i>Cédula: <b>${nueva.cedula || 'N/A'}</b></small>
-                      <br><small class="text-success fw-bold"><i class="fas fa-user-plus me-1"></i>Nuevo</small>
-                    </div>
-                    <div class="ms-3">
-                      <button class="btn btn-sm btn-secondary-glass" onclick="viewPlayerDetails('${nueva.docId}')">
-                        <i class="fas fa-eye text-primary"></i>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              `;
-              playersList.appendChild(flexRow);
-            } else {
-              const playerCard = document.createElement("div");
-              playerCard.className = "player-item-glass mb-3";
-              playerCard.innerHTML = `
-                <div class="d-flex align-items-center w-100">
-                  <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
-                  <div class="flex-grow-1">
-                    <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
-                    <small class="text-white-50"><i class="fas fa-id-card me-1"></i>Cédula: <b>${player.cedula || 'N/A'}</b></small>
-                    <br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>
-                  </div>
-                  <div class="ms-3">
-                    <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')">
-                      <i class="fas fa-eye text-primary"></i>
-                    </button>
-                  </div>
-                </div>
-              `;
-              playersList.appendChild(playerCard);
-            }
-          });
-        } else {
-          listToDisplay.forEach((player) => {
-            let statusBadge = "";
-            if (player.status === "recalificado") {
-              statusBadge = '<br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>';
-            } else if (player.status === "pendiente_aprobacion") {
-              statusBadge = '<br><small class="text-warning fw-bold"><i class="fas fa-clock me-1"></i>Calificación por Aceptar</small>';
-            } else {
-              statusBadge = '<br><small class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Calificado</small>';
-            }
-
-            const playerCard = document.createElement("div");
-            playerCard.className = "player-item-glass mb-3";
-            playerCard.innerHTML = `
-              <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
-              <div class="flex-grow-1">
-                <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
-                <small class="text-white-50"><i class="fas fa-id-card me-1"></i>Cédula: <b>${player.cedula || 'N/A'}</b> | Dorsal: #${player.numeroJugador || '-'}</small>
-                ${statusBadge}
-              </div>
-              <div class="ms-3 d-flex align-items-center">
-                <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')" title="Ver Detalles y Carnet">
-                  <i class="fas fa-eye text-primary"></i>
-                </button>
-                ${
-                  player.status !== "recalificado"
-                    ? `<button class="btn btn-sm btn-secondary-glass text-danger" onclick="deletePlayer('${player.docId}')" title="Eliminar Jugador">
-                  <i class="fas fa-trash"></i>
-                </button>`
-                    : ""
-                }
-              </div>
-            `;
-            playersList.appendChild(playerCard);
-          });
-        }
-      }
-
       // Cargar lista de jugadores
       function loadPlayers() {
         console.log("Iniciando carga de jugadores para el equipo:", teamId);
@@ -1212,8 +1129,7 @@
               if (querySnapshot.empty) {
                 playersList.innerHTML =
                   '<div class="text-center text-muted">No hay jugadores registrados</div>';
-                cachedAllPlayers = [];
-                cachedFilteredPlayers = [];
+                // Actualizar contador con lista vacía
                 actualizarContadorCupo([]);
                 return;
               }
@@ -1227,22 +1143,145 @@
 
                 // Filtrar jugadores según el modo
                 if (mode === "reclassify") {
+                  // En modo reclassify, solo mostrar jugadores recalificados
                   if (player.status === "recalificado") {
                     jugadoresFiltrados.push({ ...player, docId: doc.id });
                   }
                 } else {
+                  // En modo register, mostrar todos menos los nuevos que reemplazaron a recalificados
                   if (!player.reemplazoDe) {
                     jugadoresFiltrados.push({ ...player, docId: doc.id });
                   }
                 }
               });
 
-              cachedAllPlayers = jugadores;
-              cachedFilteredPlayers = jugadoresFiltrados;
+              // Mostrar mensaje si no hay jugadores según el filtro
+              if (jugadoresFiltrados.length === 0) {
+                if (mode === "reclassify") {
+                  playersList.innerHTML =
+                    '<div class="text-center text-muted">No hay jugadores recalificados</div>';
+                } else {
+                  playersList.innerHTML =
+                    '<div class="text-center text-muted">No hay jugadores calificados</div>';
+                }
+                // Actualizar contador con lista vacía pero mantener todos los jugadores para el cálculo
+                actualizarContadorCupo(jugadores);
+                return;
+              }
 
-              const searchInput = document.getElementById("searchRegisteredPlayers");
-              const query = searchInput ? searchInput.value.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') : "";
-              renderFilteredPlayersList(query);
+              // Mostrar jugadores filtrados
+              if (mode === "reclassify") {
+                jugadoresFiltrados.forEach((player) => {
+                  // Buscar la jugadora nueva que reemplazó a esta recalificada
+                  let nueva = jugadores.find(
+                    (j) => j.reemplazoDe === player.docId,
+                  );
+
+                  // Si no la encuentra por reemplazoDe, intenta buscar por recalificadoPor
+                  if (!nueva && player.recalificadoPor) {
+                    nueva = jugadores.find(
+                      (j) => j.docId === player.recalificadoPor,
+                    );
+                  }
+
+                  if (nueva) {
+                    // Contenedor flex para ambas tarjetas
+                    const flexRow = document.createElement("div");
+                    flexRow.className = "d-flex gap-3 mb-3 align-items-stretch";
+                    flexRow.innerHTML = `
+                      <div class="player-item-glass flex-fill">
+                        <div class="d-flex align-items-center h-100">
+                          <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
+                          <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
+                            <small class="text-white-50">Cédula: ${player.cedula}</small>
+                            <br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>
+                          </div>
+                          <div class="ms-3">
+                            <button class="btn btn-sm btn-secondary-glass" onclick="viewPlayerDetails('${player.docId}')">
+                              <i class="fas fa-eye text-primary"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="player-item-glass flex-fill" style="border-color: var(--primary-color);">
+                        <div class="d-flex align-items-center h-100">
+                          <img src="${nueva.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
+                          <div class="flex-grow-1">
+                            <h6 class="mb-1 fw-bold">${nueva.nombres} ${nueva.apellidos}</h6>
+                            <small class="text-white-50">Cédula: ${nueva.cedula}</small>
+                            <br><small class="text-success fw-bold"><i class="fas fa-user-plus me-1"></i>Nuevo</small>
+                          </div>
+                          <div class="ms-3">
+                            <button class="btn btn-sm btn-secondary-glass" onclick="viewPlayerDetails('${nueva.docId}')">
+                              <i class="fas fa-eye text-primary"></i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                    playersList.appendChild(flexRow);
+                  } else {
+                    // Solo recalificado si no hay nuevo
+                    const playerCard = document.createElement("div");
+                    playerCard.className = "player-item-glass mb-3";
+                    playerCard.innerHTML = `
+                      <div class="d-flex align-items-center w-100">
+                        <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
+                        <div class="flex-grow-1">
+                          <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
+                          <small class="text-white-50">Cédula: ${player.cedula}</small>
+                          <br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>
+                        </div>
+                        <div class="ms-3">
+                          <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')">
+                            <i class="fas fa-eye text-primary"></i>
+                          </button>
+                        </div>
+                      </div>
+                    `;
+                    playersList.appendChild(playerCard);
+                  }
+                });
+              } else {
+                jugadoresFiltrados.forEach((player) => {
+                  let statusBadge = "";
+                  if (player.status === "recalificado") {
+                    statusBadge =
+                      '<br><small class="text-danger fw-bold"><i class="fas fa-exclamation-triangle me-1"></i>Recalificado</small>';
+                  } else if (player.status === "pendiente_aprobacion") {
+                    statusBadge =
+                      '<br><small class="text-warning fw-bold"><i class="fas fa-clock me-1"></i>Calificación por Aceptar</small>';
+                  } else {
+                    statusBadge =
+                      '<br><small class="text-success fw-bold"><i class="fas fa-check-circle me-1"></i>Calificado</small>';
+                  }
+
+                  const playerCard = document.createElement("div");
+                  playerCard.className = "player-item-glass mb-3";
+                  playerCard.innerHTML = `
+                    <img src="${player.playerPhoto}" alt="Foto del jugador" class="player-photo-sm">
+                    <div class="flex-grow-1">
+                      <h6 class="mb-1 fw-bold">${player.nombres} ${player.apellidos}</h6>
+                      <small class="text-white-50">Cédula: ${player.cedula}</small>
+                      ${statusBadge}
+                    </div>
+                    <div class="ms-3 d-flex align-items-center">
+                      <button class="btn btn-sm btn-secondary-glass me-2" onclick="viewPlayerDetails('${player.docId}')" title="Ver Detalles y Carnet">
+                        <i class="fas fa-eye text-primary"></i>
+                      </button>
+                      ${
+                        player.status !== "recalificado"
+                          ? `<button class="btn btn-sm btn-secondary-glass text-danger" onclick="deletePlayer('${player.docId}')" title="Eliminar Jugador">
+                        <i class="fas fa-trash"></i>
+                      </button>`
+                          : ""
+                      }
+                    </div>
+                  `;
+                  playersList.appendChild(playerCard);
+                });
+              }
 
               // Actualizar contador de cupo
               actualizarContadorCupo(jugadores);
@@ -1272,7 +1311,8 @@
 
             try {
               // Buscar si la cédula ya existe en la base de datos de jugadores
-              const playerQuery = await db.collection("players")
+              const playerQuery = await db
+                .collection("players")
                 .where("cedula", "==", numCedula)
                 .get();
 
@@ -1280,17 +1320,19 @@
                 // Verificar si pertenece a otro equipo
                 let enOtroEquipo = false;
                 let originalPlayerDoc = null;
-                const currentTeamName = document.getElementById("teamName").value || "";
+                const currentTeamName =
+                  document.getElementById("teamName").value || "";
 
                 function cleanTextForComparison(str) {
-                  return (str || "").toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '')
-                    .replace(/[^a-z0-9]/g, '')
+                  return (str || "")
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .replace(/[^a-z0-9]/g, "")
                     .trim();
                 }
 
-                playerQuery.forEach(doc => {
+                playerQuery.forEach((doc) => {
                   const data = doc.data();
                   if (data.teamId !== teamId) {
                     const cleanPrev = cleanTextForComparison(data.teamName);
@@ -1305,13 +1347,14 @@
                 if (enOtroEquipo) {
                   // Mostrar modal automático para subir la carta pase con diseño premium y datos detallados
                   const { value: fileData } = await Swal.fire({
-                    title: '<span style="color: #f39c12;"><i class="fas fa-exchange-alt me-2"></i>Jugador en Otro Club</span>',
+                    title:
+                      '<span style="color: #f39c12;"><i class="fas fa-exchange-alt me-2"></i>Jugador en Otro Club</span>',
                     html: `
                       <div class="text-start p-2" style="font-size: 0.95rem; color: #fff;">
                         <p class="mb-3">El jugador con cédula <strong>${numCedula}</strong> ya está registrado en el sistema.</p>
                         <div class="p-3 mb-3 rounded" style="background: rgba(255,255,255,0.05); border-left: 4px solid #f39c12;">
                           <p class="mb-1 text-white-50 small">Club Anterior:</p>
-                          <p class="mb-0 fw-bold fs-5 text-warning"><i class="fas fa-shield-alt me-2"></i>${originalPlayerDoc.teamName || 'Sin asignar'}</p>
+                          <p class="mb-0 fw-bold fs-5 text-warning"><i class="fas fa-shield-alt me-2"></i>${originalPlayerDoc.teamName || "Sin asignar"}</p>
                           <p class="mb-0 text-white-50 small mt-2">Nombre del Jugador:</p>
                           <p class="mb-0 fw-bold text-white">${originalPlayerDoc.nombres} ${originalPlayerDoc.apellidos}</p>
                         </div>
@@ -1319,30 +1362,33 @@
                         <label class="form-label text-white-50 mt-3 small">Selecciona el archivo de la Carta Pase (PDF, JPG, PNG):</label>
                       </div>
                     `,
-                    input: 'file',
+                    input: "file",
                     inputAttributes: {
-                      accept: 'image/*,application/pdf',
-                      required: 'required',
-                      class: 'form-control text-white bg-dark border-secondary'
+                      accept: "image/*,application/pdf",
+                      required: "required",
+                      class: "form-control text-white bg-dark border-secondary",
                     },
                     customClass: {
-                      popup: 'swal-premium',
-                      confirmButton: 'btn btn-success px-4 py-2 rounded-3',
-                      cancelButton: 'btn btn-outline-light px-4 py-2 rounded-3',
-                      input: 'form-control bg-dark text-white border-secondary'
+                      popup: "swal-premium",
+                      confirmButton: "btn btn-success px-4 py-2 rounded-3",
+                      cancelButton: "btn btn-outline-light px-4 py-2 rounded-3",
+                      input: "form-control bg-dark text-white border-secondary",
                     },
                     showCancelButton: true,
-                    confirmButtonText: '<i class="fas fa-upload me-2"></i>Subir Carta Pase',
-                    cancelButtonText: 'Cancelar Registro',
+                    confirmButtonText:
+                      '<i class="fas fa-upload me-2"></i>Subir Carta Pase',
+                    cancelButtonText: "Cancelar Registro",
                     allowOutsideClick: false,
                     allowEscapeKey: false,
                     preConfirm: (file) => {
                       if (!file) {
-                        Swal.showValidationMessage('Debe seleccionar un archivo de Carta Pase.');
+                        Swal.showValidationMessage(
+                          "Debe seleccionar un archivo de Carta Pase.",
+                        );
                         return false;
                       }
                       return file;
-                    }
+                    },
                   });
 
                   if (fileData) {
@@ -1351,101 +1397,137 @@
                     reader.onload = async function (e) {
                       try {
                         Swal.fire({
-                          title: 'Registrando Carta Pase...',
+                          title: "Registrando Carta Pase...",
                           allowOutsideClick: false,
-                          didOpen: () => { Swal.showLoading(); }
+                          didOpen: () => {
+                            Swal.showLoading();
+                          },
                         });
 
-                        const ext = fileData.name && fileData.name.includes('.') ? fileData.name.substring(fileData.name.lastIndexOf('.')) : '.pdf';
+                        const ext =
+                          fileData.name && fileData.name.includes(".")
+                            ? fileData.name.substring(
+                                fileData.name.lastIndexOf("."),
+                              )
+                            : ".pdf";
                         const fileName = `Carta_Pase_${numCedula}${ext}`;
                         const playerName = `${originalPlayerDoc.nombres} ${originalPlayerDoc.apellidos}`;
-                        const currentTeamNameVal = document.getElementById("teamName").value || "";
+                        const currentTeamNameVal =
+                          document.getElementById("teamName").value || "";
 
                         // 1. Guardar la carta pase en team_documentation
-                        const docRef = await db.collection("team_documentation").add({
-                          teamId: teamId,
-                          teamName: currentTeamNameVal,
-                          type: 'transferencia',
-                          file: e.target.result,
-                          fileName: fileName,
-                          status: 'Pendiente',
-                          notes: `Carta pase para transferencia de ${playerName} (CI: ${numCedula}) del club ${originalPlayerDoc.teamName || 'Anterior'} a ${currentTeamNameVal}`,
-                          playerId: originalPlayerDoc.id,
-                          cedula: numCedula,
-                          playerName: playerName,
-                          clubAnterior: originalPlayerDoc.teamName || '',
-                          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                        });
+                        const docRef = await db
+                          .collection("team_documentation")
+                          .add({
+                            teamId: teamId,
+                            teamName: currentTeamNameVal,
+                            type: "transferencia",
+                            file: e.target.result,
+                            fileName: fileName,
+                            status: "Pendiente",
+                            notes: `Carta pase para transferencia de ${playerName} (CI: ${numCedula}) del club ${originalPlayerDoc.teamName || "Anterior"} a ${currentTeamNameVal}`,
+                            playerId: originalPlayerDoc.id,
+                            cedula: numCedula,
+                            playerName: playerName,
+                            clubAnterior: originalPlayerDoc.teamName || "",
+                            timestamp:
+                              firebase.firestore.FieldValue.serverTimestamp(),
+                          });
 
                         // 2. Guardar en teamFiles para que aparezca de inmediato en Gestionar Archivos del equipo
                         await db.collection("teamFiles").add({
                           teamId: teamId,
                           fileName: fileName,
-                          fileType: 'carta_pase',
+                          fileType: "carta_pase",
                           fileBase64: e.target.result,
-                          status: 'Pendiente',
+                          status: "Pendiente",
                           cedula: numCedula,
                           playerName: playerName,
-                          notes: `Carta pase para transferencia del club ${originalPlayerDoc.teamName || 'Anterior'}`,
+                          notes: `Carta pase para transferencia del club ${originalPlayerDoc.teamName || "Anterior"}`,
                           docRefId: docRef.id,
-                          uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+                          uploadedAt:
+                            firebase.firestore.FieldValue.serverTimestamp(),
                         });
 
                         // Guardar referencia en memoria para asociar al guardar el jugador
                         pendingTransferDoc = {
-                          type: 'carta_pase',
+                          type: "carta_pase",
                           docRefId: docRef.id,
                           fileName: fileName,
                           numCedula: numCedula,
-                          originalPlayerDoc: originalPlayerDoc
+                          originalPlayerDoc: originalPlayerDoc,
                         };
 
                         // Autollenar datos disponibles
-                        if (originalPlayerDoc.nombres && !document.getElementById("nombres").value) {
-                          document.getElementById("nombres").value = originalPlayerDoc.nombres;
+                        if (
+                          originalPlayerDoc.nombres &&
+                          !document.getElementById("nombres").value
+                        ) {
+                          document.getElementById("nombres").value =
+                            originalPlayerDoc.nombres;
                         }
-                        if (originalPlayerDoc.apellidos && !document.getElementById("apellidos").value) {
-                          document.getElementById("apellidos").value = originalPlayerDoc.apellidos;
+                        if (
+                          originalPlayerDoc.apellidos &&
+                          !document.getElementById("apellidos").value
+                        ) {
+                          document.getElementById("apellidos").value =
+                            originalPlayerDoc.apellidos;
                         }
-                        if (originalPlayerDoc.fechaNacimiento && !document.getElementById("fechaNacimiento").value) {
-                          document.getElementById("fechaNacimiento").value = originalPlayerDoc.fechaNacimiento;
+                        if (
+                          originalPlayerDoc.fechaNacimiento &&
+                          !document.getElementById("fechaNacimiento").value
+                        ) {
+                          document.getElementById("fechaNacimiento").value =
+                            originalPlayerDoc.fechaNacimiento;
                         }
                         if (originalPlayerDoc.playerPhoto) {
-                          const pPreview = document.getElementById("playerPhotoPreview");
+                          const pPreview =
+                            document.getElementById("playerPhotoPreview");
                           if (pPreview) {
                             pPreview.src = originalPlayerDoc.playerPhoto;
                             pPreview.classList.remove("d-none");
-                            const pText = document.getElementById("playerPhotoText");
+                            const pText =
+                              document.getElementById("playerPhotoText");
                             if (pText) pText.classList.add("d-none");
-                            document.getElementById("playerPhoto").removeAttribute("required");
+                            document
+                              .getElementById("playerPhoto")
+                              .removeAttribute("required");
                           }
                         }
                         if (originalPlayerDoc.cedulaPhoto) {
-                          const cPreview = document.getElementById("cedulaPhotoPreview");
+                          const cPreview =
+                            document.getElementById("cedulaPhotoPreview");
                           if (cPreview) {
                             cPreview.src = originalPlayerDoc.cedulaPhoto;
                             cPreview.classList.remove("d-none");
-                            const cText = document.getElementById("cedulaPhotoText");
+                            const cText =
+                              document.getElementById("cedulaPhotoText");
                             if (cText) cText.classList.add("d-none");
-                            document.getElementById("cedulaPhoto").removeAttribute("required");
+                            document
+                              .getElementById("cedulaPhoto")
+                              .removeAttribute("required");
                           }
                         }
 
                         Swal.fire({
-                          icon: 'success',
-                          title: 'Carta Pase Subida',
+                          icon: "success",
+                          title: "Carta Pase Subida",
                           html: `
                             <div class="text-start p-2 text-white">
                               <p class="mb-2">La Carta Pase ha sido subida correctamente y vinculada a los archivos del equipo.</p>
                               <p class="text-white-50 small mb-0">Puedes continuar completando el formulario. Al presionar <strong>Calificar Jugador</strong>, se registrará en estado de revisión.</p>
                             </div>
                           `,
-                          confirmButtonText: 'Continuar Registro',
-                          confirmButtonColor: '#28a745'
+                          confirmButtonText: "Continuar Registro",
+                          confirmButtonColor: "#28a745",
                         });
                       } catch (err) {
                         console.error(err);
-                        Swal.fire('Error', 'No se pudo guardar el documento de transferencia.', 'error');
+                        Swal.fire(
+                          "Error",
+                          "No se pudo guardar el documento de transferencia.",
+                          "error",
+                        );
                       }
                     };
                     reader.readAsDataURL(fileData);
@@ -1472,37 +1554,41 @@
             if (edad <= 12) {
               // Pedir autorización de padres obligatoria
               const { value: fileData } = await Swal.fire({
-                title: '<span style="color: #3498db;"><i class="fas fa-child me-2"></i>Jugador de 12 Años o Menor</span>',
+                title:
+                  '<span style="color: #3498db;"><i class="fas fa-child me-2"></i>Jugador de 12 Años o Menor</span>',
                 html: `
                   <div class="text-start p-2 text-white" style="font-size: 0.95rem;">
                     <p class="mb-2">Para registrar un jugador de <strong>${edad} años</strong> (12 años o menor), es obligatorio subir la <strong>Autorización firmada por los padres de familia</strong> (PDF o Imagen).</p>
                     <label class="form-label text-white-50 mt-2 small">Selecciona el archivo de la Autorización:</label>
                   </div>
                 `,
-                input: 'file',
+                input: "file",
                 inputAttributes: {
-                  accept: 'image/*,application/pdf',
-                  required: 'required',
-                  class: 'form-control text-white bg-dark border-secondary'
+                  accept: "image/*,application/pdf",
+                  required: "required",
+                  class: "form-control text-white bg-dark border-secondary",
                 },
                 customClass: {
-                  popup: 'swal-premium',
-                  confirmButton: 'btn btn-success px-4 py-2 rounded-3',
-                  cancelButton: 'btn btn-outline-light px-4 py-2 rounded-3',
-                  input: 'form-control bg-dark text-white border-secondary'
+                  popup: "swal-premium",
+                  confirmButton: "btn btn-success px-4 py-2 rounded-3",
+                  cancelButton: "btn btn-outline-light px-4 py-2 rounded-3",
+                  input: "form-control bg-dark text-white border-secondary",
                 },
                 showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-upload me-2"></i>Subir Autorización',
-                cancelButtonText: 'Cancelar',
+                confirmButtonText:
+                  '<i class="fas fa-upload me-2"></i>Subir Autorización',
+                cancelButtonText: "Cancelar",
                 allowOutsideClick: false,
                 allowEscapeKey: false,
                 preConfirm: (file) => {
                   if (!file) {
-                    Swal.showValidationMessage('Debe seleccionar un archivo de autorización.');
+                    Swal.showValidationMessage(
+                      "Debe seleccionar un archivo de autorización.",
+                    );
                     return false;
                   }
                   return file;
-                }
+                },
               });
 
               if (fileData) {
@@ -1510,70 +1596,95 @@
                 reader.onload = async function (e) {
                   try {
                     Swal.fire({
-                      title: 'Guardando Autorización...',
+                      title: "Guardando Autorización...",
                       allowOutsideClick: false,
-                      didOpen: () => { Swal.showLoading(); }
+                      didOpen: () => {
+                        Swal.showLoading();
+                      },
                     });
 
-                    const ext = fileData.name && fileData.name.includes('.') ? fileData.name.substring(fileData.name.lastIndexOf('.')) : '.pdf';
-                    const currentCedula = (document.getElementById("cedula").value || "").trim() || "MENOR";
-                    const currentNombres = (document.getElementById("nombres").value || "").trim();
-                    const currentApellidos = (document.getElementById("apellidos").value || "").trim();
-                    const playerName = (currentNombres || currentApellidos) ? `${currentNombres} ${currentApellidos}`.trim() : "";
+                    const ext =
+                      fileData.name && fileData.name.includes(".")
+                        ? fileData.name.substring(
+                            fileData.name.lastIndexOf("."),
+                          )
+                        : ".pdf";
+                    const currentCedula =
+                      (document.getElementById("cedula").value || "").trim() ||
+                      "MENOR";
+                    const currentNombres = (
+                      document.getElementById("nombres").value || ""
+                    ).trim();
+                    const currentApellidos = (
+                      document.getElementById("apellidos").value || ""
+                    ).trim();
+                    const playerName =
+                      currentNombres || currentApellidos
+                        ? `${currentNombres} ${currentApellidos}`.trim()
+                        : "";
                     const fileName = `Autorizacion_${currentCedula}${ext}`;
-                    const currentTeamNameVal = document.getElementById("teamName").value || "";
+                    const currentTeamNameVal =
+                      document.getElementById("teamName").value || "";
 
                     // 1. Guardar la autorización en team_documentation
-                    const docRef = await db.collection("team_documentation").add({
-                      teamId: teamId,
-                      teamName: currentTeamNameVal,
-                      type: 'autorizacion_padres',
-                      file: e.target.result,
-                      fileName: fileName,
-                      status: 'Pendiente',
-                      notes: `Autorización de padres de familia para jugador de 12 años o menor (Edad: ${edad} años${playerName ? ' - ' + playerName : ''})`,
-                      cedula: currentCedula,
-                      playerName: playerName,
-                      timestamp: firebase.firestore.FieldValue.serverTimestamp()
-                    });
+                    const docRef = await db
+                      .collection("team_documentation")
+                      .add({
+                        teamId: teamId,
+                        teamName: currentTeamNameVal,
+                        type: "autorizacion_padres",
+                        file: e.target.result,
+                        fileName: fileName,
+                        status: "Pendiente",
+                        notes: `Autorización de padres de familia para jugador de 12 años o menor (Edad: ${edad} años${playerName ? " - " + playerName : ""})`,
+                        cedula: currentCedula,
+                        playerName: playerName,
+                        timestamp:
+                          firebase.firestore.FieldValue.serverTimestamp(),
+                      });
 
                     // 2. Guardar en teamFiles
                     await db.collection("teamFiles").add({
                       teamId: teamId,
                       fileName: fileName,
-                      fileType: 'autorizacion',
+                      fileType: "autorizacion",
                       fileBase64: e.target.result,
-                      status: 'Pendiente',
+                      status: "Pendiente",
                       cedula: currentCedula,
                       playerName: playerName,
                       notes: `Autorización de padres de familia para jugador de 12 años o menor (Edad: ${edad} años)`,
                       docRefId: docRef.id,
-                      uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
+                      uploadedAt:
+                        firebase.firestore.FieldValue.serverTimestamp(),
                     });
 
                     pendingAutorizacionDoc = {
-                      type: 'autorizacion',
+                      type: "autorizacion",
                       docRefId: docRef.id,
                       fileName: fileName,
                       cedula: currentCedula,
-                      edad: edad
+                      edad: edad,
                     };
 
                     Swal.fire({
-                      icon: 'success',
-                      title: 'Autorización Subida',
+                      icon: "success",
+                      title: "Autorización Subida",
                       html: `
                         <div class="text-start p-2 text-white">
                           <p class="mb-2">La autorización de padres de familia ha sido subida y guardada en los archivos del equipo.</p>
                           <p class="text-white-50 small mb-0">Puedes continuar completando el formulario. Al presionar <strong>Calificar Jugador</strong>, el jugador quedará en estado de revisión.</p>
                         </div>
                       `,
-                      confirmButtonText: 'Continuar Registro',
-                      confirmButtonColor: '#28a745'
+                      confirmButtonText: "Continuar Registro",
+                      confirmButtonColor: "#28a745",
                     });
                   } catch (err) {
                     console.error(err);
-                    Swal.fire('Error', 'No se pudo guardar la autorización.', 'error');
+                    Swal.fire(
+                      "Error",
+                      "No se pudo guardar la autorización.",
+                      "error",
+                    );
                   }
                 };
                 reader.readAsDataURL(fileData);
@@ -1615,7 +1726,10 @@
             });
 
             // Si hay un campeonato seleccionado, actualizar activeChampionshipData y subtítulo
-            if (campeonatoSelect.value && championshipsMap[campeonatoSelect.value]) {
+            if (
+              campeonatoSelect.value &&
+              championshipsMap[campeonatoSelect.value]
+            ) {
               activeChampionshipData = championshipsMap[campeonatoSelect.value];
               const champTitle = getChampionshipTitle(activeChampionshipData);
               const modalSub = document.getElementById("modalCarnetSubtitle");
@@ -1636,7 +1750,11 @@
         if (campeonatoSelect && !campeonatoSelect.dataset.listenerAttached) {
           campeonatoSelect.dataset.listenerAttached = "true";
           campeonatoSelect.addEventListener("change", function () {
-            if (this.selectedIndex >= 0 && this.value && championshipsMap[this.value]) {
+            if (
+              this.selectedIndex >= 0 &&
+              this.value &&
+              championshipsMap[this.value]
+            ) {
               activeChampionshipData = championshipsMap[this.value];
               const champTitle = getChampionshipTitle(activeChampionshipData);
               const modalSub = document.getElementById("modalCarnetSubtitle");
@@ -1653,8 +1771,12 @@
         const qualStatus = getQualificationStatus();
         if (!qualStatus.canDelete) {
           Swal.fire({
-            title: qualStatus.isOpen ? "Eliminación Deshabilitada" : "Período de Calificación Finalizado",
-            text: qualStatus.reason || "La eliminación de jugadores no está disponible fuera de la fecha límite o está deshabilitada por la administración.",
+            title: qualStatus.isOpen
+              ? "Eliminación Deshabilitada"
+              : "Período de Calificación Finalizado",
+            text:
+              qualStatus.reason ||
+              "La eliminación de jugadores no está disponible fuera de la fecha límite o está deshabilitada por la administración.",
             icon: "warning",
             confirmButtonColor: "#28a745",
           });
@@ -1673,23 +1795,26 @@
           inputAttributes: {
             autocapitalize: "off",
             autocorrect: "off",
-            class: "form-control bg-dark text-white border-secondary"
+            class: "form-control bg-dark text-white border-secondary",
           },
           showCancelButton: true,
-          confirmButtonText: '<i class="fas fa-trash-alt me-2"></i>Eliminar Jugador',
+          confirmButtonText:
+            '<i class="fas fa-trash-alt me-2"></i>Eliminar Jugador',
           cancelButtonText: "Cancelar",
           confirmButtonColor: "#e74c3c",
           cancelButtonColor: "#6c757d",
           showLoaderOnConfirm: true,
           customClass: {
-            popup: 'glass-popup'
+            popup: "glass-popup",
           },
           preConfirm: async (passwordInput) => {
             if (!passwordInput || !passwordInput.trim()) {
-              Swal.showValidationMessage("Por favor ingresa la clave de tu equipo");
+              Swal.showValidationMessage(
+                "Por favor ingresa la clave de tu equipo",
+              );
               return false;
             }
-            
+
             const trimmedPass = passwordInput.trim();
 
             // Claves maestras de administrador
@@ -1708,23 +1833,31 @@
                 const teamDoc = await db.collection("teams").doc(teamId).get();
                 if (teamDoc.exists) {
                   const tData = teamDoc.data();
-                  if (tData.adminKey) currentTeamKeys.push(String(tData.adminKey).trim());
-                  if (tData.password) currentTeamKeys.push(String(tData.password).trim());
+                  if (tData.adminKey)
+                    currentTeamKeys.push(String(tData.adminKey).trim());
+                  if (tData.password)
+                    currentTeamKeys.push(String(tData.password).trim());
                 }
               }
               if (adminKey) {
                 currentTeamKeys.push(String(adminKey).trim());
               }
 
-              const isMatch = currentTeamKeys.some(k => k && k === trimmedPass);
+              const isMatch = currentTeamKeys.some(
+                (k) => k && k === trimmedPass,
+              );
               if (!isMatch) {
-                Swal.showValidationMessage("Clave incorrecta. Debes ingresar la clave proporcionada al registrar su equipo.");
+                Swal.showValidationMessage(
+                  "Clave incorrecta. Debes ingresar la clave proporcionada al registrar su equipo.",
+                );
                 return false;
               }
               return trimmedPass;
             } catch (err) {
               console.error("Error al validar clave de equipo:", err);
-              Swal.showValidationMessage("No se pudo verificar la clave en el servidor.");
+              Swal.showValidationMessage(
+                "No se pudo verificar la clave en el servidor.",
+              );
               return false;
             }
           },
@@ -1739,7 +1872,7 @@
               allowEscapeKey: false,
               didOpen: () => {
                 Swal.showLoading();
-              }
+              },
             });
 
             await db.collection("players").doc(playerId).delete();
@@ -1749,7 +1882,7 @@
               text: "El jugador ha sido eliminado correctamente. El cupo ha sido liberado.",
               icon: "success",
               timer: 2000,
-              confirmButtonColor: "#28a745"
+              confirmButtonColor: "#28a745",
             });
             loadPlayers();
           } catch (error) {
@@ -1757,7 +1890,7 @@
             Swal.fire(
               "Error",
               "No se pudo eliminar el jugador. Por favor, intenta de nuevo.",
-              "error"
+              "error",
             );
           }
         }
@@ -1828,9 +1961,11 @@
         if (submitButton) {
           submitButton.disabled = false;
           if (mode === "reclassify") {
-            submitButton.innerHTML = '<i class="fas fa-exchange-alt me-2"></i> Recalificar Jugador';
+            submitButton.innerHTML =
+              '<i class="fas fa-exchange-alt me-2"></i> Recalificar Jugador';
           } else {
-            submitButton.innerHTML = '<i class="fas fa-user-plus me-2"></i> Registrar Nuevo Jugador';
+            submitButton.innerHTML =
+              '<i class="fas fa-user-plus me-2"></i> Registrar Nuevo Jugador';
           }
         }
       }
@@ -1900,22 +2035,30 @@
           const playerPhotoSrc = playerPhotoElem ? playerPhotoElem.src : "";
           const cedulaPhotoSrc = cedulaPhotoElem ? cedulaPhotoElem.src : "";
 
-          if (!playerPhotoSrc || playerPhotoSrc.includes("data:image/svg") || playerPhotoElem.classList.contains("d-none")) {
+          if (
+            !playerPhotoSrc ||
+            playerPhotoSrc.includes("data:image/svg") ||
+            playerPhotoElem.classList.contains("d-none")
+          ) {
             Swal.fire({
               title: "Foto Requerida",
               text: "Por favor selecciona la foto del jugador.",
               icon: "warning",
-              confirmButtonColor: "#28a745"
+              confirmButtonColor: "#28a745",
             });
             return;
           }
 
-          if (!cedulaPhotoSrc || cedulaPhotoSrc.includes("data:image/svg") || cedulaPhotoElem.classList.contains("d-none")) {
+          if (
+            !cedulaPhotoSrc ||
+            cedulaPhotoSrc.includes("data:image/svg") ||
+            cedulaPhotoElem.classList.contains("d-none")
+          ) {
             Swal.fire({
               title: "Foto de Cédula Requerida",
               text: "Por favor selecciona la foto de la cédula del jugador.",
               icon: "warning",
-              confirmButtonColor: "#28a745"
+              confirmButtonColor: "#28a745",
             });
             return;
           }
@@ -1923,17 +2066,32 @@
           // Obtener los valores de los campos y convertir a mayúsculas
           const nombres = document
             .getElementById("nombres")
-            .value.trim().toUpperCase();
+            .value.trim()
+            .toUpperCase();
           const apellidos = document
             .getElementById("apellidos")
-            .value.trim().toUpperCase();
-          const cedula = document.getElementById("cedula").value.trim().toUpperCase();
+            .value.trim()
+            .toUpperCase();
+          const cedula = document
+            .getElementById("cedula")
+            .value.trim()
+            .toUpperCase();
           const fechaNacimiento =
             document.getElementById("fechaNacimiento").value;
           const numeroJugador = document.getElementById("numeroJugador").value;
 
-          if (!nombres || !apellidos || !cedula || !fechaNacimiento || !numeroJugador) {
-            Swal.fire("Campos Incompletos", "Por favor completa todos los datos obligatorios del jugador.", "warning");
+          if (
+            !nombres ||
+            !apellidos ||
+            !cedula ||
+            !fechaNacimiento ||
+            !numeroJugador
+          ) {
+            Swal.fire(
+              "Campos Incompletos",
+              "Por favor completa todos los datos obligatorios del jugador.",
+              "warning",
+            );
             return;
           }
 
@@ -1942,11 +2100,15 @@
           const submitButton = document.getElementById("submitButton");
           if (submitButton) {
             submitButton.disabled = true;
-            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Guardando jugador... Por favor espere';
+            submitButton.innerHTML =
+              '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Guardando jugador... Por favor espere';
           }
 
           Swal.fire({
-            title: mode === "reclassify" ? "Recalificando Jugador..." : "Registrando Jugador...",
+            title:
+              mode === "reclassify"
+                ? "Recalificando Jugador..."
+                : "Registrando Jugador...",
             html: `
               <div class="text-center py-2">
                 <p class="text-white mb-2 fw-bold">${nombres} ${apellidos}</p>
@@ -1957,7 +2119,7 @@
             allowEscapeKey: false,
             didOpen: () => {
               Swal.showLoading();
-            }
+            },
           });
 
           let campeonatoId = document.getElementById("campeonato").value;
@@ -2019,16 +2181,23 @@
             }
 
             // VALIDACIÓN ANTIDUPLICADOS 1: Cédula duplicada en el mismo equipo
-            const selectedPlayerId = mode === "reclassify" ? document.getElementById("playerSelector").value : null;
-            const duplicateCedulaSnap = await db.collection("players")
+            const selectedPlayerId =
+              mode === "reclassify"
+                ? document.getElementById("playerSelector").value
+                : null;
+            const duplicateCedulaSnap = await db
+              .collection("players")
               .where("teamId", "==", teamId)
               .where("cedula", "==", cedula)
               .get();
 
             let isDuplicateCedula = false;
-            duplicateCedulaSnap.forEach(doc => {
+            duplicateCedulaSnap.forEach((doc) => {
               if (mode === "reclassify") {
-                if (doc.id !== selectedPlayerId && doc.data().status !== "recalificado") {
+                if (
+                  doc.id !== selectedPlayerId &&
+                  doc.data().status !== "recalificado"
+                ) {
                   isDuplicateCedula = true;
                 }
               } else {
@@ -2042,8 +2211,8 @@
               Swal.fire({
                 icon: "warning",
                 title: "¡Jugador Ya Registrado!",
-                text: `El jugador con cédula ${cedula} ya se encuentra registrado en la nómina de ${teamData.name || 'este equipo'}. No se permiten registros duplicados.`,
-                confirmButtonColor: "#28a745"
+                text: `El jugador con cédula ${cedula} ya se encuentra registrado en la nómina de ${teamData.name || "este equipo"}. No se permiten registros duplicados.`,
+                confirmButtonColor: "#28a745",
               });
               isSubmitting = false;
               resetSubmitButtonUI();
@@ -2051,16 +2220,20 @@
             }
 
             // VALIDACIÓN ANTIDUPLICADOS 2: Mismo nombre y apellido en el equipo
-            const duplicateNameSnap = await db.collection("players")
+            const duplicateNameSnap = await db
+              .collection("players")
               .where("teamId", "==", teamId)
               .where("nombres", "==", nombres)
               .where("apellidos", "==", apellidos)
               .get();
 
             let isDuplicateName = false;
-            duplicateNameSnap.forEach(doc => {
+            duplicateNameSnap.forEach((doc) => {
               if (mode === "reclassify") {
-                if (doc.id !== selectedPlayerId && doc.data().status !== "recalificado") {
+                if (
+                  doc.id !== selectedPlayerId &&
+                  doc.data().status !== "recalificado"
+                ) {
                   isDuplicateName = true;
                 }
               } else {
@@ -2075,7 +2248,7 @@
                 icon: "warning",
                 title: "¡Nombre Ya Registrado!",
                 text: `Ya existe un jugador registrado con los nombres "${nombres} ${apellidos}" en este equipo.`,
-                confirmButtonColor: "#28a745"
+                confirmButtonColor: "#28a745",
               });
               isSubmitting = false;
               resetSubmitButtonUI();
@@ -2084,12 +2257,13 @@
 
             // VALIDACIÓN DE CUPO EN TIEMPO REAL (Límite 27)
             if (mode === "register") {
-              const currentPlayersSnap = await db.collection("players")
+              const currentPlayersSnap = await db
+                .collection("players")
                 .where("teamId", "==", teamId)
                 .get();
 
               let activeCount = 0;
-              currentPlayersSnap.forEach(doc => {
+              currentPlayersSnap.forEach((doc) => {
                 const p = doc.data();
                 if (p.status !== "recalificado" && !p.reemplazoDe) {
                   activeCount++;
@@ -2101,7 +2275,7 @@
                   icon: "warning",
                   title: "Cupo Máximo Alcanzado",
                   text: "El equipo ya cuenta con el cupo máximo de 27 jugadores registrados.",
-                  confirmButtonColor: "#28a745"
+                  confirmButtonColor: "#28a745",
                 });
                 isSubmitting = false;
                 resetSubmitButtonUI();
@@ -2110,8 +2284,14 @@
             }
 
             const playerAge = calcularEdad(fechaNacimiento);
-            const isPendingApproval = Boolean(pendingTransferDoc || pendingAutorizacionDoc || (playerAge <= 12));
-            const docTipo = pendingTransferDoc ? 'carta_pase' : (pendingAutorizacionDoc || (playerAge <= 12) ? 'autorizacion' : null);
+            const isPendingApproval = Boolean(
+              pendingTransferDoc || pendingAutorizacionDoc || playerAge <= 12,
+            );
+            const docTipo = pendingTransferDoc
+              ? "carta_pase"
+              : pendingAutorizacionDoc || playerAge <= 12
+                ? "autorizacion"
+                : null;
 
             // Crear el objeto con los datos del jugador
             const playerData = {
@@ -2129,8 +2309,12 @@
               status: isPendingApproval ? "pendiente_aprobacion" : "activo",
               requiereRevision: isPendingApproval,
               documentoTipo: docTipo,
-              clubAnterior: pendingTransferDoc ? (pendingTransferDoc.originalPlayerDoc?.teamName || '') : '',
-              originalPlayerId: pendingTransferDoc ? (pendingTransferDoc.originalPlayerDoc?.id || '') : '',
+              clubAnterior: pendingTransferDoc
+                ? pendingTransferDoc.originalPlayerDoc?.teamName || ""
+                : "",
+              originalPlayerId: pendingTransferDoc
+                ? pendingTransferDoc.originalPlayerDoc?.id || ""
+                : "",
               createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             };
 
@@ -2160,16 +2344,16 @@
                       <p class="mb-3">El jugador <strong>${nombres} ${apellidos}</strong> ha sido enviado a la nómina de recalificación.</p>
                       <div class="p-3 rounded-3" style="background: rgba(243, 156, 18, 0.15); border-left: 4px solid #f39c12;">
                         <p class="mb-1 fw-bold text-warning"><i class="fas fa-file-signature me-2"></i>Calificación en Revisión</p>
-                        <p class="mb-0 text-white-50 small">Debemos revisar sus documentos (${docTipo === 'carta_pase' ? 'Carta Pase' : 'Autorización de Padres'}) en el panel administrativo antes de la habilitación final.</p>
+                        <p class="mb-0 text-white-50 small">Debemos revisar sus documentos (${docTipo === "carta_pase" ? "Carta Pase" : "Autorización de Padres"}) en el panel administrativo antes de la habilitación final.</p>
                       </div>
                     </div>
                   `,
                   confirmButtonText: "Entendido",
                   confirmButtonColor: "#28a745",
                   customClass: {
-                    popup: 'swal-premium',
-                    confirmButton: 'btn btn-success px-4 py-2 rounded-3'
-                  }
+                    popup: "swal-premium",
+                    confirmButton: "btn btn-success px-4 py-2 rounded-3",
+                  },
                 }).then(() => {
                   pendingTransferDoc = null;
                   pendingAutorizacionDoc = null;
@@ -2189,7 +2373,8 @@
                     .classList.remove("d-none");
                   document.getElementById("currentPlayerForm").style.display =
                     "none";
-                  document.getElementById("newPlayerForm").style.display = "none";
+                  document.getElementById("newPlayerForm").style.display =
+                    "none";
                   document.getElementById("playerSelector").value = "";
                 });
               } else {
@@ -2215,7 +2400,8 @@
                     .classList.remove("d-none");
                   document.getElementById("currentPlayerForm").style.display =
                     "none";
-                  document.getElementById("newPlayerForm").style.display = "none";
+                  document.getElementById("newPlayerForm").style.display =
+                    "none";
                   document.getElementById("playerSelector").value = "";
                 });
               }
@@ -2233,16 +2419,16 @@
                       <p class="mb-3">El jugador <strong>${nombres} ${apellidos}</strong> ha sido enviado a calificación.</p>
                       <div class="p-3 rounded-3" style="background: rgba(243, 156, 18, 0.15); border-left: 4px solid #f39c12;">
                         <p class="mb-1 fw-bold text-warning"><i class="fas fa-file-signature me-2"></i>Calificación en Revisión</p>
-                        <p class="mb-0 text-white-50 small">Debemos revisar sus documentos (${docTipo === 'carta_pase' ? 'Carta Pase oficial' : 'Autorización de Padres'}) en el panel administrativo antes de la habilitación final.</p>
+                        <p class="mb-0 text-white-50 small">Debemos revisar sus documentos (${docTipo === "carta_pase" ? "Carta Pase oficial" : "Autorización de Padres"}) en el panel administrativo antes de la habilitación final.</p>
                       </div>
                     </div>
                   `,
                   confirmButtonText: "Entendido",
                   confirmButtonColor: "#28a745",
                   customClass: {
-                    popup: 'swal-premium',
-                    confirmButton: 'btn btn-success px-4 py-2 rounded-3'
-                  }
+                    popup: "swal-premium",
+                    confirmButton: "btn btn-success px-4 py-2 rounded-3",
+                  },
                 }).then(() => {
                   pendingTransferDoc = null;
                   pendingAutorizacionDoc = null;
@@ -2356,33 +2542,48 @@
 
               // Actualizar el subtítulo del carnet con el año / nombre del campeonato
               let modalChampText = getChampionshipTitle(activeChampionshipData);
-              const modalSubtitle = document.getElementById("modalCarnetSubtitle");
+              const modalSubtitle = document.getElementById(
+                "modalCarnetSubtitle",
+              );
               if (modalSubtitle) {
                 modalSubtitle.textContent = modalChampText;
               }
 
               // Si el jugador tiene campeonatoId específico que difiere del activo, buscarlo
-              if (player.campeonatoId && (!activeChampionshipData || activeChampionshipData.id !== player.campeonatoId)) {
+              if (
+                player.campeonatoId &&
+                (!activeChampionshipData ||
+                  activeChampionshipData.id !== player.campeonatoId)
+              ) {
                 db.collection("championships")
                   .doc(player.campeonatoId)
                   .get()
                   .then((pChampDoc) => {
                     if (pChampDoc.exists && modalSubtitle) {
-                      modalSubtitle.textContent = getChampionshipTitle(pChampDoc.data());
+                      modalSubtitle.textContent = getChampionshipTitle(
+                        pChampDoc.data(),
+                      );
                     }
                   })
-                  .catch((err) => console.error("Error al obtener campeonato del jugador:", err));
+                  .catch((err) =>
+                    console.error(
+                      "Error al obtener campeonato del jugador:",
+                      err,
+                    ),
+                  );
               }
 
               // Actualizar banner de estado del jugador en el modal
-              const statusBanner = document.getElementById("modalPlayerStatusBanner");
+              const statusBanner = document.getElementById(
+                "modalPlayerStatusBanner",
+              );
               if (statusBanner) {
                 if (player.status === "pendiente_aprobacion") {
                   statusBanner.innerHTML = `
                     <div class="alert alert-warning text-dark d-flex align-items-center justify-content-between p-3 rounded-3 shadow-sm mb-0">
                       <div>
                         <div class="fw-bold mb-1"><i class="fas fa-clock me-2"></i>Calificación por Aceptar - Documentación en Revisión</div>
-                        <div class="small">El jugador cuenta con documentación adjunta (${player.documentoTipo === 'carta_pase' ? 'Carta Pase' : 'Autorización de Padres'}) que debe ser revisada y aprobada por la administración en el <b>Panel de Equipos</b> para quedar oficialmente calificado.</div>
+                        <div class="small">El jugador cuenta con documentación adjunta (${player.documentoTipo === "carta_pase" ? "Carta Pase" : "Autorización de Padres"}) que debe ser revisada y aprobada por la administración en el <b>Panel de Equipos</b> para quedar oficialmente calificado.</div>
                       </div>
                       <span class="badge bg-dark text-warning px-3 py-2 text-uppercase font-monospace">Por Aceptar</span>
                     </div>
@@ -2544,9 +2745,11 @@
         const faltanTotal = maxTotal - totalJugadores;
 
         // Actualizar contadores principales
-        document.getElementById("jugadoresRegularesCount").textContent = regular;
+        document.getElementById("jugadoresRegularesCount").textContent =
+          regular;
         document.getElementById("jugadoresMasterCount").textContent = master;
-        document.getElementById("jugadoresTotalCount").textContent = totalJugadores;
+        document.getElementById("jugadoresTotalCount").textContent =
+          totalJugadores;
 
         // Actualizar contador de total de jugadores registrados
         document.getElementById("jugadoresRegistradosTotalCount").textContent =
@@ -2585,7 +2788,7 @@
         const progresoTotal = (totalJugadores / maxTotal) * 100;
         const progresoTotalRegistrados =
           (totalRegistrados / (maxTotal + recalificados)) * 100; // Progreso del total registrado
-        
+
         document.getElementById("jugadoresRegularesProgress").style.width =
           `${Math.min(progresoRegular, 100)}%`;
         document.getElementById("jugadoresMasterProgress").style.width =
@@ -2597,10 +2800,14 @@
         ).style.width = `${Math.min(progresoTotalRegistrados, 100)}%`;
 
         // Actualizar estados textuales de los cupos
-        document.getElementById("jugadoresRegularesStatus").textContent = 
-          regular >= maxRegulares ? `Cupo máximo alcanzado (${maxRegulares}/${maxRegulares})` : `${maxRegulares - regular} cupos libres de ${maxRegulares}`;
-        document.getElementById("jugadoresMasterStatus").textContent = 
-          master >= 1 ? `Cupo cubierto (${master} registrado/s)` : "Falta mínimo 1 jugador Master";
+        document.getElementById("jugadoresRegularesStatus").textContent =
+          regular >= maxRegulares
+            ? `Cupo máximo alcanzado (${maxRegulares}/${maxRegulares})`
+            : `${maxRegulares - regular} cupos libres de ${maxRegulares}`;
+        document.getElementById("jugadoresMasterStatus").textContent =
+          master >= 1
+            ? `Cupo cubierto (${master} registrado/s)`
+            : "Falta mínimo 1 jugador Master";
 
         // Actualizar estado del total de registrados
         document.getElementById("jugadoresRegistradosTotalStatus").textContent =
@@ -2634,7 +2841,8 @@
           if (recalificados > 0) {
             mensaje += ` <strong>Total de jugadores en el equipo: ${totalRegistrados} (incluyendo ${recalificados} recalificado${recalificados !== 1 ? "s" : ""}).</strong>`;
           }
-          cupoAlert.className = master < 1 ? "alert alert-warning mt-3" : "alert alert-info mt-3";
+          cupoAlert.className =
+            master < 1 ? "alert alert-warning mt-3" : "alert alert-info mt-3";
           cupoAlertText.innerHTML = mensaje;
           cupoAlert.style.display = "block";
         }
@@ -2685,7 +2893,7 @@
           input: "password",
           inputAttributes: {
             autocapitalize: "off",
-            class: "form-control bg-dark text-white border-secondary"
+            class: "form-control bg-dark text-white border-secondary",
           },
           showCancelButton: true,
           confirmButtonText: '<i class="fas fa-id-card me-2"></i>Generar',
@@ -2694,7 +2902,7 @@
           cancelButtonColor: "#6c757d",
           showLoaderOnConfirm: true,
           customClass: {
-            popup: 'glass-popup'
+            popup: "glass-popup",
           },
           preConfirm: async (password) => {
             if (!password || !password.trim()) {
@@ -2720,7 +2928,7 @@
                 }
               }
               if (adminKey) keys.push(String(adminKey).trim());
-              if (!keys.some(k => k === trimmed)) {
+              if (!keys.some((k) => k === trimmed)) {
                 Swal.showValidationMessage("Clave incorrecta.");
                 return false;
               }
@@ -2743,12 +2951,18 @@
                 const cId = teamData.championshipId || urlChampionshipId;
                 if (cId && (!teamChampData || teamChampData.id !== cId)) {
                   try {
-                    const cDoc = await db.collection("championships").doc(cId).get();
+                    const cDoc = await db
+                      .collection("championships")
+                      .doc(cId)
+                      .get();
                     if (cDoc.exists) {
                       teamChampData = { id: cDoc.id, ...cDoc.data() };
                     }
                   } catch (e) {
-                    console.error("Error al obtener campeonato para carnets:", e);
+                    console.error(
+                      "Error al obtener campeonato para carnets:",
+                      e,
+                    );
                   }
                 }
               }
@@ -2810,15 +3024,19 @@
                         }</p>
                         <p><strong>NOM:</strong> ${player.nombres || ""}</p>
                         <p><strong>APELL:</strong> ${player.apellidos || ""}</p>
-                        <p><strong>FECHA NAC:</strong> ${player.fechaNacimiento ? formatDate(
-                          player.fechaNacimiento,
-                        ) : "N/A"}</p>
+                        <p><strong>FECHA NAC:</strong> ${
+                          player.fechaNacimiento
+                            ? formatDate(player.fechaNacimiento)
+                            : "N/A"
+                        }</p>
                         <p class="d-flex justify-content-between align-items-center">
                           <strong>CI:</strong> ${player.cedula || ""}
                           ${
-                            player.fechaNacimiento && esJuvenil(player.fechaNacimiento)
+                            player.fechaNacimiento &&
+                            esJuvenil(player.fechaNacimiento)
                               ? '<span class="badge bg-light text-dark ms-5">JUVENIL</span>'
-                              : player.fechaNacimiento && esMaster(player.fechaNacimiento)
+                              : player.fechaNacimiento &&
+                                  esMaster(player.fechaNacimiento)
                                 ? '<span class="badge bg-warning text-dark ms-5">MASTER</span>'
                                 : ""
                           }
@@ -3027,7 +3245,11 @@
       if (btnAutofill) {
         btnAutofill.addEventListener("click", async function () {
           if (!teamId) {
-            Swal.fire("Error", "No se ha detectado el ID del equipo en la URL.", "error");
+            Swal.fire(
+              "Error",
+              "No se ha detectado el ID del equipo en la URL.",
+              "error",
+            );
             return;
           }
 
@@ -3036,14 +3258,18 @@
             allowOutsideClick: false,
             didOpen: () => {
               Swal.showLoading();
-            }
+            },
           });
 
           try {
             // Obtener datos del equipo actual para conocer el club y la categoría
             const teamDoc = await db.collection("teams").doc(teamId).get();
             if (!teamDoc.exists) {
-              Swal.fire("Error", "No se encontró la información del equipo actual.", "error");
+              Swal.fire(
+                "Error",
+                "No se encontró la información del equipo actual.",
+                "error",
+              );
               return;
             }
             const currentTeamData = teamDoc.data();
@@ -3052,25 +3278,27 @@
 
             // Optimizar la consulta buscando únicamente jugadores que coincidan con la primera palabra clave del equipo
             function cleanTextForComparison(str) {
-              return (str || "").toLowerCase()
-                .normalize('NFD')
-                .replace(/[\u0300-\u036f]/g, '')
-                .replace(/[^a-z0-9\s]/g, '')
+              return (str || "")
+                .toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9\s]/g, "")
                 .trim();
             }
 
             const cleanName = cleanTextForComparison(currentTeamName);
-            const words = cleanName.split(/\s+/).filter(w => w.length > 2);
+            const words = cleanName.split(/\s+/).filter((w) => w.length > 2);
             let querySnapshot;
 
             if (words.length > 0) {
               // Si tenemos palabras significativas (ej: "NAPOLES", "INTER"), buscamos de manera que empiece por ese término
               const searchWord = words[0].toUpperCase();
-              querySnapshot = await db.collection("players")
+              querySnapshot = await db
+                .collection("players")
                 .where("teamName", ">=", searchWord)
                 .where("teamName", "<=", searchWord + "\uf8ff")
                 .get();
-              
+
               // Si la consulta optimizada no trae nada, hacemos fallback a una más abierta
               if (querySnapshot.empty) {
                 querySnapshot = await db.collection("players").get();
@@ -3087,25 +3315,28 @@
               const clean2 = cleanTextForComparison(name2);
               if (clean1 === clean2) return true;
 
-              const words1 = clean1.split(/\s+/).filter(w => w.length > 2);
-              const words2 = clean2.split(/\s+/).filter(w => w.length > 2);
+              const words1 = clean1.split(/\s+/).filter((w) => w.length > 2);
+              const words2 = clean2.split(/\s+/).filter((w) => w.length > 2);
 
               // Si alguna palabra de words1 coincide con words2, hay coincidencia
-              return words1.some(w1 => words2.includes(w1));
+              return words1.some((w1) => words2.includes(w1));
             }
 
-            const cleanCurrentCategory = cleanTextForComparison(currentTeamCategory);
+            const cleanCurrentCategory =
+              cleanTextForComparison(currentTeamCategory);
 
-            querySnapshot.forEach(doc => {
+            querySnapshot.forEach((doc) => {
               const p = doc.data();
-              const cleanPlayerCategory = cleanTextForComparison(p.teamCategory);
-              
+              const cleanPlayerCategory = cleanTextForComparison(
+                p.teamCategory,
+              );
+
               // Verificar si el equipo coincide de forma flexible (ej. "C.D. NAPOLES" con "CD NAPOLES")
               if (matchesFlexible(p.teamName, currentTeamName)) {
                 // Filtrar para mostrar solo jugadores que coincidan con la categoría (Masculina, Femenina, etc.)
                 if (cleanPlayerCategory === cleanCurrentCategory) {
                   // Evitar duplicados por número de cédula
-                  if (!playerList.some(added => added.cedula === p.cedula)) {
+                  if (!playerList.some((added) => added.cedula === p.cedula)) {
                     playerList.push({ id: doc.id, ...p });
                   }
                 }
@@ -3117,96 +3348,132 @@
                 icon: "info",
                 title: "Sin Registros",
                 text: `No se encontraron jugadores registrados anteriormente para el club "${currentTeamName}" en la categoría "${currentTeamCategory}".`,
-                confirmButtonColor: "#28a745"
+                confirmButtonColor: "#28a745",
               });
               return;
             }
 
             // Ordenar alfabéticamente
-            playerList.sort((a, b) => `${a.nombres} ${a.apellidos}`.localeCompare(`${b.nombres} ${b.apellidos}`));
+            playerList.sort((a, b) =>
+              `${a.nombres} ${a.apellidos}`.localeCompare(
+                `${b.nombres} ${b.apellidos}`,
+              ),
+            );
 
-            let optionsHtml = '<option value="" style="padding: 8px; margin-bottom: 5px; color: #888;">Seleccione un jugador...</option>';
-            playerList.forEach(p => {
-              optionsHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} - CI: ${p.cedula || 'S/N'} [${p.teamCategory || 'Sin Categoría'}]</option>`;
+            let optionsHtml =
+              '<option value="" style="padding: 8px; margin-bottom: 5px; color: #888;">Seleccione un jugador...</option>';
+            playerList.forEach((p) => {
+              optionsHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} [${p.teamCategory || "Sin Categoría"}]</option>`;
             });
 
             Swal.fire({
-              title: '<span style="color: #ffc107; font-weight: 800; font-size: 1.5rem;"><i class="fas fa-history me-2"></i>Jugadores del Club</span>',
+              title:
+                '<span style="color: #ffc107; font-weight: 800; font-size: 1.5rem;"><i class="fas fa-history me-2"></i>Jugadores del Club</span>',
               html: `
                 <div class="text-start mb-2 text-white-50" style="font-size: 0.85rem;">
-                  Busca por número de cédula, nombre o apellido para cargar sus datos:
+                  Busca por nombre o apellido para cargar sus datos automáticamente:
                 </div>
-                <input type="text" id="swalSearchInput" class="form-control bg-dark text-white border-secondary mb-3 py-2 px-3" placeholder="🔍 Cédula, nombre o apellido..." style="border-radius: 8px; font-size: 0.95rem;">
+                <input type="text" id="swalSearchInput" class="form-control bg-dark text-white border-secondary mb-3 py-2 px-3" placeholder="🔍 Escribe nombre o apellido..." style="border-radius: 8px; font-size: 0.95rem;">
                 <select id="swalPlayerSelect" class="form-select bg-dark text-white border-secondary mb-2" size="6" style="height: 220px; border-radius: 8px; font-size: 0.9rem; padding: 8px; line-height: 2;">
                   ${optionsHtml}
                 </select>
               `,
               customClass: {
-                popup: 'swal-premium',
-                confirmButton: 'btn btn-success px-4 py-2 rounded-3',
-                cancelButton: 'btn btn-outline-light px-4 py-2 rounded-3'
+                popup: "swal-premium",
+                confirmButton: "btn btn-success px-4 py-2 rounded-3",
+                cancelButton: "btn btn-outline-light px-4 py-2 rounded-3",
               },
               showCancelButton: true,
-              confirmButtonText: '<i class="fas fa-check-circle me-2"></i>Cargar Datos',
-              cancelButtonText: 'Cancelar',
+              confirmButtonText:
+                '<i class="fas fa-check-circle me-2"></i>Cargar Datos',
+              cancelButtonText: "Cancelar",
               didOpen: () => {
                 const searchInput = document.getElementById("swalSearchInput");
-                const selectElement = document.getElementById("swalPlayerSelect");
-                
-                // Evento de filtrado en tiempo real por Cédula, Nombre o Apellido
-                searchInput.addEventListener("input", function() {
-                  const query = searchInput.value.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-                  let filteredHtml = '<option value="" style="padding: 8px; margin-bottom: 5px; color: #888;">Seleccione un jugador...</option>';
-                  
-                  playerList.forEach(p => {
-                    const text = `${p.nombres || ''} ${p.apellidos || ''} ${p.cedula || ''}`.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+                const selectElement =
+                  document.getElementById("swalPlayerSelect");
+
+                // Evento de filtrado en tiempo real por Nombre o Apellido únicamente
+                searchInput.addEventListener("input", function () {
+                  const query = searchInput.value
+                    .toLowerCase()
+                    .normalize("NFD")
+                    .replace(/[\u0300-\u036f]/g, "");
+                  let filteredHtml =
+                    '<option value="" style="padding: 8px; margin-bottom: 5px; color: #888;">Seleccione un jugador...</option>';
+
+                  playerList.forEach((p) => {
+                    const text = `${p.nombres} ${p.apellidos}`
+                      .toLowerCase()
+                      .normalize("NFD")
+                      .replace(/[\u0300-\u036f]/g, "");
                     if (text.includes(query)) {
-                      filteredHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} - CI: ${p.cedula || 'S/N'} [${p.teamCategory || 'Sin Categoría'}]</option>`;
+                      filteredHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} [${p.teamCategory || "Sin Categoría"}]</option>`;
                     }
                   });
                   selectElement.innerHTML = filteredHtml;
                 });
               },
               preConfirm: () => {
-                const selectedId = document.getElementById("swalPlayerSelect").value;
+                const selectedId =
+                  document.getElementById("swalPlayerSelect").value;
                 if (!selectedId) {
-                  Swal.showValidationMessage("Debes seleccionar un jugador de la lista.");
+                  Swal.showValidationMessage(
+                    "Debes seleccionar un jugador de la lista.",
+                  );
                   return false;
                 }
                 return selectedId;
-              }
+              },
             }).then((result) => {
               if (result.isConfirmed) {
-                const player = playerList.find(p => p.id === result.value);
+                const player = playerList.find((p) => p.id === result.value);
                 if (player) {
                   // Cargar campos de texto
-                  document.getElementById("nombres").value = player.nombres || "";
-                  document.getElementById("apellidos").value = player.apellidos || "";
+                  document.getElementById("nombres").value =
+                    player.nombres || "";
+                  document.getElementById("apellidos").value =
+                    player.apellidos || "";
                   document.getElementById("cedula").value = player.cedula || "";
-                  document.getElementById("fechaNacimiento").value = player.fechaNacimiento || "";
-                  document.getElementById("numeroJugador").value = player.numeroJugador || "";
+                  document.getElementById("fechaNacimiento").value =
+                    player.fechaNacimiento || "";
+                  document.getElementById("numeroJugador").value =
+                    player.numeroJugador || "";
 
                   // Cargar imágenes
                   if (player.playerPhoto) {
-                    const pPreview = document.getElementById("playerPhotoPreview");
+                    const pPreview =
+                      document.getElementById("playerPhotoPreview");
                     pPreview.src = player.playerPhoto;
                     pPreview.classList.remove("d-none");
-                    document.getElementById("playerPhotoText").classList.add("d-none");
+                    document
+                      .getElementById("playerPhotoText")
+                      .classList.add("d-none");
                     // Desactivar requerido para fotos ya cargadas
-                    document.getElementById("playerPhoto").removeAttribute("required");
+                    document
+                      .getElementById("playerPhoto")
+                      .removeAttribute("required");
                   } else {
-                    document.getElementById("playerPhoto").setAttribute("required", "");
+                    document
+                      .getElementById("playerPhoto")
+                      .setAttribute("required", "");
                   }
 
                   if (player.cedulaPhoto) {
-                    const cPreview = document.getElementById("cedulaPhotoPreview");
+                    const cPreview =
+                      document.getElementById("cedulaPhotoPreview");
                     cPreview.src = player.cedulaPhoto;
                     cPreview.classList.remove("d-none");
-                    document.getElementById("cedulaPhotoText").classList.add("d-none");
+                    document
+                      .getElementById("cedulaPhotoText")
+                      .classList.add("d-none");
                     // Desactivar requerido para cédula ya cargada
-                    document.getElementById("cedulaPhoto").removeAttribute("required");
+                    document
+                      .getElementById("cedulaPhoto")
+                      .removeAttribute("required");
                   } else {
-                    document.getElementById("cedulaPhoto").setAttribute("required", "");
+                    document
+                      .getElementById("cedulaPhoto")
+                      .setAttribute("required", "");
                   }
 
                   Swal.fire({
@@ -3214,15 +3481,18 @@
                     title: "Datos Cargados",
                     text: `Se han cargado los datos de ${player.nombres} ${player.apellidos}. Ahora puedes modificar su número de camiseta o lo que necesites.`,
                     confirmButtonColor: "#28a745",
-                    timer: 3000
+                    timer: 3000,
                   });
                 }
               }
             });
-
           } catch (err) {
             console.error("Error al obtener jugadores del club:", err);
-            Swal.fire("Error", "Ocurrió un error al buscar los jugadores.", "error");
+            Swal.fire(
+              "Error",
+              "Ocurrió un error al buscar los jugadores.",
+              "error",
+            );
           }
         });
       }
@@ -3879,4 +4149,3 @@
     </style>
   </body>
 </html>
-
