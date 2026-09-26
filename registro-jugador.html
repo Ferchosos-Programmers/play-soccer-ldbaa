@@ -2525,9 +2525,15 @@
               // Badge de la categoría según la edad
               let categoriaBadge = "";
 
+              const catLower = (player.teamCategory || "").toLowerCase().trim();
               if (
-                player.teamCategory.toLowerCase() === "primera" ||
-                player.teamCategory.toLowerCase() === "máxima"
+                catLower === "primera" ||
+                catLower === "máxima" ||
+                catLower === "maxima" ||
+                catLower === "segunda" ||
+                catLower === "femenino" ||
+                catLower === "master" ||
+                catLower === "máster"
               ) {
                 categoriaBadge =
                   categoria === "Juvenil"
@@ -2686,21 +2692,33 @@
           });
       };
 
-      // Función para calcular la edad
+      // Función para calcular la edad (año actual - año de nacimiento según reglamento deportivo)
       function calcularEdad(fechaNacimiento) {
-        const hoy = new Date();
-        const fechaNac = new Date(fechaNacimiento);
-        let edad = hoy.getFullYear() - fechaNac.getFullYear();
-        const mes = hoy.getMonth() - fechaNac.getMonth();
-
-        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-          edad--;
+        if (!fechaNacimiento) return 0;
+        let anioNac = null;
+        if (typeof fechaNacimiento === "string") {
+          const parts = fechaNacimiento.trim().split(/[-/.]/);
+          if (parts.length === 3) {
+            if (parts[0].length === 4) {
+              anioNac = parseInt(parts[0], 10);
+            } else if (parts[2].length === 4) {
+              anioNac = parseInt(parts[2], 10);
+            }
+          }
+        } else if (fechaNacimiento instanceof Date) {
+          anioNac = fechaNacimiento.getFullYear();
         }
 
-        return edad;
+        const anioActual = new Date().getFullYear();
+        if (anioNac && !isNaN(anioNac)) {
+          return Math.max(0, anioActual - anioNac);
+        }
+
+        const d = new Date(fechaNacimiento);
+        return !isNaN(d.getTime()) ? Math.max(0, anioActual - d.getFullYear()) : 0;
       }
 
-      // Función para verificar si es juvenil
+      // Función para verificar si es juvenil (< 18 años)
       function esJuvenil(fechaNacimiento) {
         return calcularEdad(fechaNacimiento) < 18;
       }
@@ -2710,8 +2728,9 @@
         return calcularEdad(fechaNacimiento) < 15;
       }
 
+      // Función para verificar si es master (>= 40 años)
       function esMaster(fechaNacimiento) {
-        return calcularEdad(fechaNacimiento) > 40;
+        return calcularEdad(fechaNacimiento) >= 40;
       }
 
       // Función para actualizar el contador de cupo
@@ -3110,10 +3129,17 @@
       }
 
       // Función para formatear la fecha
-      // Función para formatear la fecha sin afectar la zona horaria
       function formatDate(dateString) {
-        const [year, month, day] = dateString.split("-");
-        return `${day}/${month}/${year}`;
+        if (!dateString) return "";
+        if (typeof dateString === "string" && dateString.includes("/")) return dateString;
+        const parts = String(dateString).trim().split(/[-/.]/);
+        if (parts.length === 3) {
+          if (parts[0].length === 4) {
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+          }
+          return `${parts[0]}/${parts[1]}/${parts[2]}`;
+        }
+        return dateString;
       }
 
       // Función para cargar jugadores para recalificación

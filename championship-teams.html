@@ -2549,19 +2549,30 @@
         modal.show();
       }
 
-      // Función para calcular la edad
+      // Función para calcular la edad (año actual - año de nacimiento según reglamento deportivo)
       function calcularEdad(fechaNacimiento) {
         if (!fechaNacimiento) return 0;
-        const hoy = new Date();
-        const fechaNac = new Date(fechaNacimiento);
-        let edad = hoy.getFullYear() - fechaNac.getFullYear();
-        const mes = hoy.getMonth() - fechaNac.getMonth();
-
-        if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-          edad--;
+        let anioNac = null;
+        if (typeof fechaNacimiento === "string") {
+          const parts = fechaNacimiento.trim().split(/[-/.]/);
+          if (parts.length === 3) {
+            if (parts[0].length === 4) {
+              anioNac = parseInt(parts[0], 10);
+            } else if (parts[2].length === 4) {
+              anioNac = parseInt(parts[2], 10);
+            }
+          }
+        } else if (fechaNacimiento instanceof Date) {
+          anioNac = fechaNacimiento.getFullYear();
         }
 
-        return edad;
+        const anioActual = new Date().getFullYear();
+        if (anioNac && !isNaN(anioNac)) {
+          return Math.max(0, anioActual - anioNac);
+        }
+
+        const d = new Date(fechaNacimiento);
+        return !isNaN(d.getTime()) ? Math.max(0, anioActual - d.getFullYear()) : 0;
       }
 
       // Función para verificar si es juvenil (< 18 años)
@@ -2569,9 +2580,9 @@
         return calcularEdad(fechaNacimiento) < 18;
       }
 
-      // Función para verificar si es master (> 40 años)
+      // Función para verificar si es master (>= 40 años)
       function esMaster(fechaNacimiento) {
-        return calcularEdad(fechaNacimiento) > 40;
+        return calcularEdad(fechaNacimiento) >= 40;
       }
 
       // Función para exportar todos los jugadores del campeonato actual a Excel con Fotos
@@ -2584,11 +2595,11 @@
               <div class="text-start p-2">
                 <div class="form-check mb-2">
                   <input class="form-check-input" type="checkbox" value="senior" id="age_senior" checked>
-                  <label class="form-check-label" for="age_senior">Senior (Normal)</label>
+                  <label class="form-check-label" for="age_senior">Senior (18 - 39 años)</label>
                 </div>
                 <div class="form-check mb-2">
                   <input class="form-check-input" type="checkbox" value="master" id="age_master" checked>
-                  <label class="form-check-label" for="age_master">Master (> 40 años)</label>
+                  <label class="form-check-label" for="age_master">Master (≥ 40 años)</label>
                 </div>
                 <div class="form-check mb-2">
                   <input class="form-check-input" type="checkbox" value="juvenil" id="age_juvenil" checked>
@@ -2728,12 +2739,12 @@
               const edad = calcularEdad(player.fechaNacimiento);
               if (ageFilters.includes("infantil") && edad < 15) matchAge = true;
               else if (ageFilters.includes("juvenil") && edad >= 15 && edad < 18) matchAge = true;
-              else if (ageFilters.includes("master") && edad > 40)
+              else if (ageFilters.includes("master") && edad >= 40)
                 matchAge = true;
               else if (
                 ageFilters.includes("senior") &&
                 edad >= 18 &&
-                edad <= 40
+                edad < 40
               )
                 matchAge = true;
 
@@ -2820,7 +2831,7 @@
               cedula: player.cedula || "",
               club: player.clubRef,
               categoria: player.catRef,
-              tipo_jugador: edad < 15 ? "INFANTIL" : (edad < 18 ? "JUVENIL" : (edad > 40 ? "MASTER" : "SENIOR")),
+              tipo_jugador: edad < 15 ? "INFANTIL" : (edad < 18 ? "JUVENIL" : (edad >= 40 ? "MASTER" : "SENIOR")),
               estado:
                 player.status === "recalificado"
                   ? "RECALIFICADO"

@@ -3,13 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LigaBet | LDBAA Apuestas Deportivas</title>
+    <title>LigaBet | Pronósticos Deportivos Barriales LDBAA</title>
 
     <!-- Google Fonts: Outfit -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
 
@@ -25,9 +25,11 @@
       rel="stylesheet"
     />
 
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Firebase SDK (Using v8 as in other files) -->
+    <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
@@ -36,175 +38,405 @@
     <link rel="stylesheet" href="css/global-theme.css" />
     <link rel="stylesheet" href="css/ligabet.css" />
 
-    <!-- Meta tags for SEO -->
     <meta
       name="description"
-      content="LigaBet - La plataforma oficial de apuestas deportivas de la Liga Barrial Argelia Alta."
+      content="LigaBet - Plataforma oficial de pronósticos deportivos y polla barrial de la Liga Barrial Argelia Alta. Apoya a tu equipo y gana premios."
     />
   </head>
   <body>
     <div class="main-bg"></div>
 
-    <!-- Navigation -->
+    <!-- Header / Navbar -->
     <nav class="nav-premium shadow-sm">
-      <div
-        class="container-fluid d-flex justify-content-between align-items-center"
-      >
-        <a
-          class="navbar-brand text-white fw-bold d-flex align-items-center"
-          href="index.html"
-        >
-          <img
-            src="img/logo.png"
-            alt="Logo"
-            width="40"
-            height="40"
-            class="me-3"
-          />
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        <a class="navbar-brand text-white fw-bold d-flex align-items-center text-decoration-none" href="index.html">
+          <img src="img/logo.png" alt="Logo" width="42" height="42" class="me-3" onerror="this.src='img/mcv-logo.png'" />
           <div class="brand-text d-flex flex-column">
-            <span class="fs-5 lh-1">LDBAA</span>
-            <span class="brand-accent small lh-1">ARGELIA ALTA</span>
+            <span class="fs-5 lh-1 fw-900 tracking-wider">LIGA<span style="color: #2ecc71;">BET</span></span>
+            <span class="text-white-50 small lh-1" style="font-size: 0.65rem; letter-spacing: 1px;">LDBAA ARGELIA ALTA</span>
           </div>
         </a>
-        <div class="nav-actions d-flex gap-3 align-items-center">
-          <a href="index.html" class="btn btn-secondary-glass">
-            <i class="fas fa-arrow-left me-2"></i> Volver
+
+        <div class="nav-actions d-flex gap-2 align-items-center">
+          <button class="btn btn-secondary-glass" onclick="openMyTicketsModal()">
+            <i class="fas fa-ticket-alt text-warning me-2"></i> Mis Tickets
+          </button>
+          <a href="index.html" class="btn btn-secondary-glass d-none d-sm-inline-flex">
+            <i class="fas fa-arrow-left me-2"></i> Volver al Inicio
           </a>
         </div>
       </div>
     </nav>
 
-    <div class="container py-5">
-      <!-- Encabezado -->
-      <div class="text-center mb-5">
-        <h1 class="section-title display-4 fw-bold text-uppercase">
-          LIGA<span class="brand-accent">BET</span>
-        </h1>
-        <p class="text-white-50">
-          Selecciona una jornada para ver los encuentros y adquirir tu ticket.
-        </p>
-      </div>
-
-      <!-- Selector de Fecha/Jornada (Estilo Vocalía) -->
-      <div id="jornadaSelectionView">
-        <div class="glass-panel mb-4">
-          <div class="row align-items-center">
-            <div class="col-md-12">
-              <label class="form-label mb-2 text-white-50 small fw-bold"
-                >CAMPEONATO ACTIVO</label
-              >
-              <select
-                id="campSelect"
-                class="select-premium"
-                onchange="loadJornadas()"
-              >
-                <option value="">Cargando campeonatos...</option>
-              </select>
+    <!-- Main Container -->
+    <div class="container py-4 py-lg-5">
+      <!-- Live Jackpot Banner -->
+      <div class="jackpot-banner mb-4 mb-lg-5">
+        <div class="row align-items-center g-4">
+          <div class="col-lg-7 text-center text-lg-start">
+            <div class="d-inline-flex align-items-center gap-2 px-3 py-1 rounded-pill mb-2" style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.4);">
+              <i class="fas fa-coins text-warning animate__animated animate__pulse animate__infinite"></i>
+              <span class="text-warning fw-bold small text-uppercase" style="letter-spacing: 1px;">Pozo Total Acumulado</span>
             </div>
+            <div class="jackpot-number" id="jackpotAmountDisplay">$0.00</div>
+            <p class="text-white-50 mb-0 mt-1" style="font-size: 0.95rem;">
+              <i class="fas fa-info-circle text-success me-1"></i>
+              <strong>Pozo Mutuo en Vivo:</strong> El <strong>70% del dinero apostado en cada partido</strong> se reparte entre los que acierten y el <strong>30%</strong> queda para la Liga. ¡Las cuotas se calculan según lo que apuesten los participantes!
+            </p>
           </div>
-        </div>
-
-        <div
-          id="jornadasGrid"
-          class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4 card-grid-elite"
-        >
-          <!-- Tarjetas de Jornadas dinámicas -->
-          <div class="col-12 text-center py-5">
-            <div class="spinner-border text-success"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Vista de Partidos de la Jornada -->
-      <div id="matchListView" class="d-none">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <button
-            class="btn btn-secondary-glass"
-            onclick="showJornadaSelection()"
-          >
-            <i class="fas fa-arrow-left me-2"></i> Volver
-          </button>
-          <h2 id="selectedJornadaTitle" class="fw-bold text-uppercase mb-0">
-            JORNADA 1
-          </h2>
-          <div style="width: 100px"></div>
-        </div>
-
-        <div class="row g-4">
-          <div class="col-lg-8">
-            <div id="matchesContainer" class="row row-cols-1 row-cols-md-2 g-4">
-              <!-- Partidos cargados aquí -->
-            </div>
-          </div>
-
-          <div class="col-lg-4">
-            <!-- Panel de Acción (Compra o Validación) -->
-            <div class="card-glass-container sticky-top" style="top: 100px">
-              <div id="buyPanel">
-                <h3
-                  class="h5 fw-bold mb-3 border-bottom border-white border-opacity-10 pb-2 text-center text-uppercase"
-                >
-                  ¿Quieres participar?
-                </h3>
-                <p class="text-white-50 small text-center mb-4">
-                  Adquiere tu código por WhatsApp para registrar tus pronósticos
-                  de esta jornada.
-                </p>
-                <button
-                  class="btn-whatsapp w-100 py-3 mb-3"
-                  onclick="buyTicketWhatsApp()"
-                >
-                  <i class="fab fa-whatsapp me-2"></i> COMPRAR TICKET POR $1
-                </button>
-                <button
-                  class="btn btn-outline-light w-100 py-2 border-opacity-25 small"
-                  onclick="showInputCode()"
-                >
-                  YA TENGO UN CÓDIGO
-                </button>
-              </div>
-
-              <div id="validatePanel" class="d-none">
-                <h3 class="h5 fw-bold mb-3 text-center text-uppercase">
-                  INGRESA TU CÓDIGO
-                </h3>
-                <input
-                  type="text"
-                  id="ticketInput"
-                  class="glass-input text-center fs-4 py-3 mb-3"
-                  placeholder="ABCD-1234"
-                />
-                <button
-                  class="btn-premium w-100 justify-content-center py-3"
-                  onclick="validateTicket()"
-                >
-                  VALIDAR Y JUGAR
-                </button>
-                <button
-                  class="btn btn-link text-white-50 w-100 mt-2 small text-decoration-none"
-                  onclick="showBuyPanel()"
-                >
-                  Cancelar
-                </button>
-              </div>
-
-              <div
-                id="activeTicketPanel"
-                class="d-none animate__animated animate__fadeIn"
-              >
-                <div
-                  class="text-center p-3 rounded-4 bg-success bg-opacity-10 border border-success border-opacity-25"
-                >
-                  <i class="fas fa-ticket-alt text-success fs-3 mb-2"></i>
-                  <h4 class="h6 fw-bold text-success mb-1">CÓDIGO ACTIVO</h4>
-                  <p id="activeCodeLabel" class="mb-0 fw-bold">ABCD-1234</p>
+          <div class="col-lg-5">
+            <div class="row g-2 text-center">
+              <div class="col-6">
+                <div class="p-3 rounded-4" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);">
+                  <div class="text-white-50 small mb-1 fw-bold text-uppercase">Boletos Jugados</div>
+                  <div class="fs-4 fw-900 text-white" id="totalTicketsCount">0</div>
                 </div>
-                <button
-                  class="btn-premium w-100 justify-content-center py-3 mt-4"
-                  onclick="registerBets()"
-                >
-                  REGISTRAR PRONÓSTICOS
+              </div>
+              <div class="col-6">
+                <div class="p-3 rounded-4" style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.06);">
+                  <div class="text-white-50 small mb-1 fw-bold text-uppercase">Partidos Activos</div>
+                  <div class="fs-4 fw-900 text-success" id="activeMatchesCount">0</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters & Selectors -->
+      <div class="glass-panel mb-4">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-6">
+            <label class="form-label text-white-50 small fw-bold text-uppercase mb-1">
+              <i class="fas fa-trophy text-warning me-1"></i> Campeonato
+            </label>
+            <select id="campSelect" class="select-premium w-100" onchange="loadJornadas()">
+              <option value="">Cargando campeonatos...</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label text-white-50 small fw-bold text-uppercase mb-1">
+              <i class="fas fa-calendar-alt text-success me-1"></i> Jornada / Fecha
+            </label>
+            <select id="jornadaSelect" class="select-premium w-100" onchange="loadMatchesForSelectedJornada()">
+              <option value="">Selecciona un campeonato primero</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Matches Section Title -->
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+          <h2 class="h4 fw-bold text-uppercase mb-0 text-white" id="matchesSectionTitle">
+            Partidos Programados
+          </h2>
+          <p class="text-white-50 small mb-0">Selecciona tu pronóstico (1 = Local | X = Empate | 2 = Visita) para apostar</p>
+        </div>
+        <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-3 py-2 rounded-pill">
+          <i class="fas fa-circle me-1" style="font-size: 0.5rem;"></i> EN VIVO
+        </span>
+      </div>
+
+      <!-- Matches Grid -->
+      <div id="matchesContainer" class="row row-cols-1 row-cols-md-2 row-cols-xl-3 g-4 mb-5">
+        <div class="col-12 text-center py-5">
+          <div class="spinner-border text-success"></div>
+          <p class="text-white-50 mt-2">Cargando partidos de la fecha...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE APUESTA Y PAGO DIRECTO -->
+    <div class="modal fade" id="betModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content text-white" style="background: #0d1520; border: 1px solid rgba(46, 204, 113, 0.3); border-radius: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.8);">
+          <div class="modal-header border-0 pb-0">
+            <div class="d-flex align-items-center gap-2">
+              <div class="p-2 rounded-3 bg-success bg-opacity-20 text-success">
+                <i class="fas fa-futbol fs-4"></i>
+              </div>
+              <div>
+                <h5 class="modal-title fw-bold text-uppercase mb-0">Confirmar Pronóstico y Apuesta</h5>
+                <span class="text-white-50 small" id="modalCategoryBadge">CATEGORÍA MÁXIMA</span>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+
+          <div class="modal-body p-4">
+            <!-- Resumen del Partido Seleccionado -->
+            <div class="p-3 rounded-4 mb-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+              <div class="d-flex justify-content-between align-items-center text-center">
+                <div style="flex: 1;">
+                  <img id="modalLocalLogo" src="img/logo.png" style="width: 48px; height: 48px; object-fit: cover; border-radius: 50%;" class="mb-2" onerror="this.src='img/logo.png'" />
+                  <div class="fw-bold text-white small text-uppercase" id="modalLocalName">Local</div>
+                </div>
+                <div class="px-2">
+                  <span class="badge bg-dark border border-secondary px-3 py-1 fs-6">VS</span>
+                  <div class="text-white-50 mt-1" style="font-size: 0.75rem;" id="modalMatchSchedule">Sábado --:--</div>
+                </div>
+                <div style="flex: 1;">
+                  <img id="modalVisitorLogo" src="img/logo.png" style="width: 48px; height: 48px; object-fit: cover; border-radius: 50%;" class="mb-2" onerror="this.src='img/logo.png'" />
+                  <div class="fw-bold text-white small text-uppercase" id="modalVisitorName">Visitante</div>
+                </div>
+              </div>
+
+              <div class="mt-3 pt-3 border-top border-white border-opacity-10 d-flex justify-content-between align-items-center">
+                <span class="text-white-50 small">Tu Selección:</span>
+                <span class="badge bg-success text-dark fw-900 fs-6 px-3 py-1" id="modalSelectedPickBadge">GANA LOCAL (1)</span>
+              </div>
+            </div>
+
+            <!-- Paso 1: Monto a Apostar -->
+            <div class="mb-4">
+              <label class="form-label text-white-50 small fw-bold text-uppercase mb-2">
+                <i class="fas fa-dollar-sign text-warning me-1"></i> Elige el Monto a Apostar ($ USD)
+              </label>
+              <div class="d-flex gap-2 mb-2">
+                <button type="button" class="btn btn-outline-light flex-grow-1 fw-bold rounded-3 amount-btn active" onclick="setBetAmount(1)">$1.00</button>
+                <button type="button" class="btn btn-outline-light flex-grow-1 fw-bold rounded-3 amount-btn" onclick="setBetAmount(2)">$2.00</button>
+                <button type="button" class="btn btn-outline-light flex-grow-1 fw-bold rounded-3 amount-btn" onclick="setBetAmount(5)">$5.00</button>
+                <button type="button" class="btn btn-outline-light flex-grow-1 fw-bold rounded-3 amount-btn" onclick="setBetAmount(10)">$10.00</button>
+              </div>
+              <div class="input-group-custom-bet mb-2">
+                <span class="input-group-addon">$</span>
+                <input type="number" id="customAmountInput" class="input-amount-field" value="1" min="1" max="100" oninput="updatePotentialPayout()" />
+              </div>
+
+              <!-- Cálculo de Ganancia Estimada -->
+              <div class="p-3 rounded-3 mt-3 d-flex justify-content-between align-items-center" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);">
+                <div>
+                  <span class="small text-white-50 d-block">Ganancia Estimada si Aciertas:</span>
+                  <span class="fs-4 fw-900 text-success" id="modalEstimatedPayout">$0.00</span>
+                  <div class="text-white-50" style="font-size: 0.72rem;" id="modalPayoutNote">Calculado en base al pozo acumulado del partido</div>
+                </div>
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 small" id="modalMultiplierBadge">Cuota en Vivo</span>
+              </div>
+            </div>
+
+            <!-- Paso 2: Datos de Pago (DeUna / Banco Pichincha) -->
+            <div class="p-3 rounded-4 mb-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+              <div class="row align-items-center g-3">
+                <div class="col-md-5 text-center">
+                  <div class="d-inline-block p-2 bg-white rounded-4 shadow mb-2">
+                    <img src="img/qr-pago-deuna.png" alt="QR DeUna" style="width: 140px; height: 140px; object-fit: contain;" onerror="this.src='img/qr-pago.png'" />
+                  </div>
+                  <div class="small fw-bold text-white">Jessica Silvana Quishpe C.</div>
+                  <span class="badge bg-success bg-opacity-25 text-success small">Pago DeUna / Banco Pichincha</span>
+                </div>
+                <div class="col-md-7">
+                  <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-white border-opacity-10">
+                    <span class="small fw-bold text-warning"><i class="fas fa-university me-1"></i> Datos de la Liga:</span>
+                    <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-2 py-0" style="font-size: 0.7rem;" onclick="navigator.clipboard.writeText('2215760735'); Swal.fire({title: '¡Copiado!', text: 'Número de cuenta copiado al portapapeles', icon: 'success', timer: 1500, showConfirmButton: false});">
+                      <i class="fas fa-copy me-1"></i> Copiar Cuenta
+                    </button>
+                  </div>
+                  <div class="small text-white-50 mb-1">Banco: <strong class="text-white">Banco Pichincha</strong></div>
+                  <div class="small text-white-50 mb-1">Tipo: <strong class="text-white">Ahorros</strong></div>
+                  <div class="small text-white-50 mb-1">N° Cuenta: <strong class="text-white font-monospace">2215760735</strong></div>
+                  <div class="small text-white-50 mb-1">Cédula: <strong class="text-white font-monospace">1727764835</strong></div>
+                  <div class="small text-white-50">Correo: <strong class="text-white">jessicasilvanaqc@gmail.com</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Paso 3: Formulario del Apostador -->
+            <form id="betForm" onsubmit="submitBet(event)">
+              <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                  <label class="form-label text-white-50 small fw-bold">TU NOMBRE COMPLETO *</label>
+                  <input type="text" id="userNameInput" class="glass-input w-100" placeholder="Ej: Fernando Mallitaxi" required />
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label text-white-50 small fw-bold">WHATSAPP / CELULAR *</label>
+                  <input type="tel" id="userPhoneInput" class="glass-input w-100" placeholder="Ej: 0989555936" required />
+                </div>
+              </div>
+
+              <!-- DATOS BANCARIOS DEL GANADOR PARA TRANSFERIRLE EL PREMIO -->
+              <div class="p-3 rounded-4 mb-3" style="background: rgba(46, 204, 113, 0.05); border: 1px solid rgba(46, 204, 113, 0.2);">
+                <div class="text-warning fw-bold small text-uppercase mb-2">
+                  <i class="fas fa-money-check-alt me-1"></i> Datos Bancarios para Depositarte si Ganas
+                </div>
+                <div class="row g-2 mb-2">
+                  <div class="col-md-6">
+                    <label class="form-label text-white-50 small mb-1">BANCO / COOPERATIVA *</label>
+                    <select id="userBankNameSelect" class="select-premium w-100" onchange="toggleCustomBankInput()" required>
+                      <option value="Banco Pichincha">Banco Pichincha</option>
+                      <option value="DeUna">DeUna (Billetera Digital)</option>
+                      <option value="Banco Guayaquil">Banco Guayaquil</option>
+                      <option value="Produbanco">Produbanco / Servipagos</option>
+                      <option value="Banco del Pacífico">Banco del Pacífico</option>
+                      <option value="Banco Bolivariano">Banco Bolivariano</option>
+                      <option value="Banco Internacional">Banco Internacional</option>
+                      <option value="Cooperativa JEP">Cooperativa JEP</option>
+                      <option value="Cooperativa Policía Nacional">Cooperativa Policía Nacional</option>
+                      <option value="Cooperativa Alianza del Valle">Cooperativa Alianza del Valle</option>
+                      <option value="OTRO">Otro Banco / Cooperativa</option>
+                    </select>
+                    <div id="customBankInputWrapper" class="mt-2 d-none">
+                      <input type="text" id="userCustomBankInput" class="glass-input w-100" placeholder="Escribe el nombre de tu Banco o Cooperativa" />
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-white-50 small mb-1">TIPO DE CUENTA *</label>
+                    <select id="userAccountTypeInput" class="select-premium w-100" required>
+                      <option value="Ahorros">Cuenta de Ahorros</option>
+                      <option value="Corriente">Cuenta Corriente</option>
+                      <option value="DeUna">DeUna</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="row g-2 mb-2">
+                  <div class="col-md-6">
+                    <label class="form-label text-white-50 small mb-1">N° DE CUENTA / CELULAR DEUNA *</label>
+                    <input type="text" id="userAccountNumberInput" class="glass-input w-100 font-monospace" placeholder="Ej: 2205489123 o 0989555936" required />
+                  </div>
+                  <div class="col-md-6">
+                    <label class="form-label text-white-50 small mb-1">CÉDULA / RUC DEL TITULAR *</label>
+                    <input type="text" id="userCedulaInput" class="glass-input w-100 font-monospace" placeholder="Ej: 1723456789" maxlength="13" required />
+                  </div>
+                </div>
+
+                <div>
+                  <label class="form-label text-white-50 small mb-1">NOMBRE DEL TITULAR DE LA CUENTA *</label>
+                  <input type="text" id="userAccountHolderInput" class="glass-input w-100" placeholder="Ej: Fernando Mallitaxi (Nombre en el banco)" required />
+                </div>
+              </div>
+
+              <!-- Subida de Comprobante -->
+              <div class="mb-4">
+                <label class="form-label text-white-50 small fw-bold text-uppercase">
+                  <i class="fas fa-receipt text-warning me-1"></i> Subir Foto del Comprobante / Voucher *
+                </label>
+                <div class="voucher-dropzone" onclick="document.getElementById('voucherFileInput').click()">
+                  <input type="file" id="voucherFileInput" accept="image/*" class="d-none" onchange="handleVoucherUpload(event)" required />
+                  <div id="voucherEmptyState">
+                    <i class="fas fa-cloud-upload-alt text-success fs-2 mb-2"></i>
+                    <p class="mb-1 fw-bold text-white small">Haz clic aquí para seleccionar la captura de pago</p>
+                    <span class="text-white-50" style="font-size: 0.75rem;">PNG, JPG o WEBP (Compresión automática)</span>
+                  </div>
+                  <div id="voucherPreviewState" class="d-none">
+                    <div class="voucher-preview-box mb-2">
+                      <img id="voucherPreviewImg" class="voucher-preview-img" alt="Comprobante" />
+                    </div>
+                    <span class="badge bg-success"><i class="fas fa-check me-1"></i> Comprobante Cargado</span>
+                    <button type="button" class="btn btn-link text-white-50 btn-sm d-block mx-auto mt-1" onclick="event.stopPropagation(); removeVoucherImage();">Cambiar imagen</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Submit Button -->
+              <button type="submit" id="btnSubmitBet" class="btn-premium w-100 py-3 fs-6">
+                <i class="fas fa-ticket-alt me-2"></i> REGISTRAR APUESTA Y GENERAR TICKET
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL DE TICKET DIGITAL EXITOSO -->
+    <div class="modal fade" id="ticketSuccessModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-white" style="background: transparent; border: none;">
+          <div class="modal-body p-0">
+            <div id="printableTicket" class="digital-ticket-card text-center">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="text-start">
+                  <span class="fw-900 tracking-wider text-success fs-5">LIGA<span class="text-white">BET</span></span>
+                  <div class="text-white-50" style="font-size: 0.65rem;">BOLETO OFICIAL DE APUESTA</div>
+                </div>
+                <span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50">
+                  <i class="fas fa-check-circle me-1"></i> PARTICIPANDO
+                </span>
+              </div>
+
+              <div class="my-3 py-2 px-3 rounded-3" style="background: rgba(0,0,0,0.5); border: 1px solid rgba(245, 158, 11, 0.3);">
+                <div class="text-warning small fw-bold">CÓDIGO DE TICKET</div>
+                <div class="fs-2 fw-900 text-white font-monospace tracking-wider" id="ticketCodeDisplay">LDB-0000</div>
+              </div>
+
+              <div class="text-start mb-3 small">
+                <div class="d-flex justify-content-between py-1 border-bottom border-white border-opacity-10">
+                  <span class="text-white-50">Apostador:</span>
+                  <strong class="text-white" id="ticketUserNameDisplay">--</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom border-white border-opacity-10">
+                  <span class="text-white-50">Partido:</span>
+                  <strong class="text-white" id="ticketMatchDisplay">--</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom border-white border-opacity-10">
+                  <span class="text-white-50">Tu Pronóstico:</span>
+                  <strong class="text-success" id="ticketPickDisplay">--</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom border-white border-opacity-10">
+                  <span class="text-white-50">Monto Invertido:</span>
+                  <strong class="text-white font-monospace" id="ticketAmountDisplay">$0.00</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom border-white border-opacity-10">
+                  <span class="text-white-50">Cuenta de Cobro:</span>
+                  <strong class="text-info" id="ticketPayoutDisplay">--</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                  <span class="text-white-50">Premio Estimado:</span>
+                  <strong class="text-warning font-monospace fs-6" id="ticketEstPayoutDisplay">$0.00</strong>
+                </div>
+              </div>
+
+              <!-- Código QR Generado del Boleto -->
+              <div class="d-flex justify-content-center my-3">
+                <div class="p-2 bg-white rounded-3 shadow">
+                  <img id="ticketQrImage" src="" alt="QR Boleto" style="width: 140px; height: 140px; object-fit: contain;" />
+                </div>
+              </div>
+
+              <!-- Mensaje Oficial de Premiación -->
+              <div class="p-3 rounded-3 mb-3 text-start" style="background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.3);">
+                <div class="text-warning fw-bold small text-uppercase mb-1">
+                  <i class="fas fa-calendar-check me-1"></i> Entrega Oficial de Premios
+                </div>
+                <p class="text-white-50 mb-0" style="font-size: 0.78rem; line-height: 1.4;">
+                  Los premios ganadores serán transferidos el día <strong class="text-white">MARTES</strong> directamente a tu cuenta bancaria registrada, previa visualización y confirmación oficial del comprobante de transferencia por parte de la tesorería de la Liga.
+                </p>
+              </div>
+
+              <div class="ticket-barcode mb-3">||| | | |||| || ||||| | |||</div>
+
+              <div class="d-flex gap-2">
+                <button type="button" class="btn btn-secondary-glass flex-grow-1" onclick="downloadTicketImage()">
+                  <i class="fas fa-download me-1"></i> Guardar Imagen
                 </button>
+                <button type="button" class="btn-premium flex-grow-1" onclick="shareTicketWhatsApp()">
+                  <i class="fab fa-whatsapp me-1"></i> Compartir
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL "MIS TICKETS" -->
+    <div class="modal fade" id="myTicketsModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content text-white" style="background: #0d1520; border: 1px solid rgba(255,255,255,0.1); border-radius: 24px;">
+          <div class="modal-header border-0">
+            <h5 class="modal-title fw-bold text-uppercase"><i class="fas fa-ticket-alt text-warning me-2"></i> Mis Tickets de Apuesta</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="input-group mb-4">
+              <input type="text" id="searchTicketInput" class="form-control glass-input" placeholder="Ingresa tu N° de WhatsApp, Cédula o Código de Ticket..." />
+              <button class="btn btn-premium px-4" onclick="searchMyTickets()"><i class="fas fa-search me-1"></i> Buscar</button>
+            </div>
+
+            <div id="myTicketsResults" class="d-flex flex-column gap-3">
+              <div class="text-center py-4 text-white-50">
+                <i class="fas fa-search mb-2 fs-3 opacity-25"></i>
+                <p>Escribe tu número de teléfono o código de ticket arriba para ver tu historial.</p>
               </div>
             </div>
           </div>
@@ -215,7 +447,6 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-      // Firebase Config
       const firebaseConfig = {
         apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
         authDomain: "ldbaa-calificaciones.firebaseapp.com",
@@ -228,25 +459,32 @@
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
-      let fixturesMap = new Map();
+      let currentChampionshipId = "";
       let currentJornada = null;
-      let activeTicket = null;
-      let predictions = {};
+      let rawFixturesData = [];
+      let currentMatchesList = [];
+      let selectedMatch = null;
+      let selectedPick = ""; // 'L' | 'E' | 'V'
+      let currentBetAmount = 1;
+      let currentMultiplier = 1.0;
+      let voucherBase64 = "";
+      let activeBetsPool = {};
+      let lastCreatedTicket = null;
+      let betsUnsubscribe = null;
 
       document.addEventListener("DOMContentLoaded", async () => {
         await loadChampionships();
+        listenToJackpotPool();
       });
 
+      // 1. Cargar Campeonatos
       async function loadChampionships() {
         const select = document.getElementById("campSelect");
         try {
-          const snapshot = await db
-            .collection("championships")
-            .orderBy("createdAt", "desc")
-            .get();
+          const snapshot = await db.collection("championships").orderBy("createdAt", "desc").get();
           select.innerHTML = "";
           if (snapshot.empty) {
-            select.innerHTML = '<option value="">No hay campeonatos</option>';
+            select.innerHTML = '<option value="">No hay campeonatos activos</option>';
             return;
           }
           snapshot.forEach((doc) => {
@@ -257,325 +495,603 @@
           });
           if (select.options.length > 0) {
             select.value = select.options[0].value;
-            loadJornadas();
+            currentChampionshipId = select.value;
+            await loadJornadas();
           }
         } catch (e) {
-          console.error(e);
+          console.error("Error cargando campeonatos:", e);
         }
       }
 
+      // 2. Cargar Jornadas
       async function loadJornadas() {
-        const campId = document.getElementById("campSelect").value;
-        const grid = document.getElementById("jornadasGrid");
-        grid.innerHTML =
-          '<div class="col-12 text-center py-5"><div class="spinner-border text-success"></div></div>';
+        currentChampionshipId = document.getElementById("campSelect").value;
+        const jSelect = document.getElementById("jornadaSelect");
+        jSelect.innerHTML = '<option value="">Cargando jornadas...</option>';
+        rawFixturesData = [];
 
-        fixturesMap.clear();
         try {
-          // Cargamos jornadas cerradas para comparar
-          const closedSnap = await db
-            .collection("ligabet_rounds_status")
-            .where("closed", "==", true)
-            .get();
-          const closedRounds = closedSnap.docs.map((doc) => doc.id); // ID será el número de jornada
-
-          const snapshot = await db
-            .collection("fixtures")
-            .where("championshipId", "==", campId)
-            .get();
+          const snapshot = await db.collection("fixtures").where("championshipId", "==", currentChampionshipId).get();
           let jornadasSet = new Set();
-          let counts = {};
 
           snapshot.forEach((doc) => {
-            const data = doc.data();
-            fixturesMap.set(doc.id, data);
-            data.data.forEach((m) => {
-              // Solo jornadas con fecha y hora real asignada en el fixture
-              const isProgrammed =
-                m.fechaRealAsignadaText &&
-                m.fechaRealAsignadaText !== "Por Definir" &&
-                m.horaRealAsignada &&
-                m.horaRealAsignada !== "--:--";
-              if (
-                !m.isRest &&
-                m.local !== "DESCANSA" &&
-                m.visitor !== "DESCANSA" &&
-                isProgrammed
-              ) {
-                const jNum = parseInt(m.jornada) || 1;
-                jornadasSet.add(jNum);
-                counts[jNum] = (counts[jNum] || 0) + 1;
-              }
-            });
+            const docData = doc.data();
+            rawFixturesData.push({ id: doc.id, ...docData });
+            if (docData.data && Array.isArray(docData.data)) {
+              docData.data.forEach((m) => {
+                const isProgrammed =
+                  m.fechaRealAsignadaText &&
+                  m.fechaRealAsignadaText !== "Por Definir" &&
+                  m.horaRealAsignada &&
+                  m.horaRealAsignada !== "--:--";
+
+                if (!m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA" && isProgrammed) {
+                  const jNum = parseInt(m.jornada) || parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+                  jornadasSet.add(jNum);
+                }
+              });
+            }
           });
 
           const sortedJornadas = Array.from(jornadasSet).sort((a, b) => a - b);
-          grid.innerHTML = "";
+          jSelect.innerHTML = "";
 
           if (sortedJornadas.length === 0) {
-            grid.innerHTML =
-              '<div class="col-12 text-center py-5 text-white-50"><i class="fas fa-calendar-times mb-3 opacity-25" style="font-size:3rem"></i><h5 class="text-white-50">No hay jornadas programadas oficialmente aún.</h5></div>';
+            jSelect.innerHTML = '<option value="">Sin jornadas programadas</option>';
+            document.getElementById("matchesContainer").innerHTML = `
+              <div class="col-12 text-center py-5 text-white-50">
+                <i class="fas fa-calendar-times mb-3 opacity-25" style="font-size: 3rem;"></i>
+                <h5>No hay partidos oficialmente programados aún.</h5>
+              </div>
+            `;
             return;
           }
 
           sortedJornadas.forEach((j) => {
-            const isClosed = closedRounds.includes(j.toString());
-            grid.insertAdjacentHTML(
-              "beforeend",
-              `
-                <div class="col">
-                    <div class="jornada-card-elite ${isClosed ? "opacity-50" : ""}" onclick="${isClosed ? `Swal.fire('Cerrada', 'Las apuestas para esta jornada ya han concluido.', 'info')` : `selectJornada(${j})`}">
-                        <i class="fas ${isClosed ? "fa-lock text-danger" : "fa-calendar-check text-success"}"></i>
-                        <h5>Jornada ${j}</h5>
-                        <span class="match-count">${isClosed ? "RESULTADOS PUBLICADOS" : `${counts[j]} PARTIDOS DISPONIBLES`}</span>
-                    </div>
-                </div>
-            `,
-            );
+            const opt = document.createElement("option");
+            opt.value = j;
+            opt.textContent = `Jornada ${j}`;
+            jSelect.appendChild(opt);
           });
+
+          jSelect.value = sortedJornadas[0];
+          currentJornada = sortedJornadas[0];
+          await loadMatchesForSelectedJornada();
         } catch (e) {
-          console.error(e);
+          console.error("Error cargando jornadas:", e);
         }
       }
 
-      function selectJornada(j) {
-        currentJornada = j;
-        document.getElementById("selectedJornadaTitle").textContent =
-          `JORNADA ${j}`;
-        document.getElementById("jornadaSelectionView").classList.add("d-none");
-        document.getElementById("matchListView").classList.remove("d-none");
-        renderMatches();
-      }
+      // 3. Cargar Partidos de la Jornada
+      async function loadMatchesForSelectedJornada() {
+        const jVal = document.getElementById("jornadaSelect").value;
+        if (!jVal) return;
+        currentJornada = parseInt(jVal);
+        document.getElementById("matchesSectionTitle").textContent = `Partidos Programados - Jornada ${currentJornada}`;
 
-      function showJornadaSelection() {
-        document
-          .getElementById("jornadaSelectionView")
-          .classList.remove("d-none");
-        document.getElementById("matchListView").classList.add("d-none");
-        // Reset panels
-        showBuyPanel();
-        activeTicket = null;
-        predictions = {};
-      }
-
-      async function renderMatches() {
         const container = document.getElementById("matchesContainer");
-        container.innerHTML =
-          '<div class="col-12 text-center py-5"><div class="spinner-border text-success"></div></div>';
+        container.innerHTML = '<div class="col-12 text-center py-5"><div class="spinner-border text-success"></div><p class="text-white-50 mt-2">Cargando partidos...</p></div>';
 
-        // Cargar mapa de logos de equipos
-        const campId = document.getElementById("campSelect").value;
-        const teamsSnapshot = await db
-          .collection("teams")
-          .where("championshipId", "==", campId)
-          .get();
+        try {
+          const teamsSnap = await db.collection("teams").where("championshipId", "==", currentChampionshipId).get();
+          const logosMap = {};
+          teamsSnap.forEach((doc) => {
+            logosMap[doc.data().name] = doc.data().logo || "img/logo.png";
+          });
+
+          currentMatchesList = [];
+          rawFixturesData.forEach((fix) => {
+            if (fix.data && Array.isArray(fix.data)) {
+              fix.data.forEach((m, idx) => {
+                const isProgrammed =
+                  m.fechaRealAsignadaText &&
+                  m.fechaRealAsignadaText !== "Por Definir" &&
+                  m.horaRealAsignada &&
+                  m.horaRealAsignada !== "--:--";
+                const jNum = parseInt(m.jornada) || parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+
+                if (jNum === currentJornada && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA" && isProgrammed) {
+                  currentMatchesList.push({
+                    matchUniqueId: `${fix.id}_${idx}`,
+                    fixtureDocId: fix.id,
+                    matchIndex: idx,
+                    category: fix.category || "General",
+                    local: m.local,
+                    visitor: m.visitor || m.visitante,
+                    fechaText: m.fechaRealAsignadaText,
+                    horaText: m.horaRealAsignada,
+                    canchaText: m.canchaAsignada || "Principal",
+                  });
+                }
+              });
+            }
+          });
+
+          document.getElementById("activeMatchesCount").textContent = currentMatchesList.length;
+
+          if (currentMatchesList.length === 0) {
+            container.innerHTML = `
+              <div class="col-12 text-center py-5 text-white-50">
+                <i class="fas fa-futbol mb-3 opacity-25" style="font-size: 3rem;"></i>
+                <h5>No se encontraron encuentros activos para esta jornada.</h5>
+              </div>
+            `;
+            return;
+          }
+
+          // Escuchar apuestas en tiempo real para este campeonato y jornada
+          listenToMatchBetsPool(logosMap);
+        } catch (e) {
+          console.error("Error al renderizar partidos:", e);
+        }
+      }
+
+      // 4. Escuchar pozo global en vivo
+      function listenToJackpotPool() {
+        db.collection("ligabet_bets")
+          .where("status", "==", "active")
+          .onSnapshot((snapshot) => {
+            let total = 0;
+            let count = 0;
+            snapshot.forEach((doc) => {
+              const b = doc.data();
+              total += parseFloat(b.amount || 0);
+              count++;
+            });
+            const prizePool = total * 0.70;
+            document.getElementById("jackpotAmountDisplay").textContent = `$${prizePool.toFixed(2)}`;
+            document.getElementById("totalTicketsCount").textContent = count;
+          });
+      }
+
+      // 5. Escuchar apuestas por partido en tiempo real
+      function listenToMatchBetsPool(logosMap) {
+        if (betsUnsubscribe) {
+          betsUnsubscribe();
+        }
+
+        betsUnsubscribe = db.collection("ligabet_bets")
+          .where("championshipId", "==", currentChampionshipId)
+          .where("round", "==", currentJornada)
+          .where("status", "==", "active")
+          .onSnapshot((snapshot) => {
+            activeBetsPool = {};
+            snapshot.forEach((doc) => {
+              const b = doc.data();
+              const mId = b.matchUniqueId;
+              if (!activeBetsPool[mId]) {
+                activeBetsPool[mId] = { total: 0, L: 0, E: 0, V: 0, count: 0 };
+              }
+              const amt = parseFloat(b.amount || 0);
+              activeBetsPool[mId].total += amt;
+              activeBetsPool[mId].count += 1;
+              if (b.pick === "L") activeBetsPool[mId].L += amt;
+              if (b.pick === "E") activeBetsPool[mId].E += amt;
+              if (b.pick === "V") activeBetsPool[mId].V += amt;
+            });
+
+            renderMatchesGrid(logosMap);
+          });
+      }
+
+      // 6. Renderizar Grid de Partidos con Cuotas 100% Dinámicas
+      function renderMatchesGrid(logosMap) {
+        const container = document.getElementById("matchesContainer");
+        container.innerHTML = "";
+
+        currentMatchesList.forEach((m) => {
+          const localLogo = logosMap[m.local] || "img/logo.png";
+          const visitorLogo = logosMap[m.visitor] || "img/logo.png";
+          const pool = activeBetsPool[m.matchUniqueId] || { total: 0, L: 0, E: 0, V: 0, count: 0 };
+
+          // Matemática Pari-mutuel:
+          // Pozo de premios de este partido = Total apostado en el partido * 70%
+          const prizePool = pool.total * 0.70;
+
+          // Cuota dinámica: Si ya hay dinero en esa opción, Cuota = PozoPremios / DineroEnEsaOpcion
+          let oddLText, oddEText, oddVText;
+          let oddLVal, oddEVal, oddVVal;
+
+          if (pool.total === 0) {
+            // Sin apuestas aún
+            oddLText = "Pozo: $0";
+            oddEText = "Pozo: $0";
+            oddVText = "Pozo: $0";
+            oddLVal = 0;
+            oddEVal = 0;
+            oddVVal = 0;
+          } else {
+            // Hay apuestas en el partido
+            oddLVal = pool.L > 0 ? (prizePool / pool.L) : 0;
+            oddEVal = pool.E > 0 ? (prizePool / pool.E) : 0;
+            oddVVal = pool.V > 0 ? (prizePool / pool.V) : 0;
+
+            oddLText = pool.L > 0 ? `x${oddLVal.toFixed(2)}` : "¡Sé el 1°!";
+            oddEText = pool.E > 0 ? `x${oddEVal.toFixed(2)}` : "¡Sé el 1°!";
+            oddVText = pool.V > 0 ? `x${oddVVal.toFixed(2)}` : "¡Sé el 1°!";
+          }
+
+          const cardHtml = `
+            <div class="col">
+              <div class="match-card-bet h-100">
+                <div>
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="badge bg-primary bg-opacity-25 text-info border border-info border-opacity-50 text-uppercase" style="font-size: 0.65rem; letter-spacing: 1px;">
+                      ${m.category}
+                    </span>
+                    <span class="text-white-50 small" style="font-size: 0.75rem;">
+                      <i class="far fa-clock text-success me-1"></i> ${m.horaText} | ${m.fechaText}
+                    </span>
+                  </div>
+
+                  <!-- Equipos -->
+                  <div class="d-flex justify-content-between align-items-center my-3">
+                    <div class="team-badge-wrap">
+                      <img src="${localLogo}" alt="${m.local}" class="team-logo-bet" onerror="this.src='img/logo.png'" />
+                      <div class="team-name-bet">${m.local}</div>
+                    </div>
+                    <div class="vs-pill">VS</div>
+                    <div class="team-badge-wrap">
+                      <img src="${visitorLogo}" alt="${m.visitor}" class="team-logo-bet" onerror="this.src='img/logo.png'" />
+                      <div class="team-name-bet">${m.visitor}</div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Botones de Pronóstico con Acumulado en Vivo -->
+                <div>
+                  <div class="odds-group">
+                    <div class="odd-btn-box" onclick="openBetModal('${m.matchUniqueId}', 'L')">
+                      <span class="odd-label">1 (Local)</span>
+                      <span class="odd-val">${oddLText}</span>
+                      <span class="text-white-50" style="font-size: 0.65rem;">$${pool.L.toFixed(0)} en juego</span>
+                    </div>
+                    <div class="odd-btn-box" onclick="openBetModal('${m.matchUniqueId}', 'E')">
+                      <span class="odd-label">X (Empate)</span>
+                      <span class="odd-val">${oddEText}</span>
+                      <span class="text-white-50" style="font-size: 0.65rem;">$${pool.E.toFixed(0)} en juego</span>
+                    </div>
+                    <div class="odd-btn-box" onclick="openBetModal('${m.matchUniqueId}', 'V')">
+                      <span class="odd-label">2 (Visita)</span>
+                      <span class="odd-val">${oddVText}</span>
+                      <span class="text-white-50" style="font-size: 0.65rem;">$${pool.V.toFixed(0)} en juego</span>
+                    </div>
+                  </div>
+                  <div class="text-center mt-2 text-white-50" style="font-size: 0.72rem;">
+                    <i class="fas fa-coins text-warning me-1"></i> 
+                    ${pool.total > 0 ? `Pozo del Partido: <strong>$${pool.total.toFixed(2)}</strong> (${pool.count} apuestas)` : 'Pozo Abierto: ¡Sé el primero en apostar!'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          container.insertAdjacentHTML("beforeend", cardHtml);
+        });
+      }
+
+      // 7. Abrir Modal de Apuesta
+      async function openBetModal(matchUniqueId, pick) {
+        selectedMatch = currentMatchesList.find((m) => m.matchUniqueId === matchUniqueId);
+        if (!selectedMatch) return;
+        selectedPick = pick;
+        currentBetAmount = 1;
+
+        // Cargar logos
+        const teamsSnap = await db.collection("teams").where("championshipId", "==", currentChampionshipId).get();
         const logosMap = {};
-        teamsSnapshot.forEach((doc) => {
+        teamsSnap.forEach((doc) => {
           logosMap[doc.data().name] = doc.data().logo || "img/logo.png";
         });
 
-        let matches = [];
-        fixturesMap.forEach((meta) => {
-          meta.data.forEach((m) => {
-            const jNum = parseInt(m.fecha.replace(/\D/g, "")) || 1;
-            if (
-              jNum === currentJornada &&
-              !m.isRest &&
-              m.local !== "DESCANSA" &&
-              m.visitor !== "DESCANSA"
-            ) {
-              matches.push({ ...m, category: meta.category });
-            }
-          });
-        });
+        document.getElementById("modalCategoryBadge").textContent = `CATEGORÍA ${selectedMatch.category.toUpperCase()}`;
+        document.getElementById("modalLocalName").textContent = selectedMatch.local;
+        document.getElementById("modalVisitorName").textContent = selectedMatch.visitor;
+        document.getElementById("modalLocalLogo").src = logosMap[selectedMatch.local] || "img/logo.png";
+        document.getElementById("modalVisitorLogo").src = logosMap[selectedMatch.visitor] || "img/logo.png";
+        document.getElementById("modalMatchSchedule").textContent = `${selectedMatch.fechaText} - ${selectedMatch.horaText}`;
 
-        if (matches.length === 0) {
-          container.innerHTML =
-            '<div class="col-12 text-center py-5 text-white-50">No se encontraron partidos.</div>';
-          return;
+        const pickNames = {
+          L: `GANA LOCAL: ${selectedMatch.local} (1)`,
+          E: `EMPATE: ${selectedMatch.local} vs ${selectedMatch.visitor} (X)`,
+          V: `GANA VISITANTE: ${selectedMatch.visitor} (2)`,
+        };
+        document.getElementById("modalSelectedPickBadge").textContent = pickNames[pick];
+
+        setBetAmount(1);
+        removeVoucherImage();
+
+        const modal = new bootstrap.Modal(document.getElementById("betModal"));
+        modal.show();
+      }
+
+      function setBetAmount(amt) {
+        currentBetAmount = amt;
+        document.getElementById("customAmountInput").value = amt;
+        document.querySelectorAll(".amount-btn").forEach((btn) => {
+          if (btn.textContent.includes(`$${amt}.00`)) {
+            btn.classList.add("active", "btn-success");
+            btn.classList.remove("btn-outline-light");
+          } else {
+            btn.classList.remove("active", "btn-success");
+            btn.classList.add("btn-outline-light");
+          }
+        });
+        updatePotentialPayout();
+      }
+
+      // 8. Cálculo de Ganancia Estimada en el Modal
+      function updatePotentialPayout() {
+        const val = parseFloat(document.getElementById("customAmountInput").value) || 1;
+        currentBetAmount = Math.max(val, 1);
+
+        const pool = activeBetsPool[selectedMatch?.matchUniqueId] || { total: 0, L: 0, E: 0, V: 0 };
+        
+        // Simular el nuevo pozo sumando esta apuesta
+        const newTotal = pool.total + currentBetAmount;
+        const newPrizePool = newTotal * 0.70; // 70% para los ganadores
+
+        let newOptionAmount = currentBetAmount;
+        if (selectedPick === "L") newOptionAmount += pool.L;
+        if (selectedPick === "E") newOptionAmount += pool.E;
+        if (selectedPick === "V") newOptionAmount += pool.V;
+
+        // Cuota simulada = Pozo de Premios / Dinero total en esta opción
+        currentMultiplier = newPrizePool / newOptionAmount;
+        const estPayout = currentBetAmount * currentMultiplier;
+
+        document.getElementById("modalEstimatedPayout").textContent = `$${estPayout.toFixed(2)}`;
+        document.getElementById("modalMultiplierBadge").textContent = `Cuota Dinámica x${currentMultiplier.toFixed(2)}`;
+        document.getElementById("modalPayoutNote").textContent = `Si aciertas, te llevas tu parte proporcional de los $${newPrizePool.toFixed(2)} acumulados para premios`;
+      }
+
+      // 9. Manejo de Comprobante / Compresión de Imagen
+      function handleVoucherUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+          return Swal.fire("Formato Incorrecto", "Por favor selecciona un archivo de imagen (PNG, JPG o WEBP)", "error");
         }
 
-        container.innerHTML = "";
-        matches.forEach((m, i) => {
-          const localLogo = logosMap[m.local] || "img/logo.png";
-          const visitorName = m.visitor || m.visitante;
-          const visitorLogo = logosMap[visitorName] || "img/logo.png";
+        const reader = new FileReader();
+        reader.onload = function (event) {
+          const img = new Image();
+          img.onload = function () {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            const maxDim = 900;
+            let width = img.width;
+            let height = img.height;
 
-          container.insertAdjacentHTML(
-            "beforeend",
-            `
-            <div class="col">
-               <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 match-bet-card" data-match-id="${i + 1}" style="cursor: default;">
-                <div class="mb-3 text-center">
-                    <span class="badge bg-primary-glass mb-4 text-uppercase" style="font-size:0.5rem; letter-spacing:2px; opacity:0.7">${m.category}</span>
-                    <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
-                        <div style="flex:1">
-                            <img src="${localLogo}" alt="Logo Local" class="mb-2" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5);">
-                            <div class="text-white fw-800" style="font-size:0.75rem; text-transform:uppercase; line-height:1.2">${m.local}</div>
-                        </div>
-                        <div class="text-primary-glow fw-900" style="font-size:0.6rem; opacity:0.5">VS</div>
-                        <div style="flex:1">
-                            <img src="${visitorLogo}" alt="Logo Visitante" class="mb-2" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5);">
-                            <div class="text-white fw-800" style="font-size:0.75rem; text-transform:uppercase; line-height:1.2">${visitorName}</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="pt-3 border-top border-secondary border-opacity-25 text-center">
-                    <div class="d-flex justify-content-center align-items-center gap-2 mb-3">
-                        <span class="text-white-50" style="font-size:0.85rem">
-                            <i class="far fa-calendar-alt me-1 text-primary-glow" style="font-size:1rem; color: #2ecc71;"></i> ${m.fechaRealAsignadaText || "Por Definir"}
-                        </span>
-                        <span class="mx-1 opacity-10">|</span>
-                        <span class="text-white-50" style="font-size:0.85rem">
-                            <i class="far fa-clock me-1 text-primary-glow" style="font-size:1rem; color: #2ecc71;"></i> ${m.horaRealAsignada || "--:--"}
-                        </span>
-                    </div>
-                    
-                    <div class="d-flex gap-2 mt-3 betting-controls d-none">
-                        <button class="bet-btn flex-grow-1" onclick="selectBet(${i + 1}, 'L')">L</button>
-                        <button class="bet-btn flex-grow-1" onclick="selectBet(${i + 1}, 'E')">E</button>
-                        <button class="bet-btn flex-grow-1" onclick="selectBet(${i + 1}, 'V')">V</button>
-                    </div>
-                </div>
-               </div>
-            </div>
-          `,
-          );
-        });
+            if (width > height) {
+              if (width > maxDim) {
+                height *= maxDim / width;
+                width = maxDim;
+              }
+            } else {
+              if (height > maxDim) {
+                width *= maxDim / height;
+                height = maxDim;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+
+            voucherBase64 = canvas.toDataURL("image/jpeg", 0.75);
+            document.getElementById("voucherPreviewImg").src = voucherBase64;
+            document.getElementById("voucherEmptyState").classList.add("d-none");
+            document.getElementById("voucherPreviewState").classList.remove("d-none");
+          };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
       }
 
-      function buyTicketWhatsApp() {
-        const phone = "593989555936";
-        const msg = encodeURIComponent(
-          `Hola, quiero participar en LigaBet para la Jornada ${currentJornada}. Mi nombre es: `,
-        );
-        window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+      function removeVoucherImage() {
+        voucherBase64 = "";
+        document.getElementById("voucherFileInput").value = "";
+        document.getElementById("voucherEmptyState").classList.remove("d-none");
+        document.getElementById("voucherPreviewState").classList.add("d-none");
       }
 
-      function showInputCode() {
-        document.getElementById("buyPanel").classList.add("d-none");
-        document.getElementById("validatePanel").classList.remove("d-none");
+      function toggleCustomBankInput() {
+        const sel = document.getElementById("userBankNameSelect").value;
+        const wrapper = document.getElementById("customBankInputWrapper");
+        if (sel === "OTRO") {
+          wrapper.classList.remove("d-none");
+          document.getElementById("userCustomBankInput").focus();
+        } else {
+          wrapper.classList.add("d-none");
+        }
       }
 
-      function showBuyPanel() {
-        document.getElementById("buyPanel").classList.remove("d-none");
-        document.getElementById("validatePanel").classList.add("d-none");
-        document.getElementById("activeTicketPanel").classList.add("d-none");
-      }
+      // 10. Registrar Apuesta y Generar Ticket
+      async function submitBet(e) {
+        e.preventDefault();
 
-      async function validateTicket() {
-        const code = document
-          .getElementById("ticketInput")
-          .value.trim()
-          .toUpperCase();
-        if (!code) return Swal.fire("Error", "Ingresa tu código", "warning");
+        if (!voucherBase64) {
+          return Swal.fire("Comprobante Requerido", "Por favor sube la foto del comprobante de transferencia para validar tu apuesta.", "warning");
+        }
 
-        Swal.fire({ title: "Validando...", didOpen: () => Swal.showLoading() });
+        const name = document.getElementById("userNameInput").value.trim();
+        const phone = document.getElementById("userPhoneInput").value.trim();
+        
+        let bankName = document.getElementById("userBankNameSelect").value;
+        if (bankName === "OTRO") {
+          const customBank = document.getElementById("userCustomBankInput").value.trim();
+          if (!customBank) {
+            return Swal.fire("Banco Requerido", "Por favor escribe el nombre de tu Banco o Cooperativa.", "warning");
+          }
+          bankName = customBank;
+        }
+
+        const accountType = document.getElementById("userAccountTypeInput").value;
+        const accountNumber = document.getElementById("userAccountNumberInput").value.trim();
+        const cedula = document.getElementById("userCedulaInput").value.trim();
+        const accountHolder = document.getElementById("userAccountHolderInput").value.trim();
+        const amt = parseFloat(document.getElementById("customAmountInput").value) || 1;
+
+        if (!name || !phone || !accountNumber || !cedula || !accountHolder) {
+          return Swal.fire("Campos Incompletos", "Por favor llena todos tus datos bancarios y personales para poder depositarte si ganas.", "warning");
+        }
+
+        const btn = document.getElementById("btnSubmitBet");
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Registrando Apuesta...';
 
         try {
-          const q = await db
-            .collection("ligabet_tickets")
-            .where("codigo", "==", code)
-            .get();
+          const randNum = Math.floor(1000 + Math.random() * 9000);
+          const ticketCode = `LDB-${randNum}`;
 
-          if (q.empty)
-            return Swal.fire("Error", "El código no existe.", "error");
+          const betDoc = {
+            ticketCode: ticketCode,
+            championshipId: currentChampionshipId,
+            round: currentJornada,
+            matchUniqueId: selectedMatch.matchUniqueId,
+            category: selectedMatch.category,
+            local: selectedMatch.local,
+            visitor: selectedMatch.visitor,
+            fechaText: selectedMatch.fechaText,
+            horaText: selectedMatch.horaText,
+            pick: selectedPick, // 'L' | 'E' | 'V'
+            amount: amt,
+            multiplier: currentMultiplier,
+            estPayout: amt * currentMultiplier,
+            userName: name,
+            userPhone: phone,
+            // DATOS BANCARIOS COMPLETOS
+            bankName: bankName,
+            accountType: accountType,
+            accountNumber: accountNumber,
+            cedula: cedula,
+            accountHolder: accountHolder,
+            payoutAccount: `${bankName} (${accountType}) - Cta: ${accountNumber} - C.I.: ${cedula} - Titular: ${accountHolder}`,
+            voucherUrl: voucherBase64,
+            status: "active",
+            verified: false,
+            payoutDone: false,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+          };
 
-          const doc = q.docs[0];
-          const data = doc.data();
+          const docRef = await db.collection("ligabet_bets").add(betDoc);
+          lastCreatedTicket = { id: docRef.id, ...betDoc };
 
-          if (!data.pagado)
-            return Swal.fire(
-              "Pendiente",
-              "Tu pago no ha sido confirmado aún por el administrador.",
-              "info",
-            );
-          if (data.usado)
-            return Swal.fire(
-              "Usado",
-              "Este código ya registró sus pronósticos.",
-              "warning",
-            );
+          bootstrap.Modal.getInstance(document.getElementById("betModal")).hide();
+          showTicketSuccess(lastCreatedTicket);
+        } catch (err) {
+          console.error("Error al guardar apuesta:", err);
+          Swal.fire("Error", "No se pudo registrar la apuesta. Intenta de nuevo.", "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-ticket-alt me-2"></i> REGISTRAR APUESTA Y GENERAR TICKET';
+        }
+      }
 
-          if (data.round && data.round !== currentJornada) {
-            return Swal.fire(
-              "Error de Jornada",
-              `Este billete fue comprado para la Jornada ${data.round}. Solo es válido para esa fecha.`,
-              "error",
-            );
+      // 11. Mostrar Ticket Digital Exitoso
+      function showTicketSuccess(ticket) {
+        document.getElementById("ticketCodeDisplay").textContent = ticket.ticketCode;
+        document.getElementById("ticketUserNameDisplay").textContent = ticket.userName;
+        document.getElementById("ticketMatchDisplay").textContent = `${ticket.local} vs ${ticket.visitor}`;
+
+        const pickLabels = {
+          L: `Gana Local (${ticket.local})`,
+          E: `Empate`,
+          V: `Gana Visitante (${ticket.visitor})`,
+        };
+        document.getElementById("ticketPickDisplay").textContent = pickLabels[ticket.pick];
+        document.getElementById("ticketAmountDisplay").textContent = `$${parseFloat(ticket.amount).toFixed(2)}`;
+        document.getElementById("ticketPayoutDisplay").textContent = `${ticket.bankName} (${ticket.accountType}) - ${ticket.accountNumber}`;
+        document.getElementById("ticketEstPayoutDisplay").textContent = `$${parseFloat(ticket.estPayout).toFixed(2)}`;
+
+        // Generar QR dinámico del ticket
+        const qrData = encodeURIComponent(`LDBAA-TICKET:${ticket.ticketCode}|${ticket.userName}|${ticket.local}vs${ticket.visitor}|Pick:${ticket.pick}|$${ticket.amount}`);
+        document.getElementById("ticketQrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrData}`;
+
+        const ticketModal = new bootstrap.Modal(document.getElementById("ticketSuccessModal"));
+        ticketModal.show();
+      }
+
+      function downloadTicketImage() {
+        const el = document.getElementById("printableTicket");
+        html2canvas(el, { backgroundColor: "#060b10", scale: 2 }).then((canvas) => {
+          const link = document.createElement("a");
+          link.download = `Ticket_${lastCreatedTicket?.ticketCode || 'LigaBet'}.png`;
+          link.href = canvas.toDataURL("image/png");
+          link.click();
+        });
+      }
+
+      function shareTicketWhatsApp() {
+        if (!lastCreatedTicket) return;
+        const msg = encodeURIComponent(
+          `🎟️ *TICKET OFICIAL LIGABET LDBAA*\n` +
+          `• Código: *${lastCreatedTicket.ticketCode}*\n` +
+          `• Apostador: ${lastCreatedTicket.userName}\n` +
+          `• Partido: ${lastCreatedTicket.local} vs ${lastCreatedTicket.visitor}\n` +
+          `• Pronóstico: ${lastCreatedTicket.pick === 'L' ? lastCreatedTicket.local : lastCreatedTicket.pick === 'V' ? lastCreatedTicket.visitor : 'Empate'}\n` +
+          `• Inversión: $${lastCreatedTicket.amount.toFixed(2)}\n` +
+          `• Premio Estimado: $${lastCreatedTicket.estPayout.toFixed(2)}\n` +
+          `• Cuenta de Cobro: ${lastCreatedTicket.bankName} (${lastCreatedTicket.accountNumber})\n\n` +
+          `¡Mucha suerte en la jornada deportiva!`
+        );
+        window.open(`https://wa.me/?text=${msg}`, "_blank");
+      }
+
+      // 12. Modal Mis Tickets
+      function openMyTicketsModal() {
+        const modal = new bootstrap.Modal(document.getElementById("myTicketsModal"));
+        modal.show();
+      }
+
+      async function searchMyTickets() {
+        const q = document.getElementById("searchTicketInput").value.trim();
+        const resultsBox = document.getElementById("myTicketsResults");
+        if (!q) return Swal.fire("Aviso", "Ingresa tu número de WhatsApp, cédula o código de ticket", "info");
+
+        resultsBox.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success"></div></div>';
+
+        try {
+          let snap = await db.collection("ligabet_bets").where("ticketCode", "==", q.toUpperCase()).get();
+          if (snap.empty) {
+            snap = await db.collection("ligabet_bets").where("userPhone", "==", q).get();
+          }
+          if (snap.empty) {
+            snap = await db.collection("ligabet_bets").where("cedula", "==", q).get();
           }
 
-          activeTicket = { id: doc.id, ...data };
+          if (snap.empty) {
+            resultsBox.innerHTML = '<div class="text-center py-4 text-white-50"><i class="fas fa-ticket-alt mb-2 fs-3 opacity-25"></i><p>No se encontraron tickets con ese dato.</p></div>';
+            return;
+          }
 
-          // Activar interfaz de apuestas
-          document
-            .querySelectorAll(".betting-controls")
-            .forEach((c) => c.classList.remove("d-none"));
-          document.getElementById("validatePanel").classList.add("d-none");
-          document
-            .getElementById("activeTicketPanel")
-            .classList.remove("d-none");
-          document.getElementById("activeCodeLabel").textContent = code;
+          resultsBox.innerHTML = "";
+          snap.forEach((doc) => {
+            const t = doc.data();
+            const pickText = t.pick === "L" ? `Local (${t.local})` : t.pick === "V" ? `Visita (${t.visitor})` : "Empate";
+            const statusBadge = t.status === "won" 
+              ? `<span class="badge bg-warning text-dark fw-bold">🏆 ¡GANADOR!</span>`
+              : t.status === "lost" 
+              ? `<span class="badge bg-secondary">No Acertó</span>`
+              : `<span class="badge bg-success">🟢 Participando</span>`;
 
-          Swal.fire(
-            "¡Éxito!",
-            "Código validado. ¡Marca tus 5 pronósticos!",
-            "success",
-          );
+            resultsBox.innerHTML += `
+              <div class="p-3 rounded-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="font-monospace fw-bold text-success fs-5">${t.ticketCode}</span>
+                  ${statusBadge}
+                </div>
+                <div class="small text-white-50 mb-1">Partido: <strong class="text-white">${t.local} vs ${t.visitor}</strong> (Jornada ${t.round})</div>
+                <div class="small text-white-50 mb-1">Pronóstico: <strong class="text-success">${pickText}</strong> | Inversión: <strong class="text-white">$${parseFloat(t.amount).toFixed(2)}</strong></div>
+                <div class="small text-white-50 mb-1">Cobro registrado: <strong class="text-white">${t.bankName || ''} - Cta: ${t.accountNumber || ''} (C.I: ${t.cedula || ''})</strong></div>
+                <div class="small text-white-50">Premio Estimado: <strong class="text-warning">$${parseFloat(t.estPayout).toFixed(2)}</strong></div>
+              </div>
+            `;
+          });
         } catch (e) {
           console.error(e);
-        }
-      }
-
-      function selectBet(matchId, pick) {
-        const card = document.querySelector(`[data-match-id="${matchId}"]`);
-        card
-          .querySelectorAll(".bet-btn")
-          .forEach((b) => b.classList.remove("active"));
-        event.target.classList.add("active");
-        predictions[matchId] = pick;
-      }
-
-      async function registerBets() {
-        const totalMatches =
-          document.querySelectorAll(".match-bet-card").length;
-        const totalNeeded = Math.min(totalMatches, 5); // Por ahora pedimos 5 o todos si hay menos
-
-        if (Object.keys(predictions).length < 5 && totalMatches >= 5) {
-          return Swal.fire(
-            "Incompleto",
-            "Debes completar al menos 5 pronósticos.",
-            "warning",
-          );
-        }
-
-        const confirm = await Swal.fire({
-          title: "¿Confirmar Pronósticos?",
-          text: "Tus picks se guardarán de forma definitiva.",
-          icon: "question",
-          showCancelButton: true,
-        });
-
-        if (confirm.isConfirmed) {
-          try {
-            await db
-              .collection("ligabet_tickets")
-              .doc(activeTicket.id)
-              .update({
-                usado: true,
-                fechaUso: new Date(),
-                pronosticoArray: Object.values(predictions),
-              });
-            Swal.fire(
-              "¡Registrado!",
-              "Tus pronósticos han sido guardados con éxito. ¡Suerte!",
-              "success",
-            ).then(() => {
-              showJornadaSelection();
-            });
-          } catch (e) {
-            console.error(e);
-          }
+          resultsBox.innerHTML = '<div class="text-danger text-center py-4">Error al buscar tickets</div>';
         }
       }
     </script>

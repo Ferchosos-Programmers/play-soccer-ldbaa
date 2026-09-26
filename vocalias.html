@@ -4718,26 +4718,39 @@
           "background: #14802c; color: #ffffff; border: 1.5px solid #0a3d13;";
 
         if (p.fechaNacimiento) {
-          const parts = p.fechaNacimiento.split("-");
+          const parts = typeof p.fechaNacimiento === "string" ? p.fechaNacimiento.trim().split(/[-/.]/) : [];
           if (parts.length === 3) {
-            fNac = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            if (parts[0].length === 4) {
+              fNac = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            } else {
+              fNac = `${parts[0]}/${parts[1]}/${parts[2]}`;
+            }
           } else {
             fNac = p.fechaNacimiento;
           }
 
-          const hoy = new Date();
-          const fechaNac = new Date(p.fechaNacimiento);
-          let edad = hoy.getFullYear() - fechaNac.getFullYear();
-          const mes = hoy.getMonth() - fechaNac.getMonth();
-          if (mes < 0 || (mes === 0 && hoy.getDate() < fechaNac.getDate())) {
-            edad--;
+          const anioActual = new Date().getFullYear();
+          let anioNac = null;
+          if (parts.length === 3) {
+            if (parts[0].length === 4) anioNac = parseInt(parts[0], 10);
+            else if (parts[2].length === 4) anioNac = parseInt(parts[2], 10);
+          } else if (p.fechaNacimiento instanceof Date) {
+            anioNac = p.fechaNacimiento.getFullYear();
+          }
+
+          let edad = 0;
+          if (anioNac && !isNaN(anioNac)) {
+            edad = Math.max(0, anioActual - anioNac);
+          } else {
+            const d = new Date(p.fechaNacimiento);
+            edad = !isNaN(d.getTime()) ? Math.max(0, anioActual - d.getFullYear()) : 0;
           }
 
           if (edad < 18) {
             badgeText = "JUVENIL";
             badgeStyle =
               "background: #ffffff; color: #111; border: 1.5px solid #14802c;";
-          } else if (edad > 40) {
+          } else if (edad >= 40) {
             badgeText = "MASTER";
             badgeStyle =
               "background: #ffc107; color: #000; border: 1.5px solid #d39e00;";

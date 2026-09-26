@@ -3,21 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Admin LigaBet | Control de Polla Barrial</title>
+    <title>Admin LigaBet | Control y Premiación LDBAA</title>
 
+    <!-- Google Fonts: Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Font Awesome 6 -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
     />
+
+    <!-- Bootstrap 5 -->
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Firebase SDK v8 -->
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-auth.js"></script>
@@ -25,237 +35,251 @@
     <link rel="icon" href="img/logo.png" />
     <link rel="stylesheet" href="css/global-theme.css" />
     <link rel="stylesheet" href="css/ligabet.css" />
+
     <style>
-      .admin-section-card {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(12px);
-        -webkit-backdrop-filter: blur(12px);
+      .admin-kpi-card {
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(14px);
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 20px;
-        padding: 2.5rem;
-        height: 100%;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
-      }
-      .admin-section-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        border-color: rgba(46, 204, 113, 0.2);
-      }
-
-      .table-premium {
-        color: white;
-        background: transparent;
-        border-spacing: 0 8px;
-        border-collapse: separate;
-      }
-      .table-premium th {
-        background: rgba(255, 255, 255, 0.05);
-        border-bottom: none;
-        text-transform: uppercase;
-        font-size: 0.75rem;
-        letter-spacing: 1px;
-        padding: 12px 15px;
-        color: rgba(255, 255, 255, 0.7);
-        border-radius: 8px;
-      }
-      .table-premium td {
-        background: rgba(255, 255, 255, 0.02);
-        border-bottom: none;
-        padding: 15px;
-        vertical-align: middle;
-      }
-      .table-premium tr td:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
-      .table-premium tr td:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
-      .table-premium tr { transition: all 0.2s ease; }
-      .table-premium tr:hover td { background: rgba(255, 255, 255, 0.05); }
-
-      .btn-info-premium {
-        background: linear-gradient(135deg, #3498db, #2980b9);
-        border: none;
-        color: white;
-        box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+        padding: 1.5rem;
         transition: all 0.3s ease;
       }
-      .btn-info-premium:hover {
-        background: linear-gradient(135deg, #2980b9, #3498db);
-        transform: translateY(-2px);
-        color: white;
-        box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+      .admin-kpi-card:hover {
+        transform: translateY(-3px);
+        border-color: rgba(46, 204, 113, 0.4);
       }
-      .btn-danger-premium {
-        background: linear-gradient(135deg, #e74c3c, #c0392b);
-        border: none;
-        color: white;
-        box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
-        transition: all 0.3s ease;
+      .kpi-val {
+        font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+        font-weight: 900;
+        letter-spacing: -0.5px;
       }
-      .btn-danger-premium:hover {
-        background: linear-gradient(135deg, #c0392b, #e74c3c);
-        transform: translateY(-2px);
-        color: white;
-        box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+      .winner-row-card {
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-left: 6px solid #f59e0b;
+        border-radius: 16px;
+        padding: 1.25rem;
+        transition: all 0.2s ease;
+      }
+      .winner-row-card.paid {
+        border-color: rgba(46, 204, 113, 0.4);
+        border-left-color: #2ecc71;
       }
     </style>
   </head>
   <body>
     <div class="main-bg"></div>
 
+    <!-- Nav -->
     <nav class="nav-premium shadow-sm">
-      <div
-        class="container-fluid d-flex justify-content-between align-items-center"
-      >
-        <a
-          class="navbar-brand text-white fw-bold d-flex align-items-center"
-          href="tesorero-dashboard.html"
-        >
-          <img
-            src="img/logo.png"
-            alt="Logo"
-            width="40"
-            height="40"
-            class="me-3"
-          />
+      <div class="container-fluid d-flex justify-content-between align-items-center">
+        <a class="navbar-brand text-white fw-bold d-flex align-items-center text-decoration-none" href="tesorero-dashboard.html">
+          <img src="img/logo.png" alt="Logo" width="42" height="42" class="me-3" onerror="this.src='img/mcv-logo.png'" />
           <div class="brand-text d-flex flex-column">
-            <span class="fs-5 lh-1">LDBAA</span>
-            <span class="brand-accent small lh-1">ADMIN LIGABET</span>
+            <span class="fs-5 lh-1 fw-900 tracking-wider">ADMIN <span style="color: #2ecc71;">LIGABET</span></span>
+            <span class="text-white-50 small lh-1" style="font-size: 0.65rem; letter-spacing: 1px;">CONTROL Y PREMIACIÓN</span>
           </div>
         </a>
-        <div class="d-flex gap-3 align-items-center">
-          <a
-            href="tesorero-dashboard.html"
-            class="btn btn-secondary-glass d-none d-md-flex"
-          >
-            <i class="fas fa-arrow-left me-2"></i> Regresar
+
+        <div class="d-flex gap-2 align-items-center">
+          <a href="ligabet.html" target="_blank" class="btn btn-secondary-glass">
+            <i class="fas fa-external-link-alt me-1 text-success"></i> Ver Vista Hincha
+          </a>
+          <a href="tesorero-dashboard.html" class="btn btn-secondary-glass">
+            <i class="fas fa-arrow-left me-1"></i> Panel Tesorero
           </a>
         </div>
       </div>
     </nav>
 
-    <main class="container py-5">
-      <div class="text-center mb-5 mt-3">
-        <p class="text-uppercase tracking-widest text-white-50 mb-2 fw-bold" style="letter-spacing: 3px; font-size: 0.8rem">
-          Panel de Control
-        </p>
-        <h1 class="section-title">
-          Administración <span class="brand-accent">LigaBet</span>
-        </h1>
-        <p class="text-white-50 mx-auto mt-2" style="max-width: 600px; font-size: 1.1rem">
-          Gestión integral de tickets, validaciones, escrutinio de partidos y cálculo de ganadores.
-        </p>
+    <!-- Main Container -->
+    <main class="container py-4 py-lg-5">
+      <!-- Header -->
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+        <div>
+          <h1 class="h3 fw-900 text-uppercase mb-1 text-white">
+            Panel de Control <span style="color: #2ecc71;">LigaBet</span>
+          </h1>
+          <p class="text-white-50 mb-0 small">
+            Escrutinio de partidos, auditoría de comprobantes de pago y liquidación oficial de premios.
+          </p>
+        </div>
+
+        <!-- Selector de Jornada Activa -->
+        <div class="d-flex align-items-center gap-2">
+          <label class="text-white-50 small fw-bold text-uppercase text-nowrap">Jornada:</label>
+          <select id="adminRoundSelect" class="select-premium" style="min-width: 160px;" onchange="handleAdminRoundChange()">
+            <option value="">Cargando jornadas...</option>
+          </select>
+        </div>
       </div>
 
-      <div class="row g-4">
-        <!-- 1. GESTIÓN DE CÓDIGOS -->
-        <div class="col-lg-6">
-          <div class="admin-section-card">
-            <h3 class="h5 fw-bold mb-4 brand-accent text-uppercase">
-              <i class="fas fa-plus-circle me-2"></i> Generar Nuevo Ticket
-            </h3>
-            <div class="p-4 rounded-4 mb-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);">
-              <label class="form-label small text-white-50">JORNADA A JUGAR</label>
-              <select id="ticketRoundGenerate" class="select-premium mb-4">
-                <option value="">Cargando jornadas...</option>
-              </select>
-              <label class="form-label mb-1 text-white-50 small">NOMBRE DEL CLIENTE</label>
-              <input
-                type="text"
-                id="clientNameInput"
-                class="glass-input"
-                placeholder="Ej: Juan Pérez"
-              />
+      <!-- KPI Metrics Bar -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+          <div class="admin-kpi-card">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-white-50 fw-bold text-uppercase">Total Recaudado</span>
+              <i class="fas fa-dollar-sign text-success fs-5"></i>
             </div>
-            <button
-              class="btn-premium w-100 justify-content-center py-3"
-              onclick="generateNewTicket()"
-            >
-              GENERAR CÓDIGO ÚNICO
-            </button>
-
-            <hr class="my-4 border-white border-opacity-10" />
-
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mb-4">
-              <h3 class="h5 fw-bold text-warning text-uppercase mb-0">
-                <i class="fas fa-ticket-alt me-2"></i> Control de Tickets
-              </h3>
-              <select id="ticketRoundFilter" class="select-premium" style="width: auto; min-width: 150px; padding: 8px 35px 8px 15px;" onchange="loadTicketsByRound()">
-                <option value="">Cargando...</option>
-              </select>
-            </div>
-            
-            <div class="mb-3 rounded-3 p-3 text-center" style="background: rgba(46, 204, 113, 0.1); border: 1px solid rgba(46, 204, 113, 0.2);">
-               <h4 class="h6 mb-1 text-white opacity-75">Ventas de la Jornada</h4>
-               <div class="h3 mb-0 fw-bold text-success" id="totalSalesDisplay">0 Tickets = $0</div>
-            </div>
-            <div class="table-responsive">
-              <table class="table table-premium">
-                <thead>
-                  <tr>
-                    <th>Cliente</th>
-                    <th>Código</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody id="pendingTicketsTable">
-                  <!-- JS Data -->
-                </tbody>
-              </table>
-            </div>
+            <div class="kpi-val text-white" id="kpiTotalPool">$0.00</div>
+            <span class="text-white-50 small" id="kpiTotalTickets">0 boletos activos</span>
           </div>
         </div>
 
-        <!-- 2. RESULTADOS Y GANADORES -->
-        <div class="col-lg-6">
-          <div class="admin-section-card">
-            <h3 class="h5 fw-bold mb-3 text-info text-uppercase">
-              <i class="fas fa-trophy me-2"></i> Cerrar Jornada y Calcular
-            </h3>
+        <div class="col-6 col-lg-3">
+          <div class="admin-kpi-card">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-warning fw-bold text-uppercase">Pozo Premios (70%)</span>
+              <i class="fas fa-trophy text-warning fs-5"></i>
+            </div>
+            <div class="kpi-val text-warning" id="kpiPrizePool">$0.00</div>
+            <span class="text-white-50 small">Para los ganadores</span>
+          </div>
+        </div>
 
-            <div class="mb-4">
-              <label class="form-label small text-white-50"
-                >SELECCIONAR JORNADA</label
-              >
-              <select id="roundToClose" class="select-premium mb-4 text-center" onchange="loadMatchesForRound()">
-                <option value="">Cargando...</option>
-              </select>
-              <div id="realResultsInputs" class="d-flex flex-column gap-3">
-                <!-- Se genera con JS -->
-              </div>
-              <div class="row g-2 mt-3">
-                <div class="col-8">
-                  <button
-                    class="btn-info-premium w-100 fw-bold py-3 text-uppercase font-outfit rounded-3"
-                    onclick="calculateWinners()"
-                  >
-                    CALCULAR GANADORES
-                  </button>
-                </div>
-                <div class="col-4">
-                  <button
-                    class="btn-danger-premium w-100 fw-bold py-3 text-uppercase rounded-3"
-                    onclick="closeRoundOfficially()"
-                  >
-                    <i class="fas fa-lock"></i>
-                  </button>
-                </div>
+        <div class="col-6 col-lg-3">
+          <div class="admin-kpi-card">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-success fw-bold text-uppercase">Ganancia Liga (30%)</span>
+              <i class="fas fa-piggy-bank text-success fs-5"></i>
+            </div>
+            <div class="kpi-val text-success" id="kpiLeagueProfit">$0.00</div>
+            <span class="text-white-50 small">Fondos para la Liga</span>
+          </div>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="admin-kpi-card">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="small text-info fw-bold text-uppercase">Comisión Liga %</span>
+              <i class="fas fa-percentage text-info fs-5"></i>
+            </div>
+            <select id="rakePercentSelect" class="form-select form-select-sm bg-dark text-white border-secondary mt-1" onchange="recalculateKPIs()">
+              <option value="0.20">20% Liga / 80% Premios</option>
+              <option value="0.25">25% Liga / 75% Premios</option>
+              <option value="0.30" selected>30% Liga / 70% Premios (Recomendado)</option>
+              <option value="0.40">40% Liga / 60% Premios</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Admin Content Grid -->
+      <div class="row g-4">
+        <!-- Columna 1: Escrutinio y Marcadores Oficiales -->
+        <div class="col-lg-6">
+          <div class="glass-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-white border-opacity-10">
+              <h2 class="h5 fw-bold text-uppercase mb-0 text-white">
+                <i class="fas fa-clipboard-check text-success me-2"></i> Marcadores y Escrutinio
+              </h2>
+              <span class="badge bg-secondary" id="adminMatchesCountBadge">0 partidos</span>
+            </div>
+            <p class="text-white-50 small mb-3">
+              Ingresa los goles de cada partido de la jornada para calcular automáticamente los ganadores y las ganancias exactas.
+            </p>
+
+            <div id="adminMatchesListContainer" class="d-flex flex-column gap-2 mb-4">
+              <div class="text-center py-4 text-white-50">
+                <div class="spinner-border text-success spinner-border-sm me-2"></div> Cargando partidos...
               </div>
             </div>
 
-            <div id="winnersDisplay" class="d-none">
-              <h4
-                class="h6 fw-bold mb-3 text-success text-uppercase border-bottom border-white border-opacity-10 pb-2"
-              >
-                ¡Tenemos Ganador(es)!
-              </h4>
-              <div id="winnersList" class="d-flex flex-column gap-2">
-                <!-- JS Data -->
+            <button class="btn-premium w-100 py-3 fw-bold" onclick="calculateRoundWinners()">
+              <i class="fas fa-calculator me-2"></i> CALCULAR GANADORES Y PREMIOS
+            </button>
+          </div>
+        </div>
+
+        <!-- Columna 2: Ganadores y Pagos -->
+        <div class="col-lg-6">
+          <div class="glass-panel h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-white border-opacity-10">
+              <h2 class="h5 fw-bold text-uppercase mb-0 text-warning">
+                <i class="fas fa-medal text-warning me-2"></i> Ganadores de la Jornada
+              </h2>
+              <button class="btn btn-sm btn-outline-light" onclick="exportWinnersReport()">
+                <i class="fas fa-share-alt me-1"></i> Resumen
+              </button>
+            </div>
+
+            <div id="winnersListContainer" class="d-flex flex-column gap-3">
+              <div class="text-center py-5 text-white-50">
+                <i class="fas fa-trophy mb-3 opacity-25" style="font-size: 3rem;"></i>
+                <h6>Ingresa los marcadores y haz clic en "Calcular Ganadores"</h6>
+                <p class="small text-white-50 mb-0">El sistema te mostrará los ganadores, sus cuentas y sus comprobantes de pago.</p>
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      <!-- Tabla Completa de Apuestas de la Jornada -->
+      <div class="glass-panel mt-4">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+          <h2 class="h5 fw-bold text-uppercase mb-0 text-white">
+            <i class="fas fa-list-alt text-info me-2"></i> Registro Completo de Boletos
+          </h2>
+          <div class="d-flex gap-2">
+            <input type="text" id="filterTicketInput" class="glass-input form-control-sm" placeholder="Buscar por código o nombre..." oninput="filterAdminBetsTable()" />
+            <select id="filterStatusSelect" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: auto;" onchange="filterAdminBetsTable()">
+              <option value="all">Todos los estados</option>
+              <option value="active">🟢 Participando</option>
+              <option value="won">🏆 Ganadores</option>
+              <option value="lost">❌ No Acertó</option>
+              <option value="cancelled">🚫 Anulados</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="table table-admin">
+            <thead>
+              <tr>
+                <th>Ticket</th>
+                <th>Apostador</th>
+                <th>Partido & Pronóstico</th>
+                <th>Monto</th>
+                <th>Premio Est.</th>
+                <th>Comprobante</th>
+                <th>Estado</th>
+                <th>Acción</th>
+              </tr>
+            </thead>
+            <tbody id="adminBetsTableBody">
+              <tr>
+                <td colspan="8" class="text-center py-4 text-white-50">Cargando boletos de la fecha...</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </main>
 
+    <!-- MODAL PARA VER COMPROBANTE EN TAMAÑO COMPLETO -->
+    <div class="modal fade" id="voucherModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content text-white" style="background: #0d1520; border: 1px solid rgba(255,255,255,0.1); border-radius: 20px;">
+          <div class="modal-header border-0 pb-0">
+            <h5 class="modal-title fw-bold" id="voucherModalTitle">Comprobante de Transferencia</h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body text-center p-4">
+            <div class="p-2 bg-dark rounded-4 mb-3 d-inline-block border border-secondary" style="max-height: 550px; overflow-y: auto;">
+              <img id="voucherModalImg" src="" alt="Comprobante" style="max-width: 100%; max-height: 500px; object-fit: contain; border-radius: 12px;" />
+            </div>
+            <div class="d-flex justify-content-center gap-2">
+              <button type="button" class="btn btn-secondary-glass" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
       const firebaseConfig = {
         apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
@@ -269,365 +293,484 @@
       if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
       const db = firebase.firestore();
 
-      // Al cargar, inicializar inputs de resultados y cargar tablas
-      document.addEventListener("DOMContentLoaded", () => {
-        loadAvailableRounds();
+      let adminCurrentRound = 1;
+      let adminMatches = [];
+      let adminBets = [];
+      let roundWinners = [];
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        await loadAdminRounds();
       });
 
-      async function loadAvailableRounds() {
-        const selects = ['ticketRoundGenerate', 'ticketRoundFilter', 'roundToClose'];
+      // 1. Cargar Jornadas Disponibles
+      async function loadAdminRounds() {
+        const select = document.getElementById("adminRoundSelect");
         try {
           const snapshot = await db.collection("fixtures").get();
-          let available = {};
-          
+          let available = new Set();
+
           snapshot.forEach((doc) => {
-            const docData = doc.data();
-            if (docData.data && Array.isArray(docData.data)) {
-              docData.data.forEach((m) => {
+            const data = doc.data();
+            if (data.data && Array.isArray(data.data)) {
+              data.data.forEach((m) => {
                 const isProgrammed =
                   m.fechaRealAsignadaText &&
                   m.fechaRealAsignadaText !== "Por Definir" &&
                   m.horaRealAsignada &&
                   m.horaRealAsignada !== "--:--";
-                  
-                if (
-                  !m.isRest &&
-                  m.local !== "DESCANSA" &&
-                  m.visitor !== "DESCANSA" &&
-                  isProgrammed
-                ) {
-                  const jNum = parseInt(m.jornada) || parseInt(m.fecha?.replace(/\\D/g, "")) || 1;
-                  available[jNum] = true;
+
+                if (!m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA" && isProgrammed) {
+                  const jNum = parseInt(m.jornada) || parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+                  available.add(jNum);
                 }
               });
             }
           });
 
-          const rounds = Object.keys(available).map(Number).sort((a,b) => a-b);
-          let optionsHtml = '';
-          
-          if(rounds.length === 0) {
-             optionsHtml = '<option value="">(Sin programaciones)</option>';
+          const sorted = Array.from(available).sort((a, b) => a - b);
+          select.innerHTML = "";
+
+          if (sorted.length === 0) {
+            select.innerHTML = '<option value="1">Jornada 1</option>';
+            adminCurrentRound = 1;
           } else {
-             rounds.forEach(r => {
-                 optionsHtml += `<option value="${r}">Jornada ${r}</option>`;
-             });
+            sorted.forEach((r) => {
+              const opt = document.createElement("option");
+              opt.value = r;
+              opt.textContent = `Jornada ${r}`;
+              select.appendChild(opt);
+            });
+            adminCurrentRound = sorted[0];
+            select.value = adminCurrentRound;
           }
-          
-          selects.forEach(selId => {
-             const el = document.getElementById(selId);
-             if(el) el.innerHTML = optionsHtml;
-          });
-          
-          if(rounds.length > 0) {
-             loadTicketsByRound();
-             loadMatchesForRound();
-          } else {
-             const tbody = document.getElementById("pendingTicketsTable");
-             if(tbody) tbody.innerHTML = '<tr><td colspan="3" class="text-center text-white-50">Esperando programación oficial...</td></tr>';
-          }
-        } catch(e) {
-          console.error("Error al cargar jornadas:", e);
+
+          await handleAdminRoundChange();
+        } catch (e) {
+          console.error("Error cargando jornadas admin:", e);
         }
       }
 
-      function logoutLigaBet() {
-        Swal.fire({
-          title: "¿Cerrar sesión?",
-          text: "¿Estás seguro de que deseas salir?",
-          icon: "warning",
-          showCancelButton: true,
-          showDenyButton: false,
-          confirmButtonColor: "#28a745",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Sí, salir",
-          cancelButtonText: "Cancelar",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            firebase
-              .auth()
-              .signOut()
-              .then(() => {
-                window.location.href = "login.html";
-              })
-              .catch((error) => {
-                console.error("Error al cerrar sesión:", error);
-                Swal.fire(
-                  "Error",
-                  "No se pudo cerrar la sesión. Por favor, intenta de nuevo.",
-                  "error",
-                );
-              });
-          }
-        });
+      // 2. Al cambiar de jornada
+      async function handleAdminRoundChange() {
+        const val = document.getElementById("adminRoundSelect").value;
+        if (!val) return;
+        adminCurrentRound = parseInt(val);
+        await loadAdminMatches();
+        await loadAdminBets();
       }
 
-      async function loadMatchesForRound() {
-        const val = document.getElementById("roundToClose").value;
-        const container = document.getElementById("realResultsInputs");
-        
-        if (!val) {
-          container.innerHTML = '<div class="text-white-50 text-center small py-3">Selecciona una jornada</div>';
+      // 3. Cargar Partidos de la Jornada
+      async function loadAdminMatches() {
+        const container = document.getElementById("adminMatchesListContainer");
+        container.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success spinner-border-sm"></div></div>';
+
+        try {
+          const snap = await db.collection("fixtures").get();
+          adminMatches = [];
+
+          snap.forEach((doc) => {
+            const docData = doc.data();
+            if (docData.data && Array.isArray(docData.data)) {
+              docData.data.forEach((m, idx) => {
+                const isProgrammed =
+                  m.fechaRealAsignadaText &&
+                  m.fechaRealAsignadaText !== "Por Definir" &&
+                  m.horaRealAsignada &&
+                  m.horaRealAsignada !== "--:--";
+                const jNum = parseInt(m.jornada) || parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+
+                if (jNum === adminCurrentRound && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA" && isProgrammed) {
+                  adminMatches.push({
+                    matchUniqueId: `${doc.id}_${idx}`,
+                    fixtureDocId: doc.id,
+                    matchIndex: idx,
+                    category: docData.category || "General",
+                    local: m.local,
+                    visitor: m.visitor || m.visitante,
+                    // Si ya tiene goles guardados en vocalía
+                    golesLocal: m.golesLocal ?? "",
+                    golesVisitante: m.golesVisitante ?? "",
+                  });
+                }
+              });
+            }
+          });
+
+          document.getElementById("adminMatchesCountBadge").textContent = `${adminMatches.length} partidos`;
+
+          if (adminMatches.length === 0) {
+            container.innerHTML = '<div class="text-white-50 text-center py-4 small">No hay partidos programados para esta jornada.</div>';
+            return;
+          }
+
+          container.innerHTML = "";
+          adminMatches.forEach((m, i) => {
+            container.insertAdjacentHTML(
+              "beforeend",
+              `
+              <div class="p-3 rounded-4" style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="badge bg-primary bg-opacity-25 text-info" style="font-size: 0.65rem;">${m.category}</span>
+                  <span class="text-white-50 small" style="font-size: 0.75rem;">Partido #${i + 1}</span>
+                </div>
+                <div class="d-flex align-items-center justify-content-between gap-2">
+                  <div class="text-end fw-bold text-white text-truncate" style="flex: 1; font-size: 0.85rem;">
+                    ${m.local}
+                  </div>
+                  <div class="d-flex align-items-center gap-1">
+                    <input type="number" id="admin_gol_L_${i}" class="form-control text-center text-white fw-bold bg-dark bg-opacity-75" style="width: 44px; height: 38px; border: 1px solid rgba(46,204,113,0.4); border-radius: 8px;" min="0" value="${m.golesLocal}" placeholder="0" />
+                    <span class="text-white-50 fw-bold px-1">:</span>
+                    <input type="number" id="admin_gol_V_${i}" class="form-control text-center text-white fw-bold bg-dark bg-opacity-75" style="width: 44px; height: 38px; border: 1px solid rgba(46,204,113,0.4); border-radius: 8px;" min="0" value="${m.golesVisitante}" placeholder="0" />
+                  </div>
+                  <div class="text-start fw-bold text-white text-truncate" style="flex: 1; font-size: 0.85rem;">
+                    ${m.visitor}
+                  </div>
+                </div>
+              </div>
+            `
+            );
+          });
+        } catch (e) {
+          console.error("Error cargando partidos admin:", e);
+        }
+      }
+
+      // 4. Cargar Todas las Apuestas de la Jornada
+      async function loadAdminBets() {
+        const tbody = document.getElementById("adminBetsTableBody");
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-white-50"><div class="spinner-border text-success spinner-border-sm me-2"></div> Cargando boletos...</td></tr>';
+
+        try {
+          const snapshot = await db.collection("ligabet_bets").where("round", "==", adminCurrentRound).get();
+          adminBets = [];
+          snapshot.forEach((doc) => {
+            adminBets.push({ id: doc.id, ...doc.data() });
+          });
+
+          recalculateKPIs();
+          renderAdminBetsTable(adminBets);
+        } catch (e) {
+          console.error("Error cargando apuestas admin:", e);
+        }
+      }
+
+      // 5. Recalcular KPIs (Recaudación, Retención Liga, Pozo)
+      function recalculateKPIs() {
+        const rakeRate = parseFloat(document.getElementById("rakePercentSelect").value) || 0.30;
+        let total = 0;
+        let activeCount = 0;
+
+        adminBets.forEach((b) => {
+          if (b.status !== "cancelled") {
+            total += parseFloat(b.amount || 0);
+            activeCount++;
+          }
+        });
+
+        const leagueProfit = total * rakeRate;
+        const prizePool = total * (1 - rakeRate);
+
+        document.getElementById("kpiTotalPool").textContent = `$${total.toFixed(2)}`;
+        document.getElementById("kpiTotalTickets").textContent = `${activeCount} boletos activos`;
+        document.getElementById("kpiLeagueProfit").textContent = `$${leagueProfit.toFixed(2)}`;
+        document.getElementById("kpiPrizePool").textContent = `$${prizePool.toFixed(2)}`;
+      }
+
+      // 6. Renderizar Tabla de Boletos
+      function renderAdminBetsTable(list) {
+        const tbody = document.getElementById("adminBetsTableBody");
+        tbody.innerHTML = "";
+
+        if (list.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center py-4 text-white-50">No hay boletos registrados para esta jornada.</td></tr>';
           return;
         }
-        
-        const roundNum = parseInt(val);
-        container.innerHTML = '<div class="text-center py-3"><div class="spinner-border text-info spinner-border-sm"></div></div>';
-        
-        try {
-          const snapshot = await db.collection("fixtures").get();
-          let matches = [];
+
+        list.forEach((b) => {
+          const pickLabel = b.pick === "L" ? `1 (Local: ${b.local})` : b.pick === "V" ? `2 (Visita: ${b.visitor})` : "X (Empate)";
           
-          snapshot.forEach((doc) => {
-             const docData = doc.data();
-             if (docData.data && Array.isArray(docData.data)) {
-                 docData.data.forEach(m => {
-                    const isProgrammed = m.fechaRealAsignadaText && m.fechaRealAsignadaText !== "Por Definir" && m.horaRealAsignada && m.horaRealAsignada !== "--:--";
-                    if (!m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA" && isProgrammed) {
-                        const jNum = parseInt(m.jornada) || parseInt(m.fecha?.replace(/\\D/g, "")) || 1;
-                        if(jNum === roundNum) {
-                            matches.push({...m, category: docData.category});
-                        }
-                    }
-                 });
-             }
-          });
-          
-          if(matches.length === 0) {
-             container.innerHTML = '<div class="text-white-50 text-center small py-3"><i class="fas fa-exclamation-circle mb-2 fs-4"></i><br>No hay partidos programados para esta jornada.</div>';
-             return;
-          }
-          
-          realResults = {};
-          
-          let html = `
-            <div class="table-responsive">
-              <table class="table table-premium w-100" style="margin-bottom: 0;">
-                <thead>
-                  <tr>
-                    <th style="font-size: 0.75rem; color:#2ecc71; text-transform: uppercase;">CATEGORÍA</th>
-                    <th class="text-center" style="font-size: 0.75rem; color:#2ecc71; text-transform: uppercase;">ENCUENTRO / RESULTADOS</th>
-                  </tr>
-                </thead>
-                <tbody>
-          `;
-          matches.forEach((m, i) => {
-              const localName = m.local;
-              const visitorName = m.visitor || m.visitante;
-              const cat = m.category || "General";
-              
-              html += `
-                <tr>
-                   <td class="fw-bold align-middle text-white" style="letter-spacing: 1px; font-size: 0.8rem;">${cat}</td>
-                   <td class="align-middle">
-                     <div class="d-flex align-items-center justify-content-center gap-3 w-100">
-                        <div class="text-end fw-bold text-white text-wrap" style="flex: 1; font-size: 0.85rem; text-transform: uppercase;">${localName}</div>
-                        <div class="d-flex align-items-center gap-2">
-                           <input type="number" id="res_L_${i+1}" class="form-control text-center text-white fw-bold bg-dark bg-opacity-75" style="width: 48px; border: 1px solid rgba(46, 204, 113, 0.4); border-radius: 8px; outline: none; box-shadow: none;" min="0" />
-                           <span class="text-success fw-bold" style="font-size:0.75rem;">VS</span>
-                           <input type="number" id="res_V_${i+1}" class="form-control text-center text-white fw-bold bg-dark bg-opacity-75" style="width: 48px; border: 1px solid rgba(46, 204, 113, 0.4); border-radius: 8px; outline: none; box-shadow: none;" min="0" />
-                        </div>
-                        <div class="text-start fw-bold text-white text-wrap" style="flex: 1; font-size: 0.85rem; text-transform: uppercase;">${visitorName}</div>
-                     </div>
-                   </td>
-                </tr>
-              `;
-          });
-          
-          html += `</tbody></table></div>`;
-          container.innerHTML = html;
-        } catch(e) {
-          console.error(e);
-          container.innerHTML = '<div class="text-danger text-center small py-3">Error al cargar partidos</div>';
-        }
-      }
+          let statusBadge = `<span class="badge-status badge-participating">🟢 Participando</span>`;
+          if (b.status === "won") statusBadge = `<span class="badge-status badge-won">🏆 Ganador</span>`;
+          if (b.status === "lost") statusBadge = `<span class="badge-status bg-secondary text-white">❌ No Acertó</span>`;
+          if (b.status === "cancelled") statusBadge = `<span class="badge-status badge-cancelled">🚫 Anulado</span>`;
+          if (b.payoutDone) statusBadge = `<span class="badge-status badge-paid">💰 Pagado</span>`;
 
-      // Funciones L/E/V previas retiradas por usar goles
+          const voucherBtn = b.voucherUrl 
+            ? `<button class="btn btn-sm btn-outline-info rounded-pill px-2 py-1" onclick="openVoucherModal('${b.id}')"><i class="fas fa-image me-1"></i> Ver Foto</button>`
+            : `<span class="text-white-50 small">Sin foto</span>`;
 
-      async function generateNewTicket() {
-        const name = document.getElementById("clientNameInput").value.trim();
-        const roundNum = document.getElementById("ticketRoundGenerate").value;
-
-        if (!name)
-          return Swal.fire("Error", "Ingresa el nombre del cliente", "warning");
-
-        const code =
-          Math.random().toString(36).substring(2, 6).toUpperCase() +
-          "-" +
-          Math.floor(1000 + Math.random() * 9000);
-
-        try {
-          await db.collection("ligabet_tickets").add({
-            cliente: name,
-            codigo: code,
-            pagado: false,
-            usado: false,
-            round: parseInt(roundNum),
-            pronosticoArray: [],
-            fechaCreacion: new Date(),
-          });
-
-          Swal.fire(
-            "Ticket Generado",
-            `El código es: <b>${code}</b>`,
-            "success",
+          tbody.insertAdjacentHTML(
+            "beforeend",
+            `
+            <tr>
+              <td><strong class="font-monospace text-success">${b.ticketCode}</strong></td>
+              <td>
+                <div class="fw-bold">${b.userName}</div>
+                <div class="text-white-50 small"><i class="fab fa-whatsapp text-success me-1"></i> ${b.userPhone}</div>
+              </td>
+              <td>
+                <div class="fw-bold">${b.local} vs ${b.visitor}</div>
+                <div class="text-warning small">${pickLabel}</div>
+              </td>
+              <td class="font-monospace fw-bold">$${parseFloat(b.amount).toFixed(2)}</td>
+              <td class="font-monospace text-warning fw-bold">$${parseFloat(b.estPayout).toFixed(2)}</td>
+              <td>${voucherBtn}</td>
+              <td>${statusBadge}</td>
+              <td>
+                ${b.status !== 'cancelled' ? `
+                  <button class="btn btn-xs btn-outline-danger" title="Anular por comprobante falso" onclick="cancelBet('${b.id}')">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                ` : ''}
+              </td>
+            </tr>
+          `
           );
-          document.getElementById("clientNameInput").value = "";
-          loadTicketsByRound();
-        } catch (e) {
-          console.error(e);
-          Swal.fire("Error", "No se pudo generar el ticket", "error");
-        }
+        });
       }
 
-      function loadTicketsByRound() {
-        const val = document.getElementById("ticketRoundFilter").value;
-        if(!val) return;
-        const roundNum = parseInt(val);
-        
-        db.collection("ligabet_tickets")
-          .where("round", "==", roundNum)
-          .onSnapshot((snapshot) => {
-            const tbody = document.getElementById("pendingTicketsTable");
-            tbody.innerHTML = "";
-            let pagadosCount = 0;
+      function filterAdminBetsTable() {
+        const text = document.getElementById("filterTicketInput").value.toLowerCase();
+        const statusFilter = document.getElementById("filterStatusSelect").value;
 
-            if (snapshot.empty) {
-                tbody.innerHTML = '<tr><td colspan="3" class="text-center text-white-50">Aún no hay tickets vendidos en esta jornada</td></tr>';
-            } else {
-                snapshot.forEach((doc) => {
-                  const t = doc.data();
-                  if (t.pagado) pagadosCount++;
-                  
-                  const btnHTML = t.pagado 
-                      ? `<span class="badge bg-success" style="padding:0.5rem 0.8rem"><i class="fas fa-check me-1"></i> Pagado</span>` 
-                      : `<button class="btn btn-warning btn-sm fw-bold border-0" onclick="confirmPayment('${doc.id}')">PAGAR</button>`;
-
-                  tbody.innerHTML += `
-                    <tr>
-                      <td class="fw-bold">${t.cliente}</td>
-                      <td><code class="text-white bg-dark bg-opacity-50 px-2 py-1 rounded">${t.codigo}</code></td>
-                      <td>${btnHTML}</td>
-                    </tr>
-                  `;
-                });
-            }
-            document.getElementById("totalSalesDisplay").textContent = `${pagadosCount} Tickets = $${pagadosCount}`;
-          });
-      }
-
-      async function confirmPayment(id) {
-        await db.collection("ligabet_tickets").doc(id).update({ pagado: true });
-        Swal.fire(
-          "Pago Confirmado",
-          "El ticket ahora puede ser usado.",
-          "success",
-        );
-      }
-
-      async function closeRoundOfficially() {
-        const roundNum = document.getElementById("roundToClose").value;
-        const confirm = await Swal.fire({
-          title: "¿Cerrar Jornada " + roundNum + "?",
-          text: "Nadie podrá apostar más en esta fecha.",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Sí, cerrar",
+        const filtered = adminBets.filter((b) => {
+          const matchesText = b.ticketCode.toLowerCase().includes(text) || b.userName.toLowerCase().includes(text) || b.userPhone.includes(text);
+          const matchesStatus = statusFilter === "all" || b.status === statusFilter || (statusFilter === "won" && b.payoutDone);
+          return matchesText && matchesStatus;
         });
 
-        if (confirm.isConfirmed) {
-          try {
-            await db.collection("ligabet_rounds_status").doc(roundNum).set({
-              closed: true,
-              closedAt: new Date(),
-            });
-            Swal.fire(
-              "Jornada Cerrada",
-              "Ya no se permiten apuestas para la jornada " + roundNum,
-              "success",
-            );
-          } catch (e) {
-            Swal.fire("Error", "No se ha podido cerrar la jornada", "error");
-          }
-        }
+        renderAdminBetsTable(filtered);
       }
 
-      async function calculateWinners() {
-        const roundNumStr = document.getElementById("roundToClose").value;
-        const roundNum = parseInt(roundNumStr);
-
-        const matchRows = document.querySelectorAll("[id^='res_L_']");
-        if (matchRows.length === 0) {
-           return Swal.fire("Aviso", "No hay partidos para calcular en esta fecha.", "warning");
+      // 7. Calcular Ganadores y Premios
+      async function calculateRoundWinners() {
+        if (adminMatches.length === 0) {
+          return Swal.fire("Aviso", "No hay partidos en esta jornada para calcular.", "warning");
         }
 
-        let resArray = [];
-        for (let i = 0; i < matchRows.length; i++) {
-           const idNum = matchRows[i].id.split('_')[2];
-           const valL = document.getElementById(`res_L_${idNum}`).value;
-           const valV = document.getElementById(`res_V_${idNum}`).value;
-           
-           if(valL === "" || valV === "") {
-               return Swal.fire("Incompleto", "Por favor ingresa los marcadores (goles) de todos los partidos listados.", "warning");
-           }
-           
-           const l = parseInt(valL);
-           const v = parseInt(valV);
-           if (l > v) resArray.push("L");
-           else if (l === v) resArray.push("E");
-           else resArray.push("V");
+        // Obtener resultados reales de los inputs
+        let matchResults = {};
+        for (let i = 0; i < adminMatches.length; i++) {
+          const valL = document.getElementById(`admin_gol_L_${i}`).value;
+          const valV = document.getElementById(`admin_gol_V_${i}`).value;
+
+          if (valL === "" || valV === "") {
+            return Swal.fire("Incompleto", `Por favor ingresa el marcador del Partido #${i + 1} (${adminMatches[i].local} vs ${adminMatches[i].visitor}).`, "warning");
+          }
+
+          const l = parseInt(valL);
+          const v = parseInt(valV);
+          const pickOutcome = l > v ? "L" : l === v ? "E" : "V";
+          matchResults[adminMatches[i].matchUniqueId] = pickOutcome;
         }
 
         Swal.fire({
-          title: "Calculando...",
+          title: "Calculando Ganadores...",
           didOpen: () => Swal.showLoading(),
         });
 
-        const snapshot = await db
-          .collection("ligabet_tickets")
-          .where("usado", "==", true)
-          .where("round", "==", roundNum)
-          .get();
+        roundWinners = [];
+        const rakeRate = parseFloat(document.getElementById("rakePercentSelect").value) || 0.30;
 
-        const winnersList = document.getElementById("winnersList");
-        const winnersDisplay = document.getElementById("winnersDisplay");
-        winnersList.innerHTML = "";
-
-        let found = false;
-        snapshot.forEach((doc) => {
-          const t = doc.data();
-          const userPicks = t.pronosticoArray;
-
-          let hits = 0;
-          userPicks.forEach((p, index) => {
-            if (p === resArray[index]) hits++;
-          });
-
-          if (hits >= 4) {
-            found = true;
-            winnersList.innerHTML += `
-              <div class="d-flex justify-content-between align-items-center p-3 rounded-3 bg-white bg-opacity-5 border-start border-4 ${hits === 5 ? "border-success" : "border-warning"}">
-                <div>
-                  <div class="fw-bold">${t.cliente}</div>
-                  <div class="small text-white-50">Código: ${t.codigo}</div>
-                </div>
-                <div class="text-end">
-                  <div class="badge ${hits === 5 ? "bg-success" : "bg-warning text-dark"} fw-bold">${hits}/5 ACIESTOS</div>
-                  <div class="small mt-1"><a href="https://wa.me/593?text=Felicidades" class="text-info text-decoration-none"><i class="fab fa-whatsapp"></i> Contactar</a></div>
-                </div>
-              </div>
-            `;
+        // Por cada partido, calcular el pozo específico de ese partido y repartir entre quienes acertaron
+        // O liquidar con la cuota pactada
+        adminBets.forEach((b) => {
+          if (b.status !== "cancelled") {
+            const outcome = matchResults[b.matchUniqueId];
+            if (outcome && b.pick === outcome) {
+              roundWinners.push(b);
+            }
           }
         });
 
         Swal.close();
-        if (!found) {
-          winnersList.innerHTML =
-            '<div class="text-center py-4 text-white-50">No hubo ganadores en la Jornada ' +
-            roundNum +
-            ".</div>";
+        renderWinnersList();
+      }
+
+      // 8. Renderizar Lista de Ganadores
+      function renderWinnersList() {
+        const container = document.getElementById("winnersListContainer");
+        container.innerHTML = "";
+
+        if (roundWinners.length === 0) {
+          container.innerHTML = `
+            <div class="text-center py-5 text-white-50">
+              <i class="fas fa-info-circle mb-2 fs-3 text-warning"></i>
+              <h6>No hubo ganadores en los partidos evaluados de esta jornada.</h6>
+              <p class="small text-white-50">El pozo se acumula para la siguiente fecha o queda para la Liga.</p>
+            </div>
+          `;
+          return;
         }
-        winnersDisplay.classList.remove("d-none");
+
+        roundWinners.forEach((w) => {
+          const isPaid = w.payoutDone === true;
+          const bankDetailsText = `Banco: ${w.bankName || 'Pichincha'} | Tipo: ${w.accountType || 'Ahorros'} | Cta: ${w.accountNumber || ''} | CI: ${w.cedula || ''} | Titular: ${w.accountHolder || w.userName}`;
+
+          const cardHtml = `
+            <div class="winner-row-card ${isPaid ? 'paid' : ''}">
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <div class="fw-bold text-white fs-6">${w.userName}</div>
+                  <div class="text-white-50 small">
+                    <span class="font-monospace text-success fw-bold me-2">${w.ticketCode}</span>
+                    <a href="https://wa.me/593${(w.userPhone || '').replace(/^0/, '')}?text=Hola%20${encodeURIComponent(w.userName)},%20te%20escribimos%20de%20Liga%20Barrial%20Argelia%20Alta.%20%C2%A1Felicidades,%20ganaste%20tu%20apuesta%20en%20LigaBet!" target="_blank" class="text-decoration-none text-info">
+                      <i class="fab fa-whatsapp"></i> ${w.userPhone}
+                    </a>
+                  </div>
+                </div>
+                <div class="text-end">
+                  <span class="badge ${isPaid ? 'bg-success' : 'bg-warning text-dark'} fw-bold px-3 py-1">
+                    ${isPaid ? 'PREMIO PAGADO 💰' : 'POR PAGAR ⏳'}
+                  </span>
+                  <div class="fs-4 fw-900 text-warning font-monospace mt-1">$${parseFloat(w.estPayout).toFixed(2)}</div>
+                </div>
+              </div>
+
+              <!-- DATOS BANCARIOS DEL GANADOR -->
+              <div class="p-3 rounded-3 mb-2 small" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08);">
+                <div class="d-flex justify-content-between align-items-center mb-2 pb-1 border-bottom border-white border-opacity-10">
+                  <strong class="text-warning"><i class="fas fa-university me-1"></i> Datos para Transferir Premio:</strong>
+                  <button type="button" class="btn btn-xs btn-outline-warning rounded-pill px-2 py-0" style="font-size: 0.68rem;" onclick="navigator.clipboard.writeText('${bankDetailsText}'); Swal.fire({title: '¡Copiado!', text: 'Datos bancarios listos para transferir', icon: 'success', timer: 1500, showConfirmButton: false});">
+                    <i class="fas fa-copy me-1"></i> Copiar Datos
+                  </button>
+                </div>
+                <div class="row g-1 text-white-50">
+                  <div class="col-4">Banco: <strong class="text-white">${w.bankName || 'Banco Pichincha'}</strong></div>
+                  <div class="col-4">Tipo: <strong class="text-white">${w.accountType || 'Ahorros'}</strong></div>
+                  <div class="col-4">C.I.: <strong class="text-white font-monospace">${w.cedula || '--'}</strong></div>
+                  <div class="col-6 mt-1">N° Cuenta / DeUna: <strong class="text-white font-monospace">${w.accountNumber || '--'}</strong></div>
+                  <div class="col-6 mt-1">Titular: <strong class="text-white">${w.accountHolder || w.userName}</strong></div>
+                </div>
+              </div>
+
+              <div class="p-2 rounded-3 mb-2 small text-white-50" style="background: rgba(255,255,255,0.02);">
+                <div>Partido: <strong class="text-white">${w.local} vs ${w.visitor}</strong> (Acertó: <strong>${w.pick === 'L' ? w.local : w.pick === 'V' ? w.visitor : 'Empate'}</strong>) | Monto Jugado: <strong class="text-white">$${parseFloat(w.amount).toFixed(2)}</strong></div>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-light flex-grow-1" onclick="openVoucherModal('${w.id}')">
+                  <i class="fas fa-image me-1 text-info"></i> Ver Comprobante
+                </button>
+                ${!isPaid ? `
+                  <button class="btn btn-sm btn-success flex-grow-1 fw-bold" onclick="markWinnerAsPaid('${w.id}')">
+                    <i class="fas fa-check-circle me-1"></i> Confirmar Pago
+                  </button>
+                  <button class="btn btn-sm btn-outline-danger" title="Anular por fraude" onclick="cancelBet('${w.id}')">
+                    <i class="fas fa-ban"></i>
+                  </button>
+                ` : `
+                  <span class="text-success small fw-bold d-flex align-items-center"><i class="fas fa-check-double me-1"></i> Transferencia Realizada</span>
+                `}
+              </div>
+            </div>
+          `;
+          container.insertAdjacentHTML("beforeend", cardHtml);
+        });
+      }
+
+      // 9. Modal de Comprobante
+      function openVoucherModal(betId) {
+        const bet = adminBets.find((b) => b.id === betId) || roundWinners.find((w) => w.id === betId);
+        if (!bet || !bet.voucherUrl) {
+          return Swal.fire("Sin imagen", "Este boleto no tiene comprobante adjunto.", "info");
+        }
+
+        document.getElementById("voucherModalTitle").textContent = `Comprobante: ${bet.userName} (${bet.ticketCode})`;
+        document.getElementById("voucherModalImg").src = bet.voucherUrl;
+
+        const modal = new bootstrap.Modal(document.getElementById("voucherModal"));
+        modal.show();
+      }
+
+      // 10. Marcar Premio como Pagado
+      async function markWinnerAsPaid(betId) {
+        const confirm = await Swal.fire({
+          title: "¿Confirmar Pago de Premio?",
+          text: "¿Ya realizaste la transferencia bancaria o entrega en efectivo del premio?",
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: "Sí, marcar como Pagado",
+          cancelButtonText: "Cancelar",
+        });
+
+        if (confirm.isConfirmed) {
+          try {
+            await db.collection("ligabet_bets").doc(betId).update({
+              payoutDone: true,
+              payoutDate: firebase.firestore.FieldValue.serverTimestamp(),
+              status: "won",
+            });
+
+            // Actualizar local
+            const item = adminBets.find((b) => b.id === betId);
+            if (item) item.payoutDone = true;
+            const wItem = roundWinners.find((b) => b.id === betId);
+            if (wItem) wItem.payoutDone = true;
+
+            renderWinnersList();
+            renderAdminBetsTable(adminBets);
+            Swal.fire("¡Registrado!", "El pago del premio ha quedado asentado en el sistema.", "success");
+          } catch (e) {
+            console.error(e);
+            Swal.fire("Error", "No se pudo actualizar el estado del premio.", "error");
+          }
+        }
+      }
+
+      // 11. Anular Apuesta por Voucher Falso
+      async function cancelBet(betId) {
+        const confirm = await Swal.fire({
+          title: "¿Anular Boleto?",
+          text: "Usa esto si el comprobante no es válido o la transferencia nunca llegó.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#d33",
+          confirmButtonText: "Sí, Anular",
+          cancelButtonText: "Cancelar",
+        });
+
+        if (confirm.isConfirmed) {
+          try {
+            await db.collection("ligabet_bets").doc(betId).update({
+              status: "cancelled",
+              cancelledAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+
+            const item = adminBets.find((b) => b.id === betId);
+            if (item) item.status = "cancelled";
+            roundWinners = roundWinners.filter((w) => w.id !== betId);
+
+            recalculateKPIs();
+            renderWinnersList();
+            renderAdminBetsTable(adminBets);
+            Swal.fire("Boleto Anulado", "El boleto ha sido excluido del pozo.", "info");
+          } catch (e) {
+            console.error(e);
+            Swal.fire("Error", "No se pudo anular el boleto.", "error");
+          }
+        }
+      }
+
+      // 12. Exportar Resumen Oficial
+      function exportWinnersReport() {
+        if (roundWinners.length === 0) {
+          return Swal.fire("Aviso", "Primero calcula los ganadores de la jornada.", "info");
+        }
+
+        let txt = `🏆 *RESUMEN OFICIAL LIGABET - JORNADA ${adminCurrentRound}*\n`;
+        txt += `⚽ Liga Barrial Argelia Alta\n\n`;
+        txt += `*GANADORES DE LA FECHA:*\n`;
+
+        roundWinners.forEach((w, i) => {
+          txt += `${i + 1}. *${w.userName}* (${w.ticketCode})\n`;
+          txt += `   • Partido: ${w.local} vs ${w.visitor}\n`;
+          txt += `   • Premio: *$${parseFloat(w.estPayout).toFixed(2)}*\n`;
+          txt += `   • Estado: ${w.payoutDone ? '✅ Pagado' : '⏳ Por transferir'}\n\n`;
+        });
+
+        txt += `¡Felicitaciones a todos los ganadores! 🎉`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
       }
     </script>
   </body>
