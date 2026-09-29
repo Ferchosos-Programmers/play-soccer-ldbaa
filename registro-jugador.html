@@ -3349,28 +3349,94 @@
               return allWords1.some((w1) => allWords2.includes(w1));
             }
 
-            // Obtener todos los jugadores registrados para buscar coincidencias de club de forma segura y completa
-            const querySnapshot = await db.collection("players").get();
+            // 1. Obtener los equipos registrados (documentos muy livianos y rápidos de descargar)
+            const teamsSnapshot = await db.collection("teams").get();
+            const matchedTeamIds = [];
+            const matchedTeamNames = new Set();
+            if (currentTeamName) {
+              matchedTeamNames.add(currentTeamName.trim());
+            }
 
-            const playerList = [];
-            const seenCedulas = new Set();
-
-            querySnapshot.forEach((doc) => {
-              const p = doc.data();
-
-              // Verificar si el equipo coincide de forma flexible (ej. "LAKERS" con "LAKERS", "CLUB LAKERS", etc.)
-              if (matchesFlexible(p.teamName, currentTeamName)) {
-                const cedulaKey = (p.cedula || "").toString().trim();
-                if (cedulaKey) {
-                  if (!seenCedulas.has(cedulaKey)) {
-                    seenCedulas.add(cedulaKey);
-                    playerList.push({ id: doc.id, ...p });
-                  }
-                } else {
-                  playerList.push({ id: doc.id, ...p });
+            teamsSnapshot.forEach((tDoc) => {
+              const tData = tDoc.data();
+              if (matchesFlexible(tData.name, currentTeamName)) {
+                matchedTeamIds.push(tDoc.id);
+                if (tData.name) {
+                  matchedTeamNames.add(tData.name.trim());
                 }
               }
             });
+
+            // 2. Consultar en paralelo únicamente los jugadores de los equipos coincidentes
+            const playerPromises = [];
+
+            // Consultas por teamId en lotes de hasta 10 (límite de Firestore 'in')
+            for (let i = 0; i < matchedTeamIds.length; i += 10) {
+              const chunk = matchedTeamIds.slice(i, i + 10);
+              playerPromises.push(
+                db.collection("players").where("teamId", "in", chunk).get().catch(() => ({ docs: [] }))
+              );
+            }
+
+            // Consultas directas por variantes del nombre del equipo
+            matchedTeamNames.forEach((name) => {
+              if (name) {
+                playerPromises.push(
+                  db.collection("players").where("teamName", "==", name).get().catch(() => ({ docs: [] }))
+                );
+              }
+            });
+
+            const snapshots = await Promise.all(playerPromises);
+
+            const playerList = [];
+            const seenPlayerIds = new Set();
+            const seenCedulas = new Set();
+
+            snapshots.forEach((snap) => {
+              if (snap && snap.docs) {
+                snap.docs.forEach((doc) => {
+                  if (!seenPlayerIds.has(doc.id)) {
+                    seenPlayerIds.add(doc.id);
+                    const p = doc.data();
+
+                    if (matchesFlexible(p.teamName, currentTeamName) || (p.teamId && matchedTeamIds.includes(p.teamId))) {
+                      const cedulaKey = (p.cedula || "").toString().trim();
+                      if (cedulaKey) {
+                        if (!seenCedulas.has(cedulaKey)) {
+                          seenCedulas.add(cedulaKey);
+                          playerList.push({ id: doc.id, ...p });
+                        }
+                      } else {
+                        playerList.push({ id: doc.id, ...p });
+                      }
+                    }
+                  }
+                });
+              }
+            });
+
+            // 3. Fallback ultra-seguro: Si por alguna razón específica no trajo jugadores, consultar de forma global
+            if (playerList.length === 0) {
+              const fallbackSnapshot = await db.collection("players").get();
+              fallbackSnapshot.forEach((doc) => {
+                if (!seenPlayerIds.has(doc.id)) {
+                  seenPlayerIds.add(doc.id);
+                  const p = doc.data();
+                  if (matchesFlexible(p.teamName, currentTeamName)) {
+                    const cedulaKey = (p.cedula || "").toString().trim();
+                    if (cedulaKey) {
+                      if (!seenCedulas.has(cedulaKey)) {
+                        seenCedulas.add(cedulaKey);
+                        playerList.push({ id: doc.id, ...p });
+                      }
+                    } else {
+                      playerList.push({ id: doc.id, ...p });
+                    }
+                  }
+                }
+              });
+            }
 
             if (playerList.length === 0) {
               Swal.fire({
