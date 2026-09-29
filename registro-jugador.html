@@ -1328,16 +1328,34 @@
                     .toLowerCase()
                     .normalize("NFD")
                     .replace(/[\u0300-\u036f]/g, "")
-                    .replace(/[^a-z0-9]/g, "")
+                    .replace(/[^a-z0-9\s]/g, "")
                     .trim();
+                }
+
+                function matchesFlexible(name1, name2) {
+                  const clean1 = cleanTextForComparison(name1);
+                  const clean2 = cleanTextForComparison(name2);
+                  if (!clean1 || !clean2) return false;
+                  if (clean1 === clean2) return true;
+                  if (clean1.includes(clean2) || clean2.includes(clean1)) return true;
+
+                  const stopWords = new Set(["club", "cd", "fc", "deportivo", "atletico", "sc", "ldb", "el", "la", "los", "las", "de", "del", "san", "santa"]);
+                  const words1 = clean1.split(/\s+/).filter((w) => w.length > 1 && !stopWords.has(w));
+                  const words2 = clean2.split(/\s+/).filter((w) => w.length > 1 && !stopWords.has(w));
+
+                  if (words1.length > 0 && words2.length > 0) {
+                    if (words1.some((w1) => words2.includes(w1))) return true;
+                  }
+
+                  const allWords1 = clean1.split(/\s+/).filter((w) => w.length > 2);
+                  const allWords2 = clean2.split(/\s+/).filter((w) => w.length > 2);
+                  return allWords1.some((w1) => allWords2.includes(w1));
                 }
 
                 playerQuery.forEach((doc) => {
                   const data = doc.data();
                   if (data.teamId !== teamId) {
-                    const cleanPrev = cleanTextForComparison(data.teamName);
-                    const cleanCurr = cleanTextForComparison(currentTeamName);
-                    if (cleanPrev !== cleanCurr) {
+                    if (!matchesFlexible(data.teamName, currentTeamName)) {
                       enOtroEquipo = true;
                       originalPlayerDoc = { id: doc.id, ...doc.data() };
                     }
@@ -3302,7 +3320,6 @@
             const currentTeamName = currentTeamData.name;
             const currentTeamCategory = currentTeamData.category; // Ej: "Primera", "Máxima", "Femenina"
 
-            // Optimizar la consulta buscando únicamente jugadores que coincidan con la primera palabra clave del equipo
             function cleanTextForComparison(str) {
               return (str || "")
                 .toLowerCase()
@@ -3312,59 +3329,45 @@
                 .trim();
             }
 
-            const cleanName = cleanTextForComparison(currentTeamName);
-            const words = cleanName.split(/\s+/).filter((w) => w.length > 2);
-            let querySnapshot;
-
-            if (words.length > 0) {
-              // Si tenemos palabras significativas (ej: "NAPOLES", "INTER"), buscamos de manera que empiece por ese término
-              const searchWord = words[0].toUpperCase();
-              querySnapshot = await db
-                .collection("players")
-                .where("teamName", ">=", searchWord)
-                .where("teamName", "<=", searchWord + "\uf8ff")
-                .get();
-
-              // Si la consulta optimizada no trae nada, hacemos fallback a una más abierta
-              if (querySnapshot.empty) {
-                querySnapshot = await db.collection("players").get();
-              }
-            } else {
-              querySnapshot = await db.collection("players").get();
-            }
-
-            const playerList = [];
-
-            // Función para verificar si hay coincidencia flexible (al menos una palabra significativa en común de longitud > 2)
             function matchesFlexible(name1, name2) {
               const clean1 = cleanTextForComparison(name1);
               const clean2 = cleanTextForComparison(name2);
+              if (!clean1 || !clean2) return false;
               if (clean1 === clean2) return true;
+              if (clean1.includes(clean2) || clean2.includes(clean1)) return true;
 
-              const words1 = clean1.split(/\s+/).filter((w) => w.length > 2);
-              const words2 = clean2.split(/\s+/).filter((w) => w.length > 2);
+              const stopWords = new Set(["club", "cd", "fc", "deportivo", "atletico", "sc", "ldb", "el", "la", "los", "las", "de", "del", "san", "santa"]);
+              const words1 = clean1.split(/\s+/).filter((w) => w.length > 1 && !stopWords.has(w));
+              const words2 = clean2.split(/\s+/).filter((w) => w.length > 1 && !stopWords.has(w));
 
-              // Si alguna palabra de words1 coincide con words2, hay coincidencia
-              return words1.some((w1) => words2.includes(w1));
+              if (words1.length > 0 && words2.length > 0) {
+                if (words1.some((w1) => words2.includes(w1))) return true;
+              }
+
+              const allWords1 = clean1.split(/\s+/).filter((w) => w.length > 2);
+              const allWords2 = clean2.split(/\s+/).filter((w) => w.length > 2);
+              return allWords1.some((w1) => allWords2.includes(w1));
             }
 
-            const cleanCurrentCategory =
-              cleanTextForComparison(currentTeamCategory);
+            // Obtener todos los jugadores registrados para buscar coincidencias de club de forma segura y completa
+            const querySnapshot = await db.collection("players").get();
+
+            const playerList = [];
+            const seenCedulas = new Set();
 
             querySnapshot.forEach((doc) => {
               const p = doc.data();
-              const cleanPlayerCategory = cleanTextForComparison(
-                p.teamCategory,
-              );
 
-              // Verificar si el equipo coincide de forma flexible (ej. "C.D. NAPOLES" con "CD NAPOLES")
+              // Verificar si el equipo coincide de forma flexible (ej. "LAKERS" con "LAKERS", "CLUB LAKERS", etc.)
               if (matchesFlexible(p.teamName, currentTeamName)) {
-                // Filtrar para mostrar solo jugadores que coincidan con la categoría (Masculina, Femenina, etc.)
-                if (cleanPlayerCategory === cleanCurrentCategory) {
-                  // Evitar duplicados por número de cédula
-                  if (!playerList.some((added) => added.cedula === p.cedula)) {
+                const cedulaKey = (p.cedula || "").toString().trim();
+                if (cedulaKey) {
+                  if (!seenCedulas.has(cedulaKey)) {
+                    seenCedulas.add(cedulaKey);
                     playerList.push({ id: doc.id, ...p });
                   }
+                } else {
+                  playerList.push({ id: doc.id, ...p });
                 }
               }
             });
@@ -3373,23 +3376,24 @@
               Swal.fire({
                 icon: "info",
                 title: "Sin Registros",
-                text: `No se encontraron jugadores registrados anteriormente para el club "${currentTeamName}" en la categoría "${currentTeamCategory}".`,
+                text: `No se encontraron jugadores registrados anteriormente para el club "${currentTeamName}".`,
                 confirmButtonColor: "#28a745",
               });
               return;
             }
 
-            // Ordenar alfabéticamente
+            // Ordenar alfabéticamente por nombres y apellidos
             playerList.sort((a, b) =>
-              `${a.nombres} ${a.apellidos}`.localeCompare(
-                `${b.nombres} ${b.apellidos}`,
+              `${a.nombres || ""} ${a.apellidos || ""}`.localeCompare(
+                `${b.nombres || ""} ${b.apellidos || ""}`,
               ),
             );
 
             let optionsHtml =
               '<option value="" style="padding: 8px; margin-bottom: 5px; color: #888;">Seleccione un jugador...</option>';
             playerList.forEach((p) => {
-              optionsHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} [${p.teamCategory || "Sin Categoría"}]</option>`;
+              const catLabel = p.teamCategory || p.category || "General";
+              optionsHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres || ""} ${p.apellidos || ""} [${catLabel}]${p.numeroJugador ? ` - #${p.numeroJugador}` : ""}</option>`;
             });
 
             Swal.fire({
@@ -3397,9 +3401,9 @@
                 '<span style="color: #ffc107; font-weight: 800; font-size: 1.5rem;"><i class="fas fa-history me-2"></i>Jugadores del Club</span>',
               html: `
                 <div class="text-start mb-2 text-white-50" style="font-size: 0.85rem;">
-                  Busca por nombre o apellido para cargar sus datos automáticamente:
+                  Busca por nombre, apellido o cédula para cargar sus datos automáticamente:
                 </div>
-                <input type="text" id="swalSearchInput" class="form-control bg-dark text-white border-secondary mb-3 py-2 px-3" placeholder="🔍 Escribe nombre o apellido..." style="border-radius: 8px; font-size: 0.95rem;">
+                <input type="text" id="swalSearchInput" class="form-control bg-dark text-white border-secondary mb-3 py-2 px-3" placeholder="🔍 Escribe nombre, apellido, cédula..." style="border-radius: 8px; font-size: 0.95rem;">
                 <select id="swalPlayerSelect" class="form-select bg-dark text-white border-secondary mb-2" size="6" style="height: 220px; border-radius: 8px; font-size: 0.9rem; padding: 8px; line-height: 2;">
                   ${optionsHtml}
                 </select>
@@ -3418,22 +3422,24 @@
                 const selectElement =
                   document.getElementById("swalPlayerSelect");
 
-                // Evento de filtrado en tiempo real por Nombre o Apellido únicamente
+                // Evento de filtrado en tiempo real por Nombre, Apellido o Cédula
                 searchInput.addEventListener("input", function () {
                   const query = searchInput.value
                     .toLowerCase()
                     .normalize("NFD")
-                    .replace(/[\u0300-\u036f]/g, "");
+                    .replace(/[\u0300-\u036f]/g, "")
+                    .trim();
                   let filteredHtml =
                     '<option value="" style="padding: 8px; margin-bottom: 5px; color: #888;">Seleccione un jugador...</option>';
 
                   playerList.forEach((p) => {
-                    const text = `${p.nombres} ${p.apellidos}`
+                    const text = `${p.nombres || ""} ${p.apellidos || ""} ${p.cedula || ""} ${p.numeroJugador || ""}`
                       .toLowerCase()
                       .normalize("NFD")
                       .replace(/[\u0300-\u036f]/g, "");
                     if (text.includes(query)) {
-                      filteredHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres} ${p.apellidos} [${p.teamCategory || "Sin Categoría"}]</option>`;
+                      const catLabel = p.teamCategory || p.category || "General";
+                      filteredHtml += `<option value="${p.id}" style="padding: 10px 12px; margin-bottom: 8px; border-radius: 6px; background-color: rgba(255, 255, 255, 0.05); color: #fff; border-bottom: 1px solid rgba(255,255,255,0.05); cursor: pointer;">${p.nombres || ""} ${p.apellidos || ""} [${catLabel}]${p.numeroJugador ? ` - #${p.numeroJugador}` : ""}</option>`;
                     }
                   });
                   selectElement.innerHTML = filteredHtml;
