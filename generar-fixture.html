@@ -289,8 +289,8 @@
                             <div class="col-md-6">
                                 <div class="mode-card primordial selected" onclick="selectMode('ldbaa', this)">
                                     <i class="fas fa-medal text-warning"></i>
-                                    <h5>Liga LDBAA (Ida y Vuelta)</h5>
-                                    <p class="small text-white-50">Fase regular completa + Liguilla por grupos + Semifinales y Final. Formato oficial de la liga.</p>
+                                    <h5>Liga LDBAA Oficial (Ida y Vuelta + Nivelación)</h5>
+                                    <p class="small text-white-50">1ª Vuelta (Clasifican 4) + Nivelación (Top 2 de Primera pasan a Máxima en 2ª Vuelta) + 2ª Vuelta (Clasifican 4) + Liguilla (2 Grupos de 4) + Semifinales y Final.</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -534,12 +534,65 @@
             return schedule;
         }
 
-        function generateLDBAARounds(teamsList) {
-            let n = teamsList.length;
-            let tempTeams = [...teamsList];
-            if (n % 2 !== 0) { tempTeams.push("DESCANSA"); n++; }
+        function normalizeTeamName(s) {
+            return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+        }
 
-            let primeiraVuelta = [];
+        function matchSeedTeam(dbTeam, seed) {
+            const nDb = normalizeTeamName(dbTeam);
+            const nSeed = normalizeTeamName(seed);
+            if (nDb === nSeed) return true;
+            const cleanDb = nDb.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO)\b/g, '').replace(/[^A-Z0-9]/g, '').trim();
+            const cleanSeed = nSeed.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO)\b/g, '').replace(/[^A-Z0-9]/g, '').trim();
+            if (cleanDb === cleanSeed) return true;
+            if (cleanDb.includes(cleanSeed) || cleanSeed.includes(cleanDb)) return true;
+            return false;
+        }
+
+        function generateLDBAARounds(teamsList) {
+            const cat = (document.getElementById('catSelect')?.value || '').toUpperCase().trim();
+            
+            // Semillas oficiales para emparejar exactamente con la 1era Fecha jugada
+            const officialSeeds = {
+                'FEMENINO': ['PALMEIRAS', 'VENTANAS', 'ALIANZA JUVENIL', 'SPENCER', 'MANCHESTER', 'AC LATINOS', 'PORTOVIEJO', 'DEP SPENCER'],
+                'MÁXIMA': ['INDEPENDIENTE', 'FLUMINENSE', 'ESTUDIANTES', 'SOLO PANAS', 'MANCHESTER', 'ALIANZA JUVENIL', 'VENTANAS', 'PORTOVIEJO', 'GALAXY'],
+                'MAXIMA': ['INDEPENDIENTE', 'FLUMINENSE', 'ESTUDIANTES', 'SOLO PANAS', 'MANCHESTER', 'ALIANZA JUVENIL', 'VENTANAS', 'PORTOVIEJO', 'GALAXY'],
+                'PRIMERA': ['AC LATINOS', '3 DE JULIO', 'NAPOLES', 'AMAZONAS', 'LOS PRIMOS', 'LAKERS', 'ARGENTINA', 'PALMEIRAS', 'MARSELLA FC', 'INTER', 'CHELSEA', 'RIVER PLATE', 'ALMAGUER', 'DINAMO FC']
+            };
+
+            let tempTeams = [...teamsList];
+            if (officialSeeds[cat]) {
+                const seedList = officialSeeds[cat];
+                const sorted = [];
+                seedList.forEach(seed => {
+                    let match = tempTeams.find(t => normalizeTeamName(t) === normalizeTeamName(seed));
+                    if (!match) {
+                        match = tempTeams.find(t => matchSeedTeam(t, seed));
+                    }
+                    if (match && !sorted.includes(match)) {
+                        sorted.push(match);
+                    }
+                });
+
+                tempTeams.forEach(t => {
+                    if (!sorted.includes(t)) sorted.push(t);
+                });
+
+                if (sorted.length === tempTeams.length) {
+                    tempTeams = sorted;
+                }
+            }
+
+            let n = tempTeams.length;
+            if (n % 2 !== 0) {
+                // Insertar DESCANSA en la posición media para mantener los emparejamientos de la Fecha 1
+                const mid = Math.floor(n / 2) + 1;
+                tempTeams.splice(mid, 0, "DESCANSA");
+                n++;
+            }
+
+            // 1. PRIMERA VUELTA (Todos contra Todos)
+            let primeraVuelta = [];
             for (let r = 0; r < n - 1; r++) {
                 let matches = [];
                 for (let i = 0; i < n / 2; i++) {
@@ -547,36 +600,61 @@
                     matches.push({ 
                         local, 
                         visitor, 
-                        tag: (local === "DESCANSA" || visitor === "DESCANSA") ? "DESCANSO" : "1era Vuelta" 
+                        tag: (local === "DESCANSA" || visitor === "DESCANSA") ? "DESCANSO" : `1ra Vuelta (Fecha ${r + 1})` 
                     });
                 }
-                primeiraVuelta.push(matches);
+                primeraVuelta.push(matches);
                 tempTeams.splice(1, 0, tempTeams.pop());
             }
 
-            let segundaVuelta = primeiraVuelta.map(round => round.map(m => ({ 
+            // 2. SEGUNDA VUELTA (Revanchas / Nivelada)
+            let segundaVuelta = primeraVuelta.map((round, rIdx) => round.map(m => ({ 
                 local: m.visitor, 
                 visitor: m.local, 
-                tag: m.tag === "DESCANSO" ? "DESCANSO" : "2da Vuelta" 
+                tag: m.tag === "DESCANSO" ? "DESCANSO" : `2da Vuelta (Fecha ${rIdx + 1})` 
             })));
 
-            let liguilla = [];
-            let nClassified = teamsList.length >= 7 ? 4 : (teamsList.length >= 5 ? 3 : 2);
-            let totalClassified = nClassified * 2; 
-
-            if (totalClassified >= 8) {
-                liguilla.push([{ local: "A1", visitor: "A4", tag: "Liguilla A (F1)" }, { local: "A2", visitor: "A3", tag: "Liguilla A (F1)" }]);
-                liguilla.push([{ local: "B1", visitor: "B4", tag: "Liguilla B (F1)" }, { local: "B2", visitor: "B3", tag: "Liguilla B (F1)" }]);
-            } else if (totalClassified >= 6) {
-                liguilla.push([{ local: "A1", visitor: "A3", tag: "Liguilla A (F1)" }, { local: "B1", visitor: "B3", tag: "Liguilla B (F1)" }]);
-            }
-
-            let finales = [
-                [{ local: "1º Grupo A", visitor: "2º Grupo B", tag: "Semifinal 1" }, { local: "1º Grupo B", visitor: "2º Grupo A", tag: "Semifinal 2" }],
-                [{ local: "Ganador Semi 1", visitor: "Ganador Semi 2", tag: "GRAN FINAL", nota: "Final Oficial" }]
+            // 3. LIGUILLA POR GRUPOS (8 Clasificados: 4 de 1ra Vuelta + 4 de 2da Vuelta)
+            // Sorteo de 2 Grupos de 4 equipos (Grupo A y Grupo B)
+            let liguilla = [
+                // Fecha 1 Liguilla
+                [
+                    { local: "A1 (1º Clasif. A)", visitor: "A4 (4º Clasif. A)", tag: "Liguilla Grupo A (Fecha 1)" },
+                    { local: "A2 (2º Clasif. A)", visitor: "A3 (3º Clasif. A)", tag: "Liguilla Grupo A (Fecha 1)" },
+                    { local: "B1 (1º Clasif. B)", visitor: "B4 (4º Clasif. B)", tag: "Liguilla Grupo B (Fecha 1)" },
+                    { local: "B2 (2º Clasif. B)", visitor: "B3 (3º Clasif. B)", tag: "Liguilla Grupo B (Fecha 1)" }
+                ],
+                // Fecha 2 Liguilla
+                [
+                    { local: "A1 (1º Clasif. A)", visitor: "A3 (3º Clasif. A)", tag: "Liguilla Grupo A (Fecha 2)" },
+                    { local: "A4 (4º Clasif. A)", visitor: "A2 (2º Clasif. A)", tag: "Liguilla Grupo A (Fecha 2)" },
+                    { local: "B1 (1º Clasif. B)", visitor: "B3 (3º Clasif. B)", tag: "Liguilla Grupo B (Fecha 2)" },
+                    { local: "B4 (4º Clasif. B)", visitor: "B2 (2º Clasif. B)", tag: "Liguilla Grupo B (Fecha 2)" }
+                ],
+                // Fecha 3 Liguilla
+                [
+                    { local: "A1 (1º Clasif. A)", visitor: "A2 (2º Clasif. A)", tag: "Liguilla Grupo A (Fecha 3)" },
+                    { local: "A3 (3º Clasif. A)", visitor: "A4 (4º Clasif. A)", tag: "Liguilla Grupo A (Fecha 3)" },
+                    { local: "B1 (1º Clasif. B)", visitor: "B2 (2º Clasif. B)", tag: "Liguilla Grupo B (Fecha 3)" },
+                    { local: "B3 (3º Clasif. B)", visitor: "B4 (4º Clasif. B)", tag: "Liguilla Grupo B (Fecha 3)" }
+                ]
             ];
 
-            return [...primeiraVuelta, ...segundaVuelta, ...liguilla, ...finales];
+            // 4. FASES FINALES (Semifinales y Gran Final)
+            let semifinales = [
+                [
+                    { local: "1º Grupo A", visitor: "2º Grupo B", tag: "Semifinal 1" },
+                    { local: "1º Grupo B", visitor: "2º Grupo A", tag: "Semifinal 2" }
+                ]
+            ];
+
+            let finales = [
+                [
+                    { local: "Ganador Semifinal 1", visitor: "Ganador Semifinal 2", tag: "GRAN FINAL", nota: "Final Oficial del Campeonato" }
+                ]
+            ];
+
+            return [...primeraVuelta, ...segundaVuelta, ...liguilla, ...semifinales, ...finales];
         }
 
         function generateRelampagoRounds(teamsList) {
@@ -655,7 +733,7 @@
 
             const result = await Swal.fire({
                 title: '¿Guardar Fixture?',
-                text: 'El esquema lógico quedará registrado para asignar horarios.',
+                text: 'El esquema lógico quedará registrado para asignar horarios y reemplazará cualquier versión anterior.',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Sí, registrar'
@@ -668,6 +746,22 @@
                     const campId = document.getElementById('campSelect').value;
                     const cat = document.getElementById('catSelect').value;
                     
+                    // Sobreescribir limpiamente: eliminar versiones anteriores de esta categoría
+                    try {
+                        const oldSnap = await db.collection('fixtures')
+                            .where('championshipId', '==', campId)
+                            .where('category', '==', cat)
+                            .get();
+                        
+                        if (!oldSnap.empty) {
+                            const batch = db.batch();
+                            oldSnap.forEach(doc => batch.delete(doc.ref));
+                            await batch.commit();
+                        }
+                    } catch (eClean) {
+                        console.warn('Aviso limpiando fixture anterior:', eClean);
+                    }
+
                     await db.collection('fixtures').add({
                         championshipId: campId,
                         category: cat,
@@ -676,7 +770,7 @@
                         status: 'pending_schedule'
                     });
 
-                    Swal.fire('¡Éxito!', 'Fixture guardado. Ahora puedes gestionar horarios.', 'success')
+                    Swal.fire('¡Éxito!', 'Fixture guardado correctamente. Ahora puedes gestionar horarios.', 'success')
                         .then(() => window.location.href = 'programacion-dashboard.html');
                 } catch (error) {
                     console.error("Error guardando fixture:", error);

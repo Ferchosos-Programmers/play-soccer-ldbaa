@@ -1231,11 +1231,99 @@
         return `${fixId || ""}_${(local || "").trim().replace(/\s+/g, "_")}_${(visitor || "").trim().replace(/\s+/g, "_")}_J${jornada}`;
       }
 
+      function normalizeTeamText(s) {
+        return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+      }
+
+      function matchTeamFlex(dbTeam, target) {
+        const nDb = normalizeTeamText(dbTeam);
+        const nTarget = normalizeTeamText(target);
+        if (nDb === nTarget) return true;
+        const cleanDb = nDb.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
+        const cleanTarget = nTarget.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
+        if (cleanDb === cleanTarget) return true;
+        if (cleanDb.includes(cleanTarget) || cleanTarget.includes(cleanDb)) return true;
+        return false;
+      }
+
+      const officialJornada1Data = [
+        // VIERNES 02-10-2026
+        { cat: "FEMENINO", local: "PALMEIRAS", visitor: "DEP SPENCER", day: "Viernes", time: "18:20", camL: "1", camV: "3", vocal: "AC LATINOS", veedor: "DINAMO FC" },
+        { cat: "PRIMERA", local: "AC LATINOS", visitor: "DINAMO", day: "Viernes", time: "20:00", camL: "2", camV: "4", vocal: "PALMEIRAS", veedor: "DEP SPENCER" },
+
+        // SÁBADO 03-10-2026
+        { cat: "FEMENINO", local: "VENTANAS", visitor: "PORTOVIEJO", day: "Sábado", time: "08:00", camL: "1", camV: "3", vocal: "ALMAGUER", veedor: "3 DE JULIO" },
+        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "ALMAGUER", day: "Sábado", time: "09:40", camL: "2", camV: "4", vocal: "PORTOVIEJO", veedor: "VENTANAS" },
+        { cat: "FEMENINO", local: "ALIANZA JUVENIL", visitor: "AC LATINOS", day: "Sábado", time: "11:20", camL: "1", camV: "3", vocal: "RIVER PLATE", veedor: "NAPOLES" },
+        { cat: "PRIMERA", local: "NAPOLES", visitor: "RIVER PLATE", day: "Sábado", time: "13:00", camL: "2", camV: "4", vocal: "AC LATINOS", veedor: "ALIANZA JUVENIL" },
+        { cat: "MÁXIMA", local: "INDEPENDIENTE", visitor: "GALAXY", day: "Sábado", time: "14:40", camL: "1", camV: "3", vocal: "FLUMINENSE", veedor: "" },
+        { cat: "MÁXIMA", local: "FLUMINENSE", visitor: "PORTOVIEJO", day: "Sábado", time: "16:20", camL: "2", camV: "4", vocal: "INDEPENDIENTE", veedor: "" },
+        { cat: "PRIMERA", local: "AMAZONAS", visitor: "CHELSEA", day: "Sábado", time: "18:00", camL: "1", camV: "3", vocal: "SPENCER", veedor: "MANCHESTER" },
+        { cat: "FEMENINO", local: "SPENCER", visitor: "MANCHESTER", day: "Sábado", time: "19:40", camL: "2", camV: "4", vocal: "AMAZONAS", veedor: "CHELSEA" },
+
+        // DOMINGO 04-10-2026
+        { cat: "PRIMERA", local: "LOS PRIMOS", visitor: "INTER", day: "Domingo", time: "08:00", camL: "1", camV: "3", vocal: "LAKERS", veedor: "MARSELLA FC" },
+        { cat: "PRIMERA", local: "LAKERS", visitor: "MARSELLA FC", day: "Domingo", time: "09:40", camL: "2", camV: "4", vocal: "INTER", veedor: "LOS PRIMOS" },
+        { cat: "MÁXIMA", local: "ESTUDIANTES", visitor: "VENTANAS", day: "Domingo", time: "13:40", camL: "2", camV: "4", vocal: "PALMEIRAS", veedor: "ARGENTINA" },
+        { cat: "MÁXIMA", local: "SOLO PANAS", visitor: "ALIANZA JUVENIL", day: "Domingo", time: "15:20", camL: "1", camV: "3", vocal: "ESTUDIANTES", veedor: "VENTANAS" },
+        { cat: "PRIMERA", local: "ARGENTINA", visitor: "PALMEIRAS", day: "Domingo", time: "17:00", camL: "2", camV: "4", vocal: "SOLO PANAS", veedor: "ALIANZA JUVENIL" }
+      ];
+
+      function aplicarProgramacionOficialFecha1() {
+        let appliedCount = 0;
+        fixturesMap.forEach((meta) => {
+          meta.data.forEach((m) => {
+            if (m.jornada === 1 && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA") {
+              const found = officialJornada1Data.find((item) => {
+                const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+                const locMatch = matchTeamFlex(m.local, item.local);
+                const visMatch = matchTeamFlex(m.visitor, item.visitor);
+                return catMatch && locMatch && visMatch;
+              });
+              if (found) {
+                m.fechaRealAsignadaText = found.day;
+                m.horaRealAsignada = found.time;
+                m.camerinoLocal = found.camL;
+                m.camerinoVisitor = found.camV;
+                m.vocalAsignado = found.vocal;
+                m.veedorAsignado = found.veedor;
+                appliedCount++;
+              }
+            }
+          });
+        });
+
+        renderMatches();
+
+        Swal.fire({
+          title: "¡Fecha 1 Oficial Programada!",
+          html: `
+            <div class="text-start small">
+              <p class="mb-2 text-white">✅ Se cargó la programación oficial para los <strong>${appliedCount} partidos</strong> con días (Viernes 02, Sábado 03, Domingo 04), horarios, mesas y camerinos exactos.</p>
+              <p class="mb-0 text-success fw-bold">👉 Recuerda presionar el botón <strong>'Guardar'</strong> para guardar los cambios.</p>
+            </div>
+          `,
+          icon: "success",
+          confirmButtonColor: "#2ecc71",
+          background: "#121212",
+          color: "#ffffff",
+        });
+      }
+
       function openProgramacionModal() {
         if (!currentJornada) {
           return Swal.fire("Aviso", "Selecciona una jornada primero.", "info");
         }
 
+        if (currentJornada === 1) {
+          aplicarProgramacionOficialFecha1();
+          return;
+        }
+
+        mostrarModalConfiguracionHorarios();
+      }
+
+      function mostrarModalConfiguracionHorarios() {
         let totalMatches = 0;
         fixturesMap.forEach((meta) => {
           meta.data.forEach((m) => {
@@ -1814,12 +1902,25 @@
           p++;
         }
 
-        // 5. Asignación de Mesa (Vocal & Veedor) por día en orden cronológico
+        // 5. Asignación de Camerinos y Mesa (Vocal & Veedor) por día en orden cronológico
         Object.keys(dayBuckets).forEach((day) => {
           const matches = dayBuckets[day];
           matches.sort((a, b) => (a.horaRealAsignada || "99:99").localeCompare(b.horaRealAsignada || "99:99"));
 
           const count = matches.length;
+
+          // Asignación de Camerinos 1-4 (Impar: C1 vs C3, Par: C2 vs C4 de manera aleatoria)
+          matches.forEach((m, idx) => {
+            const flip = Math.random() < 0.5;
+            if (idx % 2 === 0) {
+              m.camerinoLocal = flip ? "1" : "3";
+              m.camerinoVisitor = flip ? "3" : "1";
+            } else {
+              m.camerinoLocal = flip ? "2" : "4";
+              m.camerinoVisitor = flip ? "4" : "2";
+            }
+          });
+
           if (count < 2) return;
 
           let i = 0;
@@ -1868,6 +1969,7 @@
 
         let msgHtml = `<div class="text-start small">`;
         msgHtml += `<p class="mb-1 text-white">✅ <strong>Partidos programados:</strong> ${totalScheduled} (${prefMatches.length} preferenciales + ${Math.min(autoMatches.length, allAvailableSlots.length)} por sorteo).</p>`;
+        msgHtml += `<p class="mb-1 text-info">🚪 <strong>Camerinos asignados:</strong> Rotación automática (1 vs 3 / 2 vs 4).</p>`;
         if (noProgMatches.length > 0) {
           msgHtml += `<p class="mb-1 text-danger">🚫 <strong>No programados (oficio):</strong> ${noProgMatches.length} partido(s).</p>`;
         }
@@ -1965,11 +2067,13 @@
               <table class="table-elite">
                 <thead>
                   <tr>
-                    <th style="width: 165px">Día</th>
-                    <th style="width: 120px">Hora</th>
-                    <th style="width: 120px">Categoría</th>
+                    <th style="width: 140px">Día</th>
+                    <th style="width: 105px">Hora</th>
+                    <th style="width: 110px">Categoría</th>
+                    <th style="width: 65px; text-align: center;">Cam L</th>
                     <th>Encuentro / Resultados</th>
-                    <th style="width: 350px">Mesa (Vocal / Veedor)</th>
+                    <th style="width: 65px; text-align: center;">Cam V</th>
+                    <th style="width: 300px">Mesa (Vocal / Veedor)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -2002,6 +2106,16 @@
                   <span class="badge-category-mini">${m._cat}</span>
                   ${isNoProg ? '<span class="badge bg-danger text-white ms-1" style="font-size:0.58rem; letter-spacing:0.5px;">OFICIO</span>' : ''}
                 </td>
+                <td class="text-center">
+                  <select class="input-elite-sm text-center fw-bold ${m.camerinoLocal ? 'text-primary-glow' : 'text-white-50'}" style="width: 54px; padding: 2px 2px; font-size: 0.72rem;" ${isNoProg ? 'disabled' : ''}
+                    onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'camerinoLocal', this.value)">
+                    <option value="">-</option>
+                    <option value="1" ${m.camerinoLocal == '1' ? 'selected' : ''}>C1</option>
+                    <option value="2" ${m.camerinoLocal == '2' ? 'selected' : ''}>C2</option>
+                    <option value="3" ${m.camerinoLocal == '3' ? 'selected' : ''}>C3</option>
+                    <option value="4" ${m.camerinoLocal == '4' ? 'selected' : ''}>C4</option>
+                  </select>
+                </td>
                 <td>
                   <div class="d-flex align-items-center justify-content-center gap-3">
                     <div class="d-flex align-items-center gap-2 justify-content-end" style="width:40%">
@@ -2016,6 +2130,16 @@
                       <span class="team-name-elite-table text-start">${m.visitor}</span>
                     </div>
                   </div>
+                </td>
+                <td class="text-center">
+                  <select class="input-elite-sm text-center fw-bold ${m.camerinoVisitor ? 'text-primary-glow' : 'text-white-50'}" style="width: 54px; padding: 2px 2px; font-size: 0.72rem;" ${isNoProg ? 'disabled' : ''}
+                    onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'camerinoVisitor', this.value)">
+                    <option value="">-</option>
+                    <option value="1" ${m.camerinoVisitor == '1' ? 'selected' : ''}>C1</option>
+                    <option value="2" ${m.camerinoVisitor == '2' ? 'selected' : ''}>C2</option>
+                    <option value="3" ${m.camerinoVisitor == '3' ? 'selected' : ''}>C3</option>
+                    <option value="4" ${m.camerinoVisitor == '4' ? 'selected' : ''}>C4</option>
+                  </select>
                 </td>
                 <td>
                   <div class="row g-2">
@@ -2046,7 +2170,7 @@
       }
 
       function exportToExcel() {
-        const rows = [["DÍA", "HORA", "CATEGORÍA", "LOCAL", "GL", "GV", "VISITANTE", "VOCAL", "VEEDOR"]];
+        const rows = [["DÍA", "HORA", "CATEGORÍA", "CAM L", "LOCAL", "GL", "GV", "VISITANTE", "CAM V", "VOCAL", "VEEDOR"]];
         fixturesMap.forEach((meta) => {
           meta.data.forEach(m => {
             if (m.jornada === currentJornada && !m.isRest && m.local !== "DESCANSA") {
@@ -2054,10 +2178,12 @@
                 m.fechaRealAsignadaText || "Pend",
                 m.horaRealAsignada || "--:--",
                 meta.category,
+                m.camerinoLocal ? `C${m.camerinoLocal}` : "",
                 m.local,
                 m.golesLocal ?? "",
                 m.golesVisitor ?? "",
                 m.visitor,
+                m.camerinoVisitor ? `C${m.camerinoVisitor}` : "",
                 m.vocalAsignado || "",
                 m.veedorAsignado || ""
               ]);
