@@ -551,8 +551,7 @@
                     <option value="125">Art. 125 - 2 PARTIDOS</option>
                     <option value="126">Art. 126 - 3 PARTIDOS</option>
                     <option value="127">Art. 127 - 4 PARTIDOS</option>
-                    <option value="128">Art. 128 - 6 PARTIDOS</option>
-                    <option value="129">Art. 129 - 1 AÑO</option>
+                    <option value="128">Art. 128 - 1 AÑO (EXPULSIÓN)</option>
                   </select>
                 </div>
                 <div class="mb-4">
@@ -641,15 +640,14 @@
               <div class="mb-4">
                 <label class="form-label">TIPO DE MULTA</label>
                 <select class="select-premium" id="tipoMulta" required>
-                  <option value="">Seleccione tipo</option>
-                  <option value="multa_barra">MULTA A LA BARRA</option>
-                  <option value="no_presentacion">NO PRESENTACIÓN</option>
-                  <option value="no_vocal">NO VOCAL</option>
-                  <option value="no_veedor">NO VEEDOR</option>
-                  <option value="balon_liga">BALÓN DE LIGA</option>
-                  <option value="no_balon">NO PRESENTÓ BALÓN</option>
-                  <option value="perdida_balon">PÉRDIDA DE BALÓN</option>
-                  <option value="no_cinta">NO CINTA DE CAPITÁN</option>
+                  <option value="">Seleccione tipo de multa</option>
+                  <option value="multa_barra">MULTA A LA BARRA / DISTURBIOS</option>
+                  <option value="no_presentacion">NO PRESENTACIÓN / ABANDONO</option>
+                  <option value="vocalia_veeduria">VOCALÍAS Y VEEDURÍAS</option>
+                  <option value="balon_implementos">BALÓN E IMPLEMENTOS</option>
+                  <option value="sesiones_asambleas">SESIONES Y ASAMBLEAS</option>
+                  <option value="mingas_comisiones">MINGAS, COMISIONES E INSTALACIONES</option>
+                  <option value="cuotas_garantias">DERECHOS, TRÁMITES Y GARANTÍAS</option>
                 </select>
               </div>
               <div class="mb-4">
@@ -659,7 +657,7 @@
                   id="multaArticulo"
                   onchange="actualizarLiteralesMulta()"
                 >
-                  <option value="131">Art. 131 - Multas</option>
+                  <option value="132">Art. 132 - Aportes y Sanciones Económicas</option>
                 </select>
               </div>
               <div class="mb-4">
@@ -1875,8 +1873,8 @@
           125: 2,
           126: 3,
           127: 4,
-          128: 6,
-          129: 40, // Representación de un año en partidos aprox
+          128: 40, // 1 Año calendario / Expulsión
+          129: 40,
         };
 
         if (mapping[art]) {
@@ -1887,19 +1885,50 @@
 
         const literales = {
           124: [
-            "a) Por doble tarjeta amarilla",
-            "b) Por impedir gol con la mano",
-            "c) Juego brusco",
+            "a) Acumulación de cuatro (4) tarjetas amarillas",
+            "b) Acumulación de 2 tarjetas amarillas / Expulsado por reclamos indebidos",
+            "c) Lanzar la camiseta al suelo antes de finalizar el encuentro",
+            "d) Sacarse la camiseta dentro del terreno de juego",
+            "e) Jugar con aliento a licor o estado etílico (excluido sin cambio)",
           ],
           125: [
-            "a) Insultos al árbitro",
-            "b) Gestos obscenos",
-            "c) Intento de agresión",
+            "a) Realizar necesidades biológicas en el perímetro de la cancha",
+            "b) Juego Brusco (J.B.): golpear a rival en disputa reglamentaria",
+            "c) Provocar a las barras con palabras soeces o mímicas obscenas",
+            "d) Lanzar balón fuera de juego (asume costo de reposición)",
+            "e) Suplantación de identidad (sanción a suplantador y suplantado)",
+            "f) Jugar un partido oficial estando suspendido",
+            "g) Rayar o escribir arbitrariamente en la hoja de vocalía",
+            "h) Insultar u ofender después de haber sido expulsado",
           ],
-          126: ["a) Agresión física al árbitro", "b) Riña colectiva"],
-          127: ["a) Agresión grave", "b) Reincidencia"],
-          128: ["a) Agresión criminal"],
-          129: ["a) Expulsión de la liga"],
+          126: [
+            "a) Juego Brusco Grave (J.B.G.): excesiva fuerza y/o mala intención",
+            "b) Insultos o epítetos agraviantes a vocales, veedores o árbitros",
+            "c) Lanzar balón e impactar por la espalda a rival, compañero o árbitro",
+            "d) Reincidencia en faltas de este artículo (sanción y multa duplicada)",
+          ],
+          127: [
+            "a) Mímicas, gestos o señas obscenas a público, barras o directivos",
+            "b) Intento de agresión física o empujón leve",
+            "c) Conducta Violenta (C.V.): agredir con mala intención sin disputa del balón",
+            "d) Reincidencia en sanciones de este artículo (sanción duplicada)",
+          ],
+          128: [
+            "a) Epítetos racistas, xenófobos o actos de discriminación",
+            "b) Escupir de frente o impactar con escupitajo a árbitro, rival o autoridades",
+            "c) Lanzar tierra u objetos a árbitro, directivos, compañeros o rivales",
+            "d) Lanzar balón al rostro fuera de juego causando hematomas o sangrado",
+            "e) Conducta violenta / brutalidad extrema causando daño o lesión",
+            "f) Intento de agresión o amenazas a árbitro, vocal o veedor (inmunidad 48h)",
+            "g) Intento de agresión física o verbal a directivos de LBAA",
+            "h) Agresión consumada (puño, cabezazo, puntapié, codazo u objeto contundente)",
+            "i) Incitar o participar en gresca o batalla campal (cancha o parque infantil)",
+            "j) Adulteración o falsificación de documentos de la LBAA o clubes",
+            "k) Suplantación dirigida por dirigente (pérdida de garantía y puntos)",
+            "l) Jugador condicionado: pérdida de garantía (40% 1ra, 40% 2da, 20% 3ra + expulsión)",
+            "m) Fianza de habilitación condicionados ($30.00 / reincidente $60.00)",
+            "n) Doble militancia reglamentaria (ASOLIGAS y LBAA)",
+          ],
         };
 
         if (literales[art]) {
@@ -1925,7 +1954,7 @@
         let partidos =
           parseInt(document.getElementById("partidosSuspension").value) || 0;
 
-        if (art === "129") partidos = 40;
+        if (art === "128" || art === "129") partidos = 40;
 
         if (!tipo) return;
         if (tipo === "roja" && (!art || !lit)) {
@@ -2032,19 +2061,62 @@
 
         const literales = {
           multa_barra: [
-            "a) Por comportamiento inadecuado - $10.00",
-            "b) Por invasión de cancha - $20.00",
+            "a) Multa a la barra (1.ª vez) - $10.00",
+            "b) Multa a la barra (2.ª vez) - $20.00",
+            "c) Multa a la barra (3.ª vez en adelante) - $30.00",
+            "d) Ingreso de simpatizantes a la cancha con intención de agredir - $60.00",
+            "e) Participación en gresca o batalla campal - $60.00",
           ],
           no_presentacion: [
-            "a) Primera vez - $25.00",
-            "b) Segunda vez - Expulsión",
+            "a) No presentación a partido oficial - $10.00",
+            "b) No presentación en Liguilla (pérdida de garantía) - $60.00",
+            "c) Abandonar el campo de juego en el segundo tiempo - $5.00",
+            "d) No presentación a partidos amistosos (100% valor de arbitraje)",
           ],
-          no_vocal: ["a) Por no presentarse - $15.00"],
-          no_veedor: ["a) Por no presentarse - $10.00"],
-          balon_liga: ["a) Uso de balón de liga - $0.50"],
-          no_balon: ["a) No presentar balón - $1.00"],
-          perdida_balon: ["a) Pérdida de balón liga - $25.00"],
-          no_cinta: ["a) No presentar cinta cap. - $1.00"],
+          vocalia_veeduria: [
+            "a) No realizar vocalía o veeduría asignada - $5.00",
+            "b) Mala vocalía o veeduría (llenado erróneo) - $2.00",
+            "c) No ubicarse en el lugar oficial designado (mala vocalía) - $2.00",
+            "d) No firmar la hoja de vocalía - $2.00",
+            "e) No entregar hojas de vocalía a tiempo - $5.00",
+            "f) No entregar carnets de expulsados a tiempo - $2.00",
+            "g) Realizar vocalía/veeduría en estado etílico o libar (+inhabilitación) - $10.00",
+            "h) No entregar dinero de vocalía a tiempo (+50% recargo y no programación)",
+          ],
+          balon_implementos: [
+            "a) Uso de balón oficial de la liga - $1.50",
+            "b) No solicitar balón o presentar balón no aceptado por árbitro - $5.00",
+            "c) No presentar o no portar cinta de capitán - $1.00",
+          ],
+          sesiones_asambleas: [
+            "a) Inasistencia a sesiones ordinarias o extraordinarias - $5.00",
+            "b) Atraso a sesiones - $2.00",
+            "c) Abandonar la sesión sin autorización - $3.00",
+            "d) Fumar dentro del recinto de la asamblea - $3.00",
+            "e) Falta de compostura, respeto o lenguaje impropio en sesión - $5.00",
+            "f) No pedir la palabra levantando la mano en asamblea - $0.25",
+          ],
+          mingas_comisiones: [
+            "a) Inasistencia a mingas y comisiones convocadas (falta total) - $20.00",
+            "b) Atraso a mingas y comisiones (hasta 20 min) - $5.00",
+            "c) No entregar documentación solicitada por comisiones - $5.00",
+            "d) No devolver llaves de camerinos - $5.00",
+            "e) No apagar sistema de energía eléctrica de la cancha - $5.00",
+            "f) No pintar o mantener el logo del club en espacio asignado - $10.00",
+          ],
+          cuotas_garantias: [
+            "a) No desfilar en la inauguración - $30.00",
+            "b) Garantía económica por equipo (fianza de torneo) - $60.00",
+            "c) Garantía económica de árbitros - $100.00",
+            "d) Mensualidad de la Liga (por club) - $2.50",
+            "e) Mensualidad de la Asociación (por club) - $2.50",
+            "f) Carnet de cancha (por jugador) - $1.00",
+            "g) Recalificación o reposición por pérdida de carnet - $1.00",
+            "h) Pases interclubes y emisión de certificados - $0.50",
+            "i) Derecho de cancha por partido (por equipo) - $2.00",
+            "j) Garantía por reclamos y apelaciones (reembolsable) - $3.00",
+            "k) Inscripción del equipo al campeonato - $20.00",
+          ],
         };
 
         if (literales[tipo]) {

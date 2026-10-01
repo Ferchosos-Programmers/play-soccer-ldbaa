@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Propuesta Oficial - Seguro Médico del Deportista | Liga Barrial Argelia Alta</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #0a3d13;
+      --primary-dark: #05240b;
+      --primary-light: #1b6329;
+      --accent: #ffb703;
+      --danger: #d90429;
+      --success: #2ec4b6;
+      --dark: #1e1e1e;
+      --light: #f8f9fa;
+      --border: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Open Sans', sans-serif;
+      background-color: #0f172a;
+      color: #334155;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Barra de acción flotante */
+    .top-action-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .btn-action {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      padding: 10px 22px;
+      border-radius: 8px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(16, 185, 129, 0.45);
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.1);
+      color: #f8fafc;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Contenedor del documento A4 */
+    .document-container {
+      max-width: 900px;
+      margin: 30px auto;
+      background: #ffffff;
+      padding: 55px 65px;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    /* Encabezado Membretado */
+    .header-memo {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 3px solid var(--primary);
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+
+    .header-logo {
+      width: 100px;
+      height: 100px;
+      object-fit: contain;
+    }
+
+    .header-title-box {
+      text-align: right;
+      flex: 1;
+      padding-left: 25px;
+    }
+
+    .header-org {
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 900;
+      font-size: 1.35rem;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .header-sub {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #64748b;
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+    .doc-badge {
+      display: inline-block;
+      background: #f1f5f9;
+      color: var(--primary);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 4px 14px;
+      border-radius: 20px;
+      border: 1px solid #cbd5e1;
+      margin-top: 8px;
+    }
+
+    /* Título del Proyecto */
+    .project-hero {
+      text-align: center;
+      background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+      border: 1px solid #e2e8f0;
+      border-left: 6px solid var(--primary);
+      padding: 24px 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+
+    .project-hero h1 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 900;
+      color: var(--primary-dark);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .project-hero p {
+      color: #475569;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    /* Secciones */
+    .section-block {
+      margin-bottom: 28px;
+    }
+
+    .section-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      text-transform: uppercase;
+    }
+
+    .section-title i {
+      color: var(--accent);
+      background: var(--primary);
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 6px;
+      font-size: 0.85rem;
+    }
+
+    p, li {
+      font-size: 0.95rem;
+      color: #334155;
+      text-align: justify;
+    }
+
+    ul {
+      margin-left: 20px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    li {
+      margin-bottom: 6px;
+    }
+
+    /* Grid de Modalidades de Pago */
+    .modalities-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin: 16px 0;
+    }
+
+    .modality-card {
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 18px;
+      background: #ffffff;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .modality-card.highlight {
+      border: 2px solid var(--primary);
+      background: #f0fdf4;
+    }
+
+    .modality-badge {
+      position: absolute;
+      top: -10px;
+      right: 15px;
+      background: var(--primary);
+      color: white;
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 10px;
+      border-radius: 12px;
+      text-transform: uppercase;
+    }
+
+    .modality-card h4 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .modality-price {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: var(--dark);
+      margin: 8px 0;
+    }
+
+    .modality-price small {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #64748b;
+    }
+
+    /* Tabla de Coberturas */
+    .table-coverage {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 0.9rem;
+    }
+
+    .table-coverage th {
+      background: var(--primary);
+      color: #ffffff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      text-align: left;
+      padding: 10px 14px;
+      text-transform: uppercase;
+      font-size: 0.8rem;
+    }
+
+    .table-coverage td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .table-coverage tr:nth-child(even) {
+      background: #f8fafc;
+    }
+
+    .badge-100 {
+      background: #dcfce7;
+      color: #166534;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    .badge-partial {
+      background: #fef3c7;
+      color: #92400e;
+      font-weight: 800;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    /* Flujo Operativo en Pasos */
+    .steps-flow {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 16px 0;
+    }
+
+    .step-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-top: 4px solid var(--primary);
+      border-radius: 8px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .step-number {
+      width: 26px;
+      height: 26px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      font-weight: 800;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+    }
+
+    .step-box h5 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+
+    .step-box p {
+      font-size: 0.75rem;
+      color: #64748b;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    /* Callout Informativo */
+    .callout-box {
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      padding: 14px 18px;
+      border-radius: 6px;
+      margin: 16px 0;
+      font-size: 0.9rem;
+      color: #1e40af;
+    }
+
+    .callout-box strong {
+      font-weight: 700;
+    }
+
+    /* Firmas */
+    .signature-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 50px;
+      margin-top: 45px;
+      padding-top: 20px;
+    }
+
+    .signature-line {
+      border-top: 1.5px solid #64748b;
+      text-align: center;
+      padding-top: 8px;
+    }
+
+    .signature-line h6 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: var(--dark);
+      text-transform: uppercase;
+    }
+
+    .signature-line p {
+      font-size: 0.8rem;
+      color: #64748b;
+      text-align: center;
+    }
+
+    /* Pie de página */
+    .document-footer {
+      margin-top: 35px;
+      padding-top: 15px;
+      border-top: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    /* ESTILOS PARA IMPRESIÓN Y GUARDAR EN PDF */
+    @media print {
+      body {
+        background: white;
+        color: black;
+      }
+
+      .top-action-bar {
+        display: none !important;
+      }
+
+      .document-container {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        border-radius: 0;
+      }
+
+      .section-block {
+        page-break-inside: avoid;
+      }
+
+      .signature-grid {
+        page-break-inside: avoid;
+      }
+
+      @page {
+        size: A4;
+        margin: 1.8cm 1.5cm;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra de Acciones Superior -->
+  <div class="top-action-bar">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <a href="index.html" class="btn-action btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver al Sistema
+      </a>
+      <span style="color: #94a3b8; font-size: 0.85rem; font-weight: 600;">
+        <i class="fas fa-file-contract me-1 text-warning"></i> Documento Oficial de Propuesta
+      </span>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button onclick="window.print()" class="btn-action">
+        <i class="fas fa-print"></i> Imprimir / Guardar en PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Contenedor del Documento -->
+  <div class="document-container">
+
+    <!-- Membrete Oficial -->
+    <div class="header-memo">
+      <img src="img/logo.png" alt="Logo LDBAA" class="header-logo" onerror="this.src='https://via.placeholder.com/100x100?text=LIGA+ARGELIA'">
+      <div class="header-title-box">
+        <div class="header-org">Liga Deportiva Barrial "Argelia Alta"</div>
+        <div class="header-sub">Comisión Directiva & Departamento Técnico</div>
+        <div class="doc-badge"><i class="fas fa-shield-alt me-1"></i> PROPUESTA REGLAMENTARIA N° 2026-SMD</div>
+      </div>
+    </div>
+
+    <!-- Título de la Propuesta -->
+    <div class="project-hero">
+      <h1>Proyecto de Creación del Fondo Solidario y Seguro Médico del Deportista</h1>
+      <p>Sistema de Asistencia Médica Inmediata y Cobertura de Lesiones para Jugadores Federados</p>
+    </div>
+
+    <!-- 1. Justificación -->
+    <div class="section-block">
+      <div class="section-title">
+        <i class="fas fa-bullseye"></i> 1. Objetivo y Justificación
+      </div>
+      <p>
+        El presente proyecto tiene por objetivo garantizar la <strong>atención médica inmediata y digna</strong> a todos los deportistas debidamente calificados que sufran lesiones durante el desarrollo de los partidos oficiales organizados por la <strong>Liga Barrial Argelia Alta</strong>.
+      </p>
+      <p style="margin-top: 6px;">
+        A través de un <strong>Fondo Solidario Común</strong> y una <strong>Alianza Estratégica con Centros Médicos Locales</strong>, se asegura que ningún jugador quede desamparado ante emergencias en cancha, eliminando la incertidumbre económica para los clubes y familiares.
+      </p>
+    </div>
+
+    <!-- 2. Modalidades de Aporte Financiero -->
+    <div class="section-block">
+      <div class="section-title">
+        <i class="fas fa-hand-holding-usd"></i> 2. Modalidades de Aporte (Aprobación de Asamblea)
+      </div>
+      <p>
+        Para la recaudación del Fondo Médico, se presentan <strong>dos modalidades de pago viables</strong> a consideración de la directiva y presidentes de los clubes:
+      </p>
+
+      <div class="modalities-grid">
+        <!-- Modalidad 1 -->
+        <div class="modality-card highlight">
+          <span class="modality-badge">Recomendada</span>
+          <h4><i class="fas fa-receipt text-success"></i> Opción A: Por Vocalía</h4>
+          <div class="modality-price">$2.00 <small>/ por partido jugado</small></div>
+          <ul>
+            <li>Se cancela directamente en la <strong>Planilla de Vocalía</strong> de cada fin de semana.</li>
+            <li>No genera deudas acumuladas semanales.</li>
+            <li>Se cobra automáticamente en el sistema digital de vocalías.</li>
+          </ul>
+        </div>
+
+        <!-- Modalidad 2 -->
+        <div class="modality-card">
+          <span class="modality-badge" style="background:#475569;">Alternativa</span>
+          <h4><i class="fas fa-calendar-alt text-primary"></i> Opción B: En Sesión</h4>
+          <div class="modality-price">$2.00 a $3.00 <small>/ semanal en asamblea</small></div>
+          <ul>
+            <li>Se cancela los <strong>días martes</strong> en la sesión semanal de dirigentes.</li>
+            <li>Cobrado por el Tesorero de la Liga con recibo oficial.</li>
+            <li>El club que no cancele en sesión queda suspendido del seguro hasta su pago.</li>
+          </ul>
+        </div>
+      </div>
+      <p style="font-size: 0.85rem; color: #64748b; font-style: italic;">
+        * Nota: El aporte garantiza la cobertura del 100% de los jugadores inscritos en la nómina oficial del club durante todo el torneo.
+      </p>
+    </div>
+
+    <!-- 3. Cuadro de Coberturas -->
+    <div class="section-block">
+      <div class="section-title">
+        <i class="fas fa-notes-medical"></i> 3. Cuadro de Coberturas y Beneficios
+      </div>
+      <p>
+        La atención médica se brindará en la <strong>Clínica / Centro de Salud en Alianza</strong>, estableciendo los siguientes porcentajes y límites de cobertura oficial:
+      </p>
+
+      <table class="table-coverage">
+        <thead>
+          <tr>
+            <th>Servicio / Prestación Médica</th>
+            <th>% Cobertura Liga</th>
+            <th>Detalle y Alcance</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Consulta Médica de Urgencia</strong></td>
+            <td><span class="badge-100">100% CUBIERTO</span></td>
+            <td>Evaluación inmediata por el médico de turno / traumatólogo.</td>
+          </tr>
+          <tr>
+            <td><strong>Inmovilización de Emergencia</strong></td>
+            <td><span class="badge-100">100% CUBIERTO</span></td>
+            <td>Colocación de vendajes compresivos, férulas o yeso inicial.</td>
+          </tr>
+          <tr>
+            <td><strong>Sutura y Curación de Heridas</strong></td>
+            <td><span class="badge-100">100% CUBIERTO</span></td>
+            <td>Limpieza, desinfección y puntos de sutura por cortes en cancha.</td>
+          </tr>
+          <tr>
+            <td><strong>Inyección / Medicación de Urgencia</strong></td>
+            <td><span class="badge-100">100% CUBIERTO</span></td>
+            <td>Analgésico o antiinflamatorio inyectado en la consulta inicial.</td>
+          </tr>
+          <tr>
+            <td><strong>Radiografías / Rayos X</strong></td>
+            <td><span class="badge-partial">40% a 50% AYUDA</span></td>
+            <td>Descuento preferencial de alianza + porcentaje cubierto por la liga.</td>
+          </tr>
+          <tr>
+            <td><strong>Medicamentos de Farmacia (Receta)</strong></td>
+            <td><span class="badge-partial">10% a 15% AYUDA</span></td>
+            <td>Rebaja institucional en farmacias aliadas o aporte de apoyo.</td>
+          </tr>
+          <tr>
+            <td><strong>Cirugías / Lesiones Mayores</strong></td>
+            <td><span class="badge-partial">AUXILIO SOLIDARIO</span></td>
+            <td>Aporte tope de emergencia (ej: hasta $100.00 a $150.00 del fondo común).</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 4. Flujo Operativo en la Plataforma Digital -->
+    <div class="section-block">
+      <div class="section-title">
+        <i class="fas fa-laptop-medical"></i> 4. Flujo Operativo y Control Antifraude
+      </div>
+      <p>
+        Para garantizar total transparencia y evitar desvíos de fondos, todo el proceso estará automatizado en el software <strong>Play Soccer LDBAA</strong>:
+      </p>
+
+      <div class="steps-flow">
+        <div class="step-box">
+          <div class="step-number">1</div>
+          <h5>Incidencia en Cancha</h5>
+          <p>El vocal asienta la lesión en la planilla digital durante el partido.</p>
+        </div>
+        <div class="step-box">
+          <div class="step-number">2</div>
+          <h5>Orden Digital</h5>
+          <p>El sistema valida que el club esté al día y emite la <strong>Orden con QR</strong>.</p>
+        </div>
+        <div class="step-box">
+          <div class="step-number">3</div>
+          <h5>Atención en Clínica</h5>
+          <p>El jugador acude con su cédula/carnet y es atendido sin pago previo.</p>
+        </div>
+        <div class="step-box">
+          <div class="step-number">4</div>
+          <h5>Liquidación Mensual</h5>
+          <p>La clínica y la tesorería concilian las cuentas a fin de mes.</p>
+        </div>
+      </div>
+
+      <div class="callout-box">
+        <i class="fas fa-check-circle me-1"></i> <strong>Garantía desde la Fecha 1:</strong> Al ser un <em>Fondo Solidario (Pool de la Liga)</em>, si un jugador se lesiona en las primeras fechas, la cobertura entra en vigencia de inmediato siempre y cuando su club no adeude la fecha correspondiente.
+      </div>
+    </div>
+
+    <!-- 5. Requisitos y Obligaciones -->
+    <div class="section-block">
+      <div class="section-title">
+        <i class="fas fa-gavel"></i> 5. Condiciones y Reglamento
+      </div>
+      <ul>
+        <li><strong>Estar Calificado:</strong> El jugador debe constar en la nómina oficial del club en la plataforma.</li>
+        <li><strong>Estar al Día:</strong> El club debe haber cancelado el aporte del seguro de la fecha jugada.</li>
+        <li><strong>Constancia en Acta:</strong> La lesión debe haber ocurrido dentro del campo de juego y constar en el informe del vocal/árbitro.</li>
+        <li><strong>Plazo de Atención:</strong> La orden médica tiene una vigencia máxima de <strong>24 a 48 horas</strong> post-partido para atención inmediata.</li>
+      </ul>
+    </div>
+
+    <!-- Firmas de Aprobación -->
+    <div class="signature-grid">
+      <div class="signature-line">
+        <h6>Sr. Presidente</h6>
+        <p>Liga Deportiva Barrial Argelia Alta</p>
+      </div>
+      <div class="signature-line">
+        <h6>Sr. Tesorero / Dir. Deportes</h6>
+        <p>Comisión de Salud y Disciplina</p>
+      </div>
+    </div>
+
+    <!-- Pie de Página -->
+    <div class="document-footer">
+      <span>Play Soccer LDBAA &copy; 2026 - Gestión Deportiva Integral</span>
+      <span>Documento para Tratamiento en Asamblea General de Clubes</span>
+    </div>
+
+  </div>
+
+</body>
+</html>

@@ -3434,7 +3434,7 @@
                 parseInt(s.partidosSuspension, 10) ||
                 parseInt(s.partidos, 10) ||
                 (s.tipo === "roja" ? 1 : 1);
-              if (String(s.articulo) === "129") totalPartidos = 40;
+              if (String(s.articulo) === "128" || String(s.articulo) === "129") totalPartidos = 40;
 
               // Determinar la jornada de origen de la sanción
               let startJornada = parseInt(s.jornada, 10);
