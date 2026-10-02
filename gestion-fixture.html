@@ -602,6 +602,37 @@
           transform: scale(1.05);
       }
 
+      .badge-cat-maxima {
+        background: rgba(46, 204, 113, 0.15);
+        color: #2ecc71;
+        border: 1px solid rgba(46, 204, 113, 0.4);
+        font-weight: 800;
+        font-size: 0.72rem;
+        padding: 4px 10px;
+        border-radius: 8px;
+        display: inline-block;
+      }
+      .badge-cat-primera {
+        background: rgba(52, 152, 219, 0.15);
+        color: #3498db;
+        border: 1px solid rgba(52, 152, 219, 0.4);
+        font-weight: 800;
+        font-size: 0.72rem;
+        padding: 4px 10px;
+        border-radius: 8px;
+        display: inline-block;
+      }
+      .badge-cat-femenino {
+        background: rgba(231, 76, 60, 0.15);
+        color: #e74c3c;
+        border: 1px solid rgba(231, 76, 60, 0.4);
+        font-weight: 800;
+        font-size: 0.72rem;
+        padding: 4px 10px;
+        border-radius: 8px;
+        display: inline-block;
+      }
+
       .d-none {
         display: none !important;
       }
@@ -651,8 +682,8 @@
       <div class="step-indicator" id="navDots"></div>
 
       <div class="glass-panel">
-        <div class="row g-4 align-items-center">
-          <div class="col-md-5">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-4">
             <label class="form-label mb-2">CAMPEONATO ACTIVO</label>
             <select
               id="campSelect"
@@ -662,7 +693,7 @@
               <option value="">Cargando campeonatos...</option>
             </select>
           </div>
-          <div class="col-md-4">
+          <div class="col-md-3">
             <label class="form-label text-center mb-2 d-block"
               >CATEGORÍAS EN PROCESO</label
             >
@@ -684,13 +715,214 @@
               >
             </div>
           </div>
-          <div class="col-md-3">
-            <!-- Gestión automática: Los encuentros se cargan directamente del fixture guardado -->
+          <div class="col-md-5">
+            <div class="d-flex justify-content-md-end justify-content-center gap-2 flex-wrap">
+              <button class="btn btn-export-excel rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm" onclick="exportarTodoElFixtureExcel()" title="Descargar todo el fixture oficial en Excel con todas las fechas">
+                <i class="fas fa-file-excel me-1"></i> Descargar Todo el Fixture
+              </button>
+              <button class="btn btn-outline-info rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm" onclick="openModalCalendarioMaestro()" title="Ver tabla de sincronización oficial">
+                <i class="fas fa-table me-1"></i> Calendario Maestro
+              </button>
+              <button class="btn btn-outline-success rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm" onclick="reaplicarSincronizacionMaestra()" title="Re-sincronizar fechas cada 15 días">
+                <i class="fas fa-sync-alt me-1"></i> Auto-Sincronizar
+              </button>
+            </div>
           </div>
         </div>
 
         <div id="jornadasContainer">
           <div class="jornada-grid" id="jornadaCards"></div>
+        </div>
+      </div>
+
+      <!-- MODAL DE CALENDARIO MAESTRO DE SINCRONIZACIÓN LDBAA -->
+      <div class="modal fade" id="modalCalendarioMaestro" tabindex="-1" aria-labelledby="modalCalendarioMaestroLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+          <div class="modal-content glass-panel" style="background: rgba(10, 16, 24, 0.98); border: 1px solid rgba(52, 152, 219, 0.4); border-radius: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.95); padding: 25px;">
+            <div class="modal-header border-0 pb-3 d-flex justify-content-between align-items-center">
+              <div>
+                <h4 class="modal-title text-white fw-900 mb-1" id="modalCalendarioMaestroLabel">
+                  📋 Calendario Maestro de <span class="text-primary-glow">Sincronización LDBAA</span>
+                </h4>
+                <p class="text-white-50 small mb-0">Planificación oficial de encuentros por semana para igualar la finalización de todas las categorías.</p>
+              </div>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body py-2">
+              <!-- Primera Vuelta -->
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="text-warning fw-bold mb-0 text-uppercase"><i class="fas fa-flag-checkered me-2"></i>1. Fechas de Encuentros - Primera Vuelta (13 Semanas)</h6>
+                  <span class="badge bg-warning text-dark fw-bold">02/10/2026 - 08/01/2027</span>
+                </div>
+                <div class="table-responsive rounded-4 border border-secondary border-opacity-25">
+                  <table class="table table-dark table-sm text-center mb-0 align-middle" style="font-size: 0.78rem;">
+                    <thead>
+                      <tr class="bg-secondary bg-opacity-25 text-white-50">
+                        <th>N° EQUIPOS</th>
+                        <th>CATEGORÍA</th>
+                        <th>2/10<br><small>J1</small></th>
+                        <th>9/10<br><small>J2</small></th>
+                        <th>16/10<br><small>J3</small></th>
+                        <th>23/10<br><small>J4</small></th>
+                        <th>30/10<br><small>J5</small></th>
+                        <th>6/11<br><small>J6</small></th>
+                        <th>13/11<br><small>J7</small></th>
+                        <th>20/11<br><small>J8</small></th>
+                        <th>27/11<br><small>J9</small></th>
+                        <th>4/12<br><small>J10</small></th>
+                        <th>11/12<br><small>J11</small></th>
+                        <th>18/12<br><small>J12</small></th>
+                        <th class="table-warning text-dark fw-bold">8/1/27<br><small>J13 ⭐</small></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="fw-bold text-danger">8</td>
+                        <td class="fw-bold text-danger text-start">FEMENINO</td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td class="table-warning"><span class="badge bg-danger text-white fw-bold">X (Fin)</span></td>
+                      </tr>
+                      <tr>
+                        <td class="fw-bold text-info">14</td>
+                        <td class="fw-bold text-info text-start">PRIMERA</td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td class="table-warning"><span class="badge bg-info text-dark fw-bold">X (Fin)</span></td>
+                      </tr>
+                      <tr>
+                        <td class="fw-bold text-success">9</td>
+                        <td class="fw-bold text-success text-start">MÁXIMA</td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td class="table-warning"><span class="badge bg-success text-dark fw-bold">X (Fin)</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Segunda Vuelta -->
+              <div class="mb-2">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="text-primary-glow fw-bold mb-0 text-uppercase"><i class="fas fa-trophy me-2"></i>2. Fechas de Encuentros - Segunda Vuelta (11 Semanas)</h6>
+                  <span class="badge bg-primary text-white fw-bold">15/01/2027 - 02/04/2027</span>
+                </div>
+                <div class="table-responsive rounded-4 border border-secondary border-opacity-25">
+                  <table class="table table-dark table-sm text-center mb-0 align-middle" style="font-size: 0.78rem;">
+                    <thead>
+                      <tr class="bg-secondary bg-opacity-25 text-white-50">
+                        <th>N° EQUIPOS</th>
+                        <th>CATEGORÍA</th>
+                        <th>15/1<br><small>J14</small></th>
+                        <th>22/1<br><small>J15</small></th>
+                        <th>29/1<br><small>J16</small></th>
+                        <th>5/2<br><small>J17</small></th>
+                        <th>12/2<br><small>J18</small></th>
+                        <th>19/2<br><small>J19</small></th>
+                        <th>26/2<br><small>J20</small></th>
+                        <th>5/3<br><small>J21</small></th>
+                        <th>12/3<br><small>J22</small></th>
+                        <th>19/3<br><small>J23</small></th>
+                        <th class="table-success text-dark fw-bold">2/4/27<br><small>J24 ⭐</small></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td class="fw-bold text-danger">8</td>
+                        <td class="fw-bold text-danger text-start">FEMENINO</td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td class="table-success"><span class="badge bg-danger text-white fw-bold">X (Fin)</span></td>
+                      </tr>
+                      <tr>
+                        <td class="fw-bold text-info">12</td>
+                        <td class="fw-bold text-info text-start">PRIMERA</td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td><span class="badge bg-info text-dark">X</span></td>
+                        <td class="table-success"><span class="badge bg-info text-dark fw-bold">X (Fin)</span></td>
+                      </tr>
+                      <tr>
+                        <td class="fw-bold text-success">11</td>
+                        <td class="fw-bold text-success text-start">MÁXIMA</td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td class="table-success"><span class="badge bg-success text-dark fw-bold">X (Fin)</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-2 d-flex justify-content-between flex-wrap gap-2">
+              <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill text-white fw-bold" data-bs-dismiss="modal">Cerrar</button>
+              <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-outline-success px-4 py-2 rounded-pill fw-bold" onclick="exportarTodoElFixtureExcel()">
+                  <i class="fas fa-file-excel me-2"></i> Descargar Todo el Fixture
+                </button>
+                <button type="button" class="btn btn-success px-4 py-2 rounded-pill fw-bold" onclick="reaplicarSincronizacionMaestra(); bootstrap.Modal.getInstance(document.getElementById('modalCalendarioMaestro')).hide();">
+                  <i class="fas fa-check-double me-2"></i> Aplicar Este Calendario
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -973,6 +1205,161 @@
         loadFixtures();
       }
 
+      // ==========================================
+      // CALENDARIO MAESTRO OFICIAL LDBAA (SINCRONIZACIÓN)
+      // ==========================================
+      const CALENDARIO_OFICIAL = {
+        1: { date: "02/10/2026", vuelta: "1ra Vuelta" },
+        2: { date: "09/10/2026", vuelta: "1ra Vuelta" },
+        3: { date: "16/10/2026", vuelta: "1ra Vuelta" },
+        4: { date: "23/10/2026", vuelta: "1ra Vuelta" },
+        5: { date: "30/10/2026", vuelta: "1ra Vuelta" },
+        6: { date: "06/11/2026", vuelta: "1ra Vuelta" },
+        7: { date: "13/11/2026", vuelta: "1ra Vuelta" },
+        8: { date: "20/11/2026", vuelta: "1ra Vuelta" },
+        9: { date: "27/11/2026", vuelta: "1ra Vuelta" },
+        10: { date: "04/12/2026", vuelta: "1ra Vuelta" },
+        11: { date: "11/12/2026", vuelta: "1ra Vuelta" },
+        12: { date: "18/12/2026", vuelta: "1ra Vuelta" },
+        13: { date: "08/01/2027", vuelta: "Fin 1ra Vuelta ⭐" },
+        14: { date: "15/01/2027", vuelta: "2da Vuelta" },
+        15: { date: "22/01/2027", vuelta: "2da Vuelta" },
+        16: { date: "29/01/2027", vuelta: "2da Vuelta" },
+        17: { date: "05/02/2027", vuelta: "2da Vuelta" },
+        18: { date: "12/02/2027", vuelta: "2da Vuelta" },
+        19: { date: "19/02/2027", vuelta: "2da Vuelta" },
+        20: { date: "26/02/2027", vuelta: "2da Vuelta" },
+        21: { date: "05/03/2027", vuelta: "2da Vuelta" },
+        22: { date: "12/03/2027", vuelta: "2da Vuelta" },
+        23: { date: "19/03/2027", vuelta: "2da Vuelta" },
+        24: { date: "02/04/2027", vuelta: "Fin 2da Vuelta ⭐" },
+        25: { date: "09/04/2027", vuelta: "Liguilla Fecha 1" },
+        26: { date: "16/04/2027", vuelta: "Liguilla Fecha 2" },
+        27: { date: "23/04/2027", vuelta: "Liguilla Fecha 3" },
+        28: { date: "30/04/2027", vuelta: "Semifinales" },
+        29: { date: "07/05/2027", vuelta: "GRAN FINAL 🏆" },
+      };
+
+      function computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat) {
+        const normCat = (cat || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+        const etiqueta = (m.etiqueta || m.tag || "").toUpperCase();
+        
+        // Determinar Fase / Vuelta
+        const is1raVuelta = etiqueta.includes("1RA") || etiqueta.includes("1ERA") || (!etiqueta.includes("2DA") && !etiqueta.includes("LIGUILLA") && !etiqueta.includes("SEMI") && !etiqueta.includes("FINAL") && etapaNum <= 13);
+        const is2daVuelta = etiqueta.includes("2DA") || (!is1raVuelta && !etiqueta.includes("LIGUILLA") && !etiqueta.includes("SEMI") && !etiqueta.includes("FINAL") && etapaNum <= 26);
+        const isLiguilla = etiqueta.includes("LIGUILLA");
+        const isSemi = etiqueta.includes("SEMI");
+        const isFinal = etiqueta.includes("FINAL");
+
+        // Extraer número de fecha relativo dentro de la vuelta si viene en la etiqueta
+        let fechaRelativa = 0;
+        const matchFecha = etiqueta.match(/FECHA\s*(\d+)/i);
+        if (matchFecha && matchFecha[1]) {
+          fechaRelativa = parseInt(matchFecha[1], 10);
+        } else {
+          if (is1raVuelta) {
+            fechaRelativa = etapaNum;
+          } else if (is2daVuelta) {
+            let offset = 13;
+            if (normCat.includes("MAXIMA")) offset = 9;
+            else if (normCat === "FEMENINO") offset = 7;
+            fechaRelativa = etapaNum > offset ? (etapaNum - offset) : etapaNum;
+          }
+        }
+
+        if (is1raVuelta) {
+          // 1RA VUELTA (Jornadas 1 a 13 del Calendario Maestro)
+          if (normCat === "PRIMERA") {
+            // Juega 13 semanas continuas (J1 a J13)
+            return Math.min(13, Math.max(1, fechaRelativa || etapaNum));
+          } else if (normCat === "FEMENINO") {
+            // 7 Fechas jugadas cada 15 días: J1, J3, J5, J7, J9, J11, J13 (Termina en J13)
+            const mapFem1 = [1, 3, 5, 7, 9, 11, 13];
+            const idx = Math.min(mapFem1.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
+            return mapFem1[idx];
+          } else if (normCat.includes("MAXIMA")) {
+            // 8 o 9 Fechas jugadas cada 15 días y remate al final para coincidir en J13:
+            // J1, J3, J5, J7, J9, J11, J12, J13 (Termina en J13)
+            const mapMax1 = [1, 3, 5, 7, 9, 11, 12, 13, 13];
+            const idx = Math.min(mapMax1.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
+            return mapMax1[idx];
+          } else {
+            const mapGeneric = [1, 3, 5, 7, 9, 11, 13];
+            const idx = Math.min(mapGeneric.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
+            return mapGeneric[idx];
+          }
+        } else if (is2daVuelta) {
+          // 2DA VUELTA (Jornadas 14 a 24 del Calendario Maestro - 11 semanas)
+          if (normCat === "PRIMERA" || normCat.includes("MAXIMA")) {
+            // Juegan las 11 semanas consecutivas de 2da vuelta (J14 a J24)
+            const r = Math.min(11, Math.max(1, fechaRelativa || 1));
+            return 13 + r; // 14 a 24
+          } else if (normCat === "FEMENINO") {
+            // 7 Fechas jugadas cada 15 días y rematando en la semana 11 (J24):
+            // J14, J16, J18, J20, J22, J23, J24 (Termina en J24)
+            const mapFem2 = [14, 16, 18, 20, 22, 23, 24];
+            const idx = Math.min(mapFem2.length - 1, Math.max(0, (fechaRelativa || 1) - 1));
+            return mapFem2[idx];
+          } else {
+            const r = Math.min(11, Math.max(1, fechaRelativa || 1));
+            return 13 + r;
+          }
+        } else if (isLiguilla) {
+          const matchLig = etiqueta.match(/FECHA\s*(\d+)/i);
+          const fLig = matchLig ? parseInt(matchLig[1], 10) : 1;
+          return 24 + fLig; // 25, 26, 27
+        } else if (isSemi) {
+          return 28;
+        } else if (isFinal) {
+          return 29;
+        }
+
+        return etapaNum || 1;
+      }
+
+      function getCategoryBadge(cat) {
+        const norm = (cat || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+        if (norm.includes("MAXIMA")) return `<span class="badge-cat-maxima">MÁXIMA</span>`;
+        if (norm === "PRIMERA") return `<span class="badge-cat-primera">PRIMERA</span>`;
+        if (norm === "FEMENINO") return `<span class="badge-cat-femenino">FEMENINO</span>`;
+        return `<span class="badge bg-secondary">${cat}</span>`;
+      }
+
+      function openModalCalendarioMaestro() {
+        const modal = new bootstrap.Modal(document.getElementById("modalCalendarioMaestro"));
+        modal.show();
+      }
+
+      function reaplicarSincronizacionMaestra() {
+        if (!fixturesMap || fixturesMap.size === 0) {
+          return Swal.fire("Aviso", "No hay fixtures cargados para sincronizar.", "info");
+        }
+        
+        fixturesMap.forEach((meta) => {
+          const cat = meta.category;
+          let totalEtapasCat = 0;
+          meta.data.forEach((m) => {
+            const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            if (j > totalEtapasCat) totalEtapasCat = j;
+          });
+
+          meta.data.forEach((m) => {
+            const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+          });
+        });
+
+        renderNavigation();
+        Swal.fire({
+          title: "¡Sincronización Aplicada!",
+          text: "Todas las categorías han sido sincronizadas según el Calendario Maestro Oficial (Primera Vuelta finaliza en J13 y Segunda Vuelta en J24). Recuerda presionar 'Guardar' en cada jornada para oficializar.",
+          icon: "success",
+          confirmButtonColor: "#2ecc71",
+          background: "#121212",
+          color: "#ffffff"
+        });
+      }
+
       async function loadFixtures() {
         const campId = document.getElementById("campSelect").value;
         if (!campId) return;
@@ -1008,46 +1395,19 @@
             }
           });
 
-          // 2. Extraer maxJ del bloque Élite (Máxima/Primera) como referencia de temporada
-          let eliteMaxJ = 0;
-          Object.values(latestVersions).forEach((fix) => {
-            if (fix.category === "MÁXIMA" || fix.category === "PRIMERA") {
-              fix.data.forEach((m) => {
-                const j = parseInt(m.fecha.replace(/\D/g, "")) || 1;
-                if (j > eliteMaxJ) eliteMaxJ = j;
-              });
-            }
-          });
-
-          // Si por alguna razón no hay élite, usamos el global
-          const targetMaxJ = eliteMaxJ || globalMaxJ;
-
-          // 3. Aplicar mapeo inteligente
+          // Aplicar sincronización inteligente basada en el Calendario Maestro Oficial
           Object.values(latestVersions).forEach((fix) => {
             const cat = fix.category;
-            let catMaxJ = 0;
+            let totalEtapasCat = 0;
             fix.data.forEach((m) => {
-              const j = parseInt(m.fecha.replace(/\D/g, "")) || 1;
-              if (j > catMaxJ) catMaxJ = j;
+              const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+              if (j > totalEtapasCat) totalEtapasCat = j;
             });
 
-            if (cat === "MÁXIMA" || cat === "PRIMERA") {
-              // ÉLITE: Mapeo directo 1 a 1 para asegurar que jueguen juntas siempre
-              fix.data.forEach((m) => {
-                m.jornada = parseInt(m.fecha.replace(/\D/g, "")) || 1;
-              });
-            } else if (catMaxJ > 0 && catMaxJ < targetMaxJ) {
-              // CATEGORÍAS CORTAS: Estirar para que la última jornada coincida con targetMaxJ
-              const step = (targetMaxJ - 1) / (catMaxJ - 1 || 1);
-              fix.data.forEach((m) => {
-                const oldJ = parseInt(m.fecha.replace(/\D/g, "")) || 1;
-                m.jornada = Math.round(1 + (oldJ - 1) * step);
-              });
-            } else {
-              fix.data.forEach((m) => {
-                m.jornada = parseInt(m.fecha.replace(/\D/g, "")) || 1;
-              });
-            }
+            fix.data.forEach((m) => {
+              const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+            });
 
             fixturesMap.set(fix.id, {
               category: fix.category,
@@ -1075,18 +1435,24 @@
 
           let maxJ = 0;
           let jornadaMatchesCount = {};
+          let jornadaCatMatches = {};
 
           fixturesMap.forEach((meta) => {
+            const catNorm = (meta.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
             meta.data.forEach((x) => {
               if (x.jornada > maxJ) maxJ = x.jornada;
-              if (!jornadaMatchesCount[x.jornada])
-                jornadaMatchesCount[x.jornada] = 0;
+              if (!jornadaMatchesCount[x.jornada]) jornadaMatchesCount[x.jornada] = 0;
+              if (!jornadaCatMatches[x.jornada]) jornadaCatMatches[x.jornada] = { MAXIMA: 0, PRIMERA: 0, FEMENINO: 0 };
+
               if (
                 !x.isRest &&
                 x.local !== "DESCANSA" &&
                 x.visitor !== "DESCANSA"
               ) {
                 jornadaMatchesCount[x.jornada]++;
+                if (catNorm.includes("MAXIMA")) jornadaCatMatches[x.jornada].MAXIMA++;
+                else if (catNorm === "PRIMERA") jornadaCatMatches[x.jornada].PRIMERA++;
+                else if (catNorm === "FEMENINO") jornadaCatMatches[x.jornada].FEMENINO++;
               }
             });
           });
@@ -1094,15 +1460,37 @@
           grid.innerHTML = "";
           for (let j = 1; j <= maxJ; j++) {
             const count = jornadaMatchesCount[j] || 0;
+            const catCounts = jornadaCatMatches[j] || { MAXIMA: 0, PRIMERA: 0, FEMENINO: 0 };
+            const calInfo = CALENDARIO_OFICIAL[j] || { 
+              date: `Semana ${j}`, 
+              vuelta: j <= 13 ? "1ra Vuelta" : (j <= 24 ? "2da Vuelta" : "Fase Final") 
+            };
+            const isFinVuelta = calInfo.vuelta.includes("Fin");
+
             grid.insertAdjacentHTML(
               "beforeend",
               `
-                        <div class="jornada-card" onclick="selectJornada(${j})">
-                            <i class="fas fa-calendar-alt"></i>
-                            <h5>Jornada ${j}</h5>
-                            <span class="match-count">${count} encuentros</span>
-                        </div>
-                    `,
+                <div class="jornada-card" onclick="selectJornada(${j})">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="badge ${isFinVuelta ? 'bg-warning text-dark fw-bold' : 'bg-dark border border-secondary text-white-50'}" style="font-size: 0.68rem; border-radius: 6px;">
+                      ${calInfo.vuelta}
+                    </span>
+                    <span class="badge bg-dark-glass text-light border border-secondary" style="font-size: 0.72rem; border-radius: 6px;">
+                      <i class="fas fa-calendar-day text-success me-1"></i>${calInfo.date}
+                    </span>
+                  </div>
+                  <i class="fas fa-calendar-alt my-2"></i>
+                  <h5 class="fw-bold mb-2">Jornada ${j}</h5>
+                  
+                  <div class="d-flex justify-content-center gap-1 flex-wrap mb-2">
+                    ${catCounts.MAXIMA > 0 ? `<span class="badge" style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); font-size: 0.65rem;">MÁX: ${catCounts.MAXIMA}</span>` : ''}
+                    ${catCounts.PRIMERA > 0 ? `<span class="badge" style="background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); font-size: 0.65rem;">PRI: ${catCounts.PRIMERA}</span>` : ''}
+                    ${catCounts.FEMENINO > 0 ? `<span class="badge" style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); font-size: 0.65rem;">FEM: ${catCounts.FEMENINO}</span>` : ''}
+                  </div>
+
+                  <span class="match-count">${count} encuentros</span>
+                </div>
+              `,
             );
           }
         } else {
@@ -1994,6 +2382,12 @@
       }
 
       function renderMatches() {
+        const calInfo = CALENDARIO_OFICIAL[currentJornada] || { 
+          date: `Semana ${currentJornada}`, 
+          vuelta: currentJornada <= 13 ? "1ra Vuelta" : (currentJornada <= 24 ? "2da Vuelta" : "Fase Final") 
+        };
+        const isFinVuelta = calInfo.vuelta.includes("Fin");
+
         const container = document.getElementById("fixturesList");
         container.innerHTML = `
           <div id="capture-header">
@@ -2002,11 +2396,24 @@
                   <button class="btn-back-jornadas" onclick="backToJornadas()">
                       <i class="fas fa-chevron-left"></i>
                   </button>
-                  <h4 class="text-white mb-0 text-uppercase fw-900 text-primary-glow" style="letter-spacing:2px">JORNADA ${currentJornada}</h4>
+                  <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                      <h4 class="text-white mb-0 text-uppercase fw-900 text-primary-glow" style="letter-spacing:1.5px">JORNADA ${currentJornada}</h4>
+                      <span class="badge ${isFinVuelta ? 'bg-warning text-dark fw-bold' : 'bg-dark border border-secondary text-white-50'}" style="font-size: 0.75rem; border-radius: 6px;">
+                        ${calInfo.vuelta}
+                      </span>
+                      <span class="badge bg-dark-glass text-light border border-secondary" style="font-size: 0.78rem; border-radius: 6px;">
+                        <i class="fas fa-calendar-day text-success me-1"></i>${calInfo.date}
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 <div class="d-flex gap-2 flex-wrap align-items-center">
-                  <button class="btn-export-excel" onclick="exportToExcel()">
-                    <i class="fas fa-file-excel"></i> Excel
+                  <button class="btn btn-outline-success rounded-pill px-3 btn-sm fw-bold shadow-sm" onclick="exportarTodoElFixtureExcel()" title="Descargar todo el fixture oficial de todas las fechas">
+                    <i class="fas fa-file-excel me-1"></i> Todo el Fixture
+                  </button>
+                  <button class="btn-export-excel" onclick="exportToExcel()" title="Exportar solo los partidos de esta jornada">
+                    <i class="fas fa-file-excel"></i> Esta Jornada
                   </button>
                   <button class="btn-export-image" onclick="exportToImage()">
                     <i class="fas fa-camera"></i> Imagen
@@ -2103,7 +2510,7 @@
                     onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'horaRealAsignada', this.value)">
                 </td>
                 <td>
-                  <span class="badge-category-mini">${m._cat}</span>
+                  ${getCategoryBadge(m._cat)}
                   ${isNoProg ? '<span class="badge bg-danger text-white ms-1" style="font-size:0.58rem; letter-spacing:0.5px;">OFICIO</span>' : ''}
                 </td>
                 <td class="text-center">
@@ -2194,6 +2601,180 @@
         const ws = XLSX.utils.aoa_to_sheet(rows);
         XLSX.utils.book_append_sheet(wb, ws, `Jornada ${currentJornada}`);
         XLSX.writeFile(wb, `LDBAA_Jornada_${currentJornada}.xlsx`);
+      }
+
+      function exportarTodoElFixtureExcel() {
+        if (!fixturesMap || fixturesMap.size === 0) {
+          return Swal.fire("Aviso", "No hay fixtures cargados para exportar.", "info");
+        }
+
+        const campSelect = document.getElementById("campSelect");
+        const campName = campSelect && campSelect.options[campSelect.selectedIndex] ? campSelect.options[campSelect.selectedIndex].text : "Campeonato";
+
+        const wb = XLSX.utils.book_new();
+
+        // 1. Hoja "Fixture General" (Organizado cronológicamente por Jornada con todas las categorías)
+        const rowsGeneral = [
+          ["LIGA DEPORTIVA BARRIAL ARGELIA ALTA (LDBAA)"],
+          [`FIXTURE OFICIAL Y PROGRAMACIÓN DE PARTIDOS - ${campName.toUpperCase()}`],
+          [`Generado el: ${new Date().toLocaleDateString('es-EC')} ${new Date().toLocaleTimeString('es-EC')}`],
+          [],
+          ["JORNADA", "FECHA CALENDARIO", "ETAPA / VUELTA", "DÍA", "HORA", "CATEGORÍA", "CAM L", "EQUIPO LOCAL", "GL", "GV", "EQUIPO VISITANTE", "CAM V", "MESA (VOCAL)", "MESA (VEEDOR)"]
+        ];
+
+        let maxJ = 0;
+        let matchesByJornada = {};
+
+        fixturesMap.forEach((meta) => {
+          meta.data.forEach((m) => {
+            const j = parseInt(m.jornada) || 1;
+            if (j > maxJ) maxJ = j;
+            if (!matchesByJornada[j]) matchesByJornada[j] = [];
+            matchesByJornada[j].push({
+              ...m,
+              _category: meta.category
+            });
+          });
+        });
+
+        const dayRank = { Viernes: 1, Sábado: 2, Domingo: 3, "No Programado": 4, "": 5, undefined: 5 };
+
+        for (let j = 1; j <= maxJ; j++) {
+          const list = matchesByJornada[j] || [];
+          const calInfo = CALENDARIO_OFICIAL[j] || {
+            date: `Semana ${j}`,
+            vuelta: j <= 13 ? "1ra Vuelta" : (j <= 24 ? "2da Vuelta" : "Fases Finales")
+          };
+
+          // Ordenar partidos de la jornada: por día y hora
+          list.sort((a, b) => {
+            const rankA = dayRank[a.fechaRealAsignadaText] || 5;
+            const rankB = dayRank[b.fechaRealAsignadaText] || 5;
+            if (rankA !== rankB) return rankA - rankB;
+            return (a.horaRealAsignada || "99:99").localeCompare(b.horaRealAsignada || "99:99");
+          });
+
+          list.forEach((m) => {
+            const isRest = m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA";
+            if (isRest) {
+              const freeTeam = m.local === "DESCANSA" ? m.visitor : m.local;
+              rowsGeneral.push([
+                `Jornada ${j}`,
+                calInfo.date,
+                calInfo.vuelta,
+                "---",
+                "---",
+                m._category,
+                "-",
+                `FECHA LIBRE: ${freeTeam}`,
+                "",
+                "",
+                "DESCANSA",
+                "-",
+                "",
+                ""
+              ]);
+            } else {
+              rowsGeneral.push([
+                `Jornada ${j}`,
+                calInfo.date,
+                calInfo.vuelta,
+                m.fechaRealAsignadaText || "Pendiente",
+                m.horaRealAsignada || "--:--",
+                m._category,
+                m.camerinoLocal ? `C${m.camerinoLocal}` : "",
+                m.local,
+                m.golesLocal !== null && m.golesLocal !== undefined ? m.golesLocal : "",
+                m.golesVisitor !== null && m.golesVisitor !== undefined ? m.golesVisitor : "",
+                m.visitor,
+                m.camerinoVisitor ? `C${m.camerinoVisitor}` : "",
+                m.vocalAsignado || "",
+                m.veedorAsignado || ""
+              ]);
+            }
+          });
+
+          // Fila separadora visual
+          rowsGeneral.push([]);
+        }
+
+        const wsGeneral = XLSX.utils.aoa_to_sheet(rowsGeneral);
+        XLSX.utils.book_append_sheet(wb, wsGeneral, "Fixture General");
+
+        // 2. Hojas individuales por cada Categoría (MÁXIMA, PRIMERA, FEMENINO)
+        const categoriesPresent = Array.from(fixturesMap.values()).map(x => x.category);
+        const uniqueCats = [...new Set(categoriesPresent)];
+
+        uniqueCats.forEach((catName) => {
+          const catRows = [
+            [`LDBAA - FIXTURE DE ${catName.toUpperCase()}`],
+            [`Campeonato: ${campName}`],
+            [],
+            ["JORNADA", "FECHA CALENDARIO", "ETAPA / FASE", "DÍA", "HORA", "CAM L", "LOCAL", "GL", "GV", "VISITANTE", "CAM V", "VOCAL", "VEEDOR"]
+          ];
+
+          fixturesMap.forEach((meta) => {
+            if (meta.category === catName) {
+              const sortedData = [...meta.data].sort((a, b) => (parseInt(a.jornada) || 0) - (parseInt(b.jornada) || 0));
+              sortedData.forEach((m) => {
+                const j = parseInt(m.jornada) || 1;
+                const calInfo = CALENDARIO_OFICIAL[j] || { date: `Semana ${j}`, vuelta: "" };
+                const isRest = m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA";
+                if (isRest) {
+                  const freeTeam = m.local === "DESCANSA" ? m.visitor : m.local;
+                  catRows.push([
+                    `Jornada ${j}`,
+                    calInfo.date,
+                    m.etiqueta || calInfo.vuelta,
+                    "---",
+                    "---",
+                    "-",
+                    `LIBRE: ${freeTeam}`,
+                    "",
+                    "",
+                    "DESCANSA",
+                    "-",
+                    "",
+                    ""
+                  ]);
+                } else {
+                  catRows.push([
+                    `Jornada ${j}`,
+                    calInfo.date,
+                    m.etiqueta || calInfo.vuelta,
+                    m.fechaRealAsignadaText || "Pendiente",
+                    m.horaRealAsignada || "--:--",
+                    m.camerinoLocal ? `C${m.camerinoLocal}` : "",
+                    m.local,
+                    m.golesLocal !== null && m.golesLocal !== undefined ? m.golesLocal : "",
+                    m.golesVisitor !== null && m.golesVisitor !== undefined ? m.golesVisitor : "",
+                    m.visitor,
+                    m.camerinoVisitor ? `C${m.camerinoVisitor}` : "",
+                    m.vocalAsignado || "",
+                    m.veedorAsignado || ""
+                  ]);
+                }
+              });
+            }
+          });
+
+          const cleanSheetName = catName.substring(0, 30).replace(/[:\\/?*\[\]]/g, "");
+          const wsCat = XLSX.utils.aoa_to_sheet(catRows);
+          XLSX.utils.book_append_sheet(wb, wsCat, cleanSheetName);
+        });
+
+        // Guardar archivo Excel
+        const safeCampName = campName.replace(/[^a-zA-Z0-9_\-]/g, "_");
+        XLSX.writeFile(wb, `LDBAA_Fixture_Completo_${safeCampName}.xlsx`);
+
+        Swal.fire({
+          title: "¡Descarga Completa!",
+          text: "Se ha descargado el fixture completo con todas las fechas calendario, categorías y partidos organizados.",
+          icon: "success",
+          confirmButtonColor: "#2ecc71",
+          background: "#121212",
+          color: "#ffffff"
+        });
       }
 
       async function exportToImage() {
