@@ -3277,7 +3277,7 @@
 
         // 3. Search in allPlayersGlobalList
         if (allPlayersGlobalList && allPlayersGlobalList.length > 0) {
-          const matched = allPlayersGlobalList.filter((p) => {
+          let matched = allPlayersGlobalList.filter((p) => {
             const pTeamNorm = normalizeTeamName(p.teamName || "");
             const isTeamMatch =
               pTeamNorm === normTeam ||
@@ -3293,6 +3293,19 @@
             }
             return true;
           });
+
+          if (matched.length === 0) {
+            matched = allPlayersGlobalList.filter((p) => {
+              const pTeamNorm = normalizeTeamName(p.teamName || "");
+              return (
+                pTeamNorm === normTeam ||
+                (strippedNorm && pTeamNorm === strippedNorm) ||
+                (pTeamNorm.length >= 4 && normTeam.includes(pTeamNorm)) ||
+                (normTeam.length >= 4 && pTeamNorm.includes(normTeam))
+              );
+            });
+          }
+
           if (matched.length > 0) {
             matched.sort((a, b) => {
               const numA =
@@ -3325,7 +3338,7 @@
         // Check stored global list
         const storedGlobal = AppStorage.get("all_players_global_cache");
         if (Array.isArray(storedGlobal) && storedGlobal.length > 0) {
-          const matched = storedGlobal.filter((p) => {
+          let matched = storedGlobal.filter((p) => {
             const pTeamNorm = normalizeTeamName(p.teamName || "");
             const isTeamMatch =
               pTeamNorm === normTeam ||
@@ -3341,6 +3354,19 @@
             }
             return true;
           });
+
+          if (matched.length === 0) {
+            matched = storedGlobal.filter((p) => {
+              const pTeamNorm = normalizeTeamName(p.teamName || "");
+              return (
+                pTeamNorm === normTeam ||
+                (strippedNorm && pTeamNorm === strippedNorm) ||
+                (pTeamNorm.length >= 4 && normTeam.includes(pTeamNorm)) ||
+                (normTeam.length >= 4 && pTeamNorm.includes(normTeam))
+              );
+            });
+          }
+
           if (matched.length > 0) {
             matched.sort((a, b) => {
               const numA =
