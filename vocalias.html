@@ -956,6 +956,9 @@
 
       function initAppEvents() {
         loadChampionships();
+        if (typeof preloadEntireChampionshipData === "function") {
+          preloadEntireChampionshipData();
+        }
         const vocaliaModalEl = document.getElementById("vocaliaModal");
         if (vocaliaModalEl) {
           vocaliaModalEl.addEventListener("hidden.bs.modal", () => {
@@ -1473,6 +1476,14 @@
         });
 
         matches.forEach((m) => {
+          // Precarga en segundo plano de plantillas completas para ambos equipos (0ms al abrir acta en cualquier dispositivo)
+          if (m.local && m.local !== "DESCANSA") {
+            fetchTeamPlayers(m.local, m._cat, campId);
+          }
+          if (m.visitor && m.visitor !== "DESCANSA") {
+            fetchTeamPlayers(m.visitor, m._cat, campId);
+          }
+
           const cardCol = document.createElement("div");
           cardCol.className = "col";
           const localLogo = logosMap[m.local] || "img/logo.png";
@@ -3034,6 +3045,8 @@
       const teamPlayersMemoryCache = new Map();
       const teamPlayersFetchPromises = new Map();
       const championshipPreloadedSet = new Set();
+      const allPlayersGlobalList = [];
+      const allTeamsGlobalList = [];
       let isFetchingCurrentTeamPlayers = false;
 
       function normalizeTeamName(str) {
@@ -3072,47 +3085,27 @@
         return `${normTeam}___${normCat}___${normCamp}`;
       }
 
-      // Precarga optimizada en segundo plano de todos los jugadores y equipos del campeonato
+      // Precarga global instantánea de todos los equipos y jugadores
       async function preloadEntireChampionshipData(campId) {
-        if (!campId || championshipPreloadedSet.has(campId)) return;
-        championshipPreloadedSet.add(campId);
-
         try {
-          // 1. Consultas paralelas masivas filtradas por campeonato
-          const [teamsSnap1, teamsSnap2, playersSnap1, playersSnap2] =
-            await Promise.all([
-              db
-                .collection("teams")
-                .where("championshipId", "==", campId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("teams")
-                .where("campeonatoId", "==", campId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("players")
-                .where("campeonatoId", "==", campId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("players")
-                .where("championshipId", "==", campId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            ]);
+          // Consultar TODOS los equipos y jugadores en paralelo para que estén listos en 0ms
+          const [teamsSnap, playersSnap, sancionesSnap] = await Promise.all([
+            db.collection("teams").get().catch(() => ({ forEach: () => {} })),
+            db.collection("players").get().catch(() => ({ forEach: () => {} })),
+            db.collection("sanciones").get().catch(() => ({ forEach: () => {} })),
+          ]);
 
           const teamIdToMeta = new Map();
           const teamNormToMeta = new Map();
           const logosMap = {};
 
-          const registerTeamDoc = (doc) => {
+          teamsSnap.forEach((doc) => {
             const t = doc.data();
             if (!t.name) return;
             const norm = normalizeTeamName(t.name);
             const catNorm = normalizeCategory(t.category || "");
             const meta = {
+              id: doc.id,
               name: t.name,
               category: t.category || "",
               norm,
@@ -3122,29 +3115,29 @@
             };
             teamIdToMeta.set(doc.id, meta);
             logosMap[t.name] = t.logo || "img/logo.png";
+            allTeamsGlobalList.push(meta);
 
             if (!teamNormToMeta.has(norm)) teamNormToMeta.set(norm, []);
-            teamNormToMeta.get(norm).push({ id: doc.id, ...meta });
-          };
+            teamNormToMeta.get(norm).push(meta);
+          });
 
-          teamsSnap1.forEach(registerTeamDoc);
-          teamsSnap2.forEach(registerTeamDoc);
-
-          if (!championshipTeamsCache.has(campId)) {
+          if (campId && !championshipTeamsCache.has(campId)) {
             championshipTeamsCache.set(campId, logosMap);
             AppStorage.set("logos_" + campId, logosMap);
           }
 
           const teamToPlayersMap = new Map();
+          allPlayersGlobalList.length = 0;
 
-          const registerPlayer = (doc) => {
+          playersSnap.forEach((doc) => {
             const p = doc.data();
             if (
               p.status &&
               (p.status.toUpperCase() === "RECALIFICADO" ||
                 p.status.toLowerCase() === "pendiente_aprobacion")
-            )
+            ) {
               return;
+            }
 
             const tMeta = p.teamId ? teamIdToMeta.get(p.teamId) : null;
             const tName = (p.teamName || tMeta?.name || "").trim();
@@ -3163,16 +3156,27 @@
               teamCategory: playerCat,
             };
 
-            // Indexación estricta por categoría
+            allPlayersGlobalList.push(playerObj);
+
+            // Indexación estricta y neutra para acceso instantáneo
             const keys = [
               `${normTeam}___${normCat}___${cleanCamp}`,
               `${normTeam}___${normCat}___`,
+              `${normTeam}______${cleanCamp}`,
+              `${normTeam}______`,
             ];
 
-            // Si no tiene categoría, indexar también en clave neutra
-            if (!normCat) {
-              keys.push(`${normTeam}______${cleanCamp}`);
-              keys.push(`${normTeam}______`);
+            const strippedTeam = tName
+              .replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?)\s+/i, "")
+              .trim();
+            if (strippedTeam && strippedTeam !== tName) {
+              const strippedNorm = normalizeTeamName(strippedTeam);
+              keys.push(
+                `${strippedNorm}___${normCat}___${cleanCamp}`,
+                `${strippedNorm}___${normCat}___`,
+                `${strippedNorm}______${cleanCamp}`,
+                `${strippedNorm}______`,
+              );
             }
 
             keys.forEach((k) => {
@@ -3182,121 +3186,195 @@
                 list.push(playerObj);
               }
             });
-          };
-
-          playersSnap1.forEach(registerPlayer);
-          playersSnap2.forEach(registerPlayer);
-
-          // Consultar TODOS los jugadores por teamId de cada equipo del campeonato en lotes paralelos
-          const champTeamIds = Array.from(teamIdToMeta.keys());
-          if (champTeamIds.length > 0) {
-            for (let i = 0; i < champTeamIds.length; i += 10) {
-              const chunk = champTeamIds.slice(i, i + 10);
-              const chunkSnaps = await Promise.all(
-                chunk.map((id) =>
-                  db
-                    .collection("players")
-                    .where("teamId", "==", id)
-                    .get()
-                    .catch(() => ({ forEach: () => {} })),
-                ),
-              );
-              chunkSnaps.forEach((s) => s.forEach(registerPlayer));
-            }
-          }
+          });
 
           teamToPlayersMap.forEach((pList, k) => {
-            pList.sort(
-              (a, b) =>
-                (parseInt(a.numeroJugador || a.num) || 999) -
-                (parseInt(b.numeroJugador || b.num) || 999),
-            );
+            pList.sort((a, b) => {
+              const numA =
+                parseInt(
+                  a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999,
+                  10,
+                ) || 999;
+              const numB =
+                parseInt(
+                  b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999,
+                  10,
+                ) || 999;
+              return numA - numB;
+            });
             teamPlayersMemoryCache.set(k, pList);
             AppStorage.set("players_" + k, pList);
           });
 
-          loadSanctionsForChampionship(campId, null, 1);
+          // Guardar lista global en disco para 0ms en próximos reinicios
+          AppStorage.set(
+            "all_players_global_cache",
+            allPlayersGlobalList.slice(0, 1000),
+          );
+
+          if (campId) {
+            loadSanctionsForChampionship(campId, null, 1);
+          }
         } catch (err) {
           console.warn("Preload entire championship data error:", err);
         }
       }
 
-      async function fetchTeamPlayers(teamName, category, currentCampId) {
+      function getCachedPlayersSync(teamName, category, currentCampId) {
         if (!teamName) return [];
         const normTeam = normalizeTeamName(teamName);
         const normCat = normalizeCategory(category);
         const cleanCamp = (currentCampId || "").trim().toUpperCase();
+        const strippedTeam = teamName
+          .replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?)\s+/i, "")
+          .trim();
+        const strippedNorm = normalizeTeamName(strippedTeam);
 
         const primaryKey = `${normTeam}___${normCat}___${cleanCamp}`;
         const secondaryKey = `${normTeam}___${normCat}___`;
         const neutralKey = `${normTeam}______${cleanCamp}`;
+        const neutralKey2 = `${normTeam}______`;
 
-        // 1. FAST PATH 1: Verificación instantánea en memoria RAM (0ms)
-        if (
-          teamPlayersMemoryCache.has(primaryKey) &&
-          teamPlayersMemoryCache.get(primaryKey).length > 0
-        ) {
-          return teamPlayersMemoryCache.get(primaryKey);
-        }
-        if (
-          teamPlayersMemoryCache.has(secondaryKey) &&
-          teamPlayersMemoryCache.get(secondaryKey).length > 0
-        ) {
-          return teamPlayersMemoryCache.get(secondaryKey);
-        }
-        if (
-          !normCat &&
-          teamPlayersMemoryCache.has(neutralKey) &&
-          teamPlayersMemoryCache.get(neutralKey).length > 0
-        ) {
-          return teamPlayersMemoryCache.get(neutralKey);
-        }
-
-        // 2. FAST PATH 2: Verificación instantánea en disco LocalStorage (0ms)
-        const storedPrimary = AppStorage.get("players_" + primaryKey);
-        if (Array.isArray(storedPrimary) && storedPrimary.length > 0) {
-          teamPlayersMemoryCache.set(primaryKey, storedPrimary);
-          // Sincronizar en segundo plano sin bloquear
-          setTimeout(
-            () =>
-              fetchTeamPlayersNetwork(
-                teamName,
-                category,
-                currentCampId,
-                primaryKey,
-                secondaryKey,
-                neutralKey,
-              ),
-            50,
-          );
-          return storedPrimary;
-        }
-        const storedSecondary = AppStorage.get("players_" + secondaryKey);
-        if (Array.isArray(storedSecondary) && storedSecondary.length > 0) {
-          teamPlayersMemoryCache.set(secondaryKey, storedSecondary);
-          setTimeout(
-            () =>
-              fetchTeamPlayersNetwork(
-                teamName,
-                category,
-                currentCampId,
-                primaryKey,
-                secondaryKey,
-                neutralKey,
-              ),
-            50,
-          );
-          return storedSecondary;
-        }
-
-        // Búsqueda flexible en memoria por coincidencia de equipo
-        for (let [k, list] of teamPlayersMemoryCache) {
-          if (list && list.length > 0 && k.startsWith(`${normTeam}___`)) {
-            return list;
+        // 1. RAM Exact Keys
+        for (const k of [primaryKey, secondaryKey, neutralKey, neutralKey2]) {
+          if (
+            teamPlayersMemoryCache.has(k) &&
+            teamPlayersMemoryCache.get(k).length > 0
+          ) {
+            return teamPlayersMemoryCache.get(k);
           }
         }
 
-        // 3. Coalescing de promesas en vuelo para evitar llamadas duplicadas simultáneas
+        if (strippedNorm && strippedNorm !== normTeam) {
+          for (const k of [
+            `${strippedNorm}___${normCat}___${cleanCamp}`,
+            `${strippedNorm}___${normCat}___`,
+            `${strippedNorm}______${cleanCamp}`,
+            `${strippedNorm}______`,
+          ]) {
+            if (
+              teamPlayersMemoryCache.has(k) &&
+              teamPlayersMemoryCache.get(k).length > 0
+            ) {
+              return teamPlayersMemoryCache.get(k);
+            }
+          }
+        }
+
+        // 2. RAM Fuzzy Key Search
+        for (let [k, list] of teamPlayersMemoryCache) {
+          if (list && list.length > 0) {
+            if (
+              k.startsWith(`${normTeam}___`) ||
+              (strippedNorm && k.startsWith(`${strippedNorm}___`))
+            ) {
+              if (!normCat || k.includes(`___${normCat}___`)) {
+                return list;
+              }
+            }
+          }
+        }
+
+        // 3. Search in allPlayersGlobalList
+        if (allPlayersGlobalList && allPlayersGlobalList.length > 0) {
+          const matched = allPlayersGlobalList.filter((p) => {
+            const pTeamNorm = normalizeTeamName(p.teamName || "");
+            const isTeamMatch =
+              pTeamNorm === normTeam ||
+              (strippedNorm && pTeamNorm === strippedNorm) ||
+              (pTeamNorm.length >= 4 && normTeam.includes(pTeamNorm)) ||
+              (normTeam.length >= 4 && pTeamNorm.includes(normTeam));
+            if (!isTeamMatch) return false;
+            if (normCat) {
+              const pCat = normalizeCategory(
+                p.teamCategory || p.category || "",
+              );
+              if (pCat && !categoriesMatch(pCat, category)) return false;
+            }
+            return true;
+          });
+          if (matched.length > 0) {
+            matched.sort((a, b) => {
+              const numA =
+                parseInt(
+                  a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999,
+                  10,
+                ) || 999;
+              const numB =
+                parseInt(
+                  b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999,
+                  10,
+                ) || 999;
+              return numA - numB;
+            });
+            teamPlayersMemoryCache.set(primaryKey, matched);
+            teamPlayersMemoryCache.set(secondaryKey, matched);
+            return matched;
+          }
+        }
+
+        // 4. LocalStorage (AppStorage)
+        for (const k of [primaryKey, secondaryKey, neutralKey, neutralKey2]) {
+          const stored = AppStorage.get("players_" + k);
+          if (Array.isArray(stored) && stored.length > 0) {
+            teamPlayersMemoryCache.set(k, stored);
+            return stored;
+          }
+        }
+
+        // Check stored global list
+        const storedGlobal = AppStorage.get("all_players_global_cache");
+        if (Array.isArray(storedGlobal) && storedGlobal.length > 0) {
+          const matched = storedGlobal.filter((p) => {
+            const pTeamNorm = normalizeTeamName(p.teamName || "");
+            const isTeamMatch =
+              pTeamNorm === normTeam ||
+              (strippedNorm && pTeamNorm === strippedNorm) ||
+              (pTeamNorm.length >= 4 && normTeam.includes(pTeamNorm)) ||
+              (normTeam.length >= 4 && pTeamNorm.includes(normTeam));
+            if (!isTeamMatch) return false;
+            if (normCat) {
+              const pCat = normalizeCategory(
+                p.teamCategory || p.category || "",
+              );
+              if (pCat && !categoriesMatch(pCat, category)) return false;
+            }
+            return true;
+          });
+          if (matched.length > 0) {
+            matched.sort((a, b) => {
+              const numA =
+                parseInt(
+                  a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999,
+                  10,
+                ) || 999;
+              const numB =
+                parseInt(
+                  b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999,
+                  10,
+                ) || 999;
+              return numA - numB;
+            });
+            teamPlayersMemoryCache.set(primaryKey, matched);
+            return matched;
+          }
+        }
+
+        return [];
+      }
+
+      async function fetchTeamPlayers(teamName, category, currentCampId) {
+        if (!teamName) return [];
+        const cached = getCachedPlayersSync(teamName, category, currentCampId);
+        if (cached && cached.length > 0) {
+          return cached;
+        }
+
+        const normTeam = normalizeTeamName(teamName);
+        const normCat = normalizeCategory(category);
+        const cleanCamp = (currentCampId || "").trim().toUpperCase();
+        const primaryKey = `${normTeam}___${normCat}___${cleanCamp}`;
+
         if (teamPlayersFetchPromises.has(primaryKey)) {
           return teamPlayersFetchPromises.get(primaryKey);
         }
@@ -3306,8 +3384,6 @@
           category,
           currentCampId,
           primaryKey,
-          secondaryKey,
-          neutralKey,
         );
         teamPlayersFetchPromises.set(primaryKey, fetchPromise);
         return fetchPromise;
@@ -4145,52 +4221,12 @@
             : window.currentMatchOpened?.championshipName ||
               "CAMPEONATO ACTIVO";
 
-        // Comprobación síncrona en memoria RAM (0ms) con aislamiento estricto de categoría
-        const normTeam = normalizeTeamName(teamName);
-        const normCat = normalizeCategory(category);
-        const cleanCamp = (currentCampId || "").trim().toUpperCase();
-
-        const primaryKey = `${normTeam}___${normCat}___${cleanCamp}`;
-        const secondaryKey = `${normTeam}___${normCat}___`;
-        const neutralKey = `${normTeam}______${cleanCamp}`;
-
-        let cachedPlayers = null;
-        if (
-          teamPlayersMemoryCache.has(primaryKey) &&
-          teamPlayersMemoryCache.get(primaryKey).length > 0
-        ) {
-          cachedPlayers = teamPlayersMemoryCache.get(primaryKey);
-        } else if (
-          teamPlayersMemoryCache.has(secondaryKey) &&
-          teamPlayersMemoryCache.get(secondaryKey).length > 0
-        ) {
-          cachedPlayers = teamPlayersMemoryCache.get(secondaryKey);
-        } else if (
-          teamPlayersMemoryCache.has(neutralKey) &&
-          teamPlayersMemoryCache.get(neutralKey).length > 0
-        ) {
-          cachedPlayers = teamPlayersMemoryCache.get(neutralKey);
-        }
-
-        if (!cachedPlayers || cachedPlayers.length === 0) {
-          for (let [k, list] of teamPlayersMemoryCache) {
-            if (k.startsWith(`${normTeam}___`) && list.length > 0) {
-              cachedPlayers = list;
-              break;
-            }
-          }
-        }
-
-        if (!cachedPlayers || cachedPlayers.length === 0) {
-          const stored =
-            AppStorage.get(`players_${primaryKey}`) ||
-            AppStorage.get(`players_${secondaryKey}`) ||
-            AppStorage.get(`players_${neutralKey}`);
-          if (stored && Array.isArray(stored) && stored.length > 0) {
-            cachedPlayers = stored;
-            teamPlayersMemoryCache.set(primaryKey, stored);
-          }
-        }
+        // FAST PATH SYNCHRONOUS RESOLUTION (0ms): RAM + Global + LocalStorage
+        const cachedPlayers = getCachedPlayersSync(
+          teamName,
+          category,
+          currentCampId,
+        );
 
         if (cachedPlayers && cachedPlayers.length > 0) {
           currentTeamPlayersList = cachedPlayers;
@@ -4226,15 +4262,8 @@
             }
             isFetchingCurrentTeamPlayers = false;
 
-            await loadSanctionsForChampionship(
-              currentCampId,
-              category,
-              window.currentMatchOpened?.jornada,
-            );
-
-            // Si el modal sigue abierto, refrescar la vista reactivamente
-            const modalInstance = bootstrap.Modal.getInstance(modalEl);
-            if (modalInstance && currentTeamName === teamName) {
+            // ACTUALIZAR LA VISTA INMEDIATAMENTE (sin bloquearse por sanciones)
+            if (currentTeamName === teamName) {
               const currentInp = document.getElementById("dorsalSearchInput");
               const val = currentInp?.value || dorsalSearchQuery;
               if (val && val.trim()) {
@@ -4243,6 +4272,17 @@
                 renderPlayerSelectionView();
               }
             }
+
+            // Sincronizar sanciones de forma asíncrona sin bloquear la UI
+            loadSanctionsForChampionship(
+              currentCampId,
+              category,
+              window.currentMatchOpened?.jornada,
+            ).then(() => {
+              if (currentTeamName === teamName) {
+                renderPlayerSelectionView();
+              }
+            }).catch(() => {});
           } catch (e) {
             console.error("Error en openPlayerSelector background fetch:", e);
             isFetchingCurrentTeamPlayers = false;
