@@ -919,35 +919,6 @@
         });
       }
 
-      // Multi-layer persistent storage cache (RAM + LocalStorage) for 0ms ultra-fast loads
-      const AppStorage = {
-        get(key, fallback = null) {
-          try {
-            const raw = localStorage.getItem("ldbaa_vocalias_" + key);
-            if (!raw) return fallback;
-            const parsed = JSON.parse(raw);
-            return parsed?.data !== undefined ? parsed.data : parsed;
-          } catch (e) {
-            return fallback;
-          }
-        },
-        set(key, data) {
-          try {
-            localStorage.setItem(
-              "ldbaa_vocalias_" + key,
-              JSON.stringify({ data, ts: Date.now() }),
-            );
-          } catch (e) {
-            console.warn("AppStorage write error:", e);
-          }
-        },
-        remove(key) {
-          try {
-            localStorage.removeItem("ldbaa_vocalias_" + key);
-          } catch (e) {}
-        },
-      };
-
       let fixturesMap = new Map();
       const fixturesCacheByCamp = new Map();
       const championshipTeamsCache = new Map();
@@ -956,9 +927,6 @@
 
       function initAppEvents() {
         loadChampionships();
-        if (typeof preloadEntireChampionshipData === "function") {
-          preloadEntireChampionshipData();
-        }
         const vocaliaModalEl = document.getElementById("vocaliaModal");
         if (vocaliaModalEl) {
           vocaliaModalEl.addEventListener("hidden.bs.modal", () => {
@@ -980,30 +948,6 @@
       async function loadChampionships() {
         const select = document.getElementById("campSelect");
         if (!select) return;
-
-        // 1. FAST PATH INSTANTÁNEO (0ms): Cargar desde caché persistente en disco
-        const cachedChamps = AppStorage.get("championships");
-        if (Array.isArray(cachedChamps) && cachedChamps.length > 0) {
-          select.innerHTML = "";
-          cachedChamps.forEach((c) => {
-            const opt = document.createElement("option");
-            opt.value = c.id;
-            opt.textContent = c.name;
-            select.appendChild(opt);
-          });
-          const lastCampId =
-            AppStorage.get("last_selected_champ") || cachedChamps[0].id;
-          if (
-            Array.from(select.options).some((opt) => opt.value === lastCampId)
-          ) {
-            select.value = lastCampId;
-          } else {
-            select.value = cachedChamps[0].id;
-          }
-          resetAndLoad();
-        }
-
-        // 2. NETWORK SYNC EN SEGUNDO PLANO (sin bloquear la interfaz)
         try {
           let snapshot;
           try {
@@ -1012,51 +956,30 @@
               .orderBy("createdAt", "desc")
               .get();
           } catch (errOrder) {
+            console.warn("Falling back to unordered query:", errOrder);
             snapshot = await db.collection("championships").get();
           }
 
+          select.innerHTML = "";
           if (snapshot.empty) {
-            if (select.options.length === 0) {
-              select.innerHTML = '<option value="">No hay campeonatos</option>';
-            }
+            select.innerHTML = '<option value="">No hay campeonatos</option>';
             return;
           }
-
-          const champsList = [];
           snapshot.forEach((doc) => {
-            champsList.push({
-              id: doc.id,
-              name: doc.data().name || doc.data().nombre || "Campeonato",
-            });
-          });
-
-          // Guardar en caché persistente para el próximo arranque
-          AppStorage.set("championships", champsList);
-
-          // Si el select estaba vacío o cambió, actualizarlo de forma transparente
-          const currentVal = select.value;
-          select.innerHTML = "";
-          champsList.forEach((c) => {
             const opt = document.createElement("option");
-            opt.value = c.id;
-            opt.textContent = c.name;
+            opt.value = doc.id;
+            opt.textContent =
+              doc.data().name || doc.data().nombre || "Campeonato";
             select.appendChild(opt);
           });
-
-          if (currentVal && champsList.some((c) => c.id === currentVal)) {
-            select.value = currentVal;
-          } else if (champsList.length > 0) {
-            select.value = champsList[0].id;
-            if (!cachedChamps || cachedChamps.length === 0) {
-              resetAndLoad();
-            }
+          if (select.options.length > 0) {
+            select.value = select.options[0].value;
+            resetAndLoad();
           }
         } catch (e) {
-          console.error("Error al sincronizar campeonatos:", e);
-          if (select.options.length === 0) {
-            select.innerHTML =
-              '<option value="">Error cargando campeonatos</option>';
-          }
+          console.error("Error al cargar campeonatos:", e);
+          select.innerHTML =
+            '<option value="">Error cargando campeonatos</option>';
         }
       }
 
@@ -1066,37 +989,20 @@
         const campId = document.getElementById("campSelect").value;
         if (!campId) return;
 
-        AppStorage.set("last_selected_champ", campId);
-
         // Detach previous listeners if exist
         if (fixturesListener) fixturesListener();
         if (fixturesListener2) fixturesListener2();
 
         currentJornada = null;
 
-        // 1. FAST PATH INSTANTÁNEO (0ms): Memoria RAM o LocalStorage
-        let hasRenderedFromCache = false;
+        // 1. FAST PATH: Si ya tenemos fixtures en memoria para este campeonato, renderizar de inmediato (0ms)
         if (
           fixturesCacheByCamp.has(campId) &&
           fixturesCacheByCamp.get(campId).size > 0
         ) {
           fixturesMap = new Map(fixturesCacheByCamp.get(campId));
           renderNavigation();
-          hasRenderedFromCache = true;
         } else {
-          const storedFixtures = AppStorage.get("fixtures_" + campId);
-          if (Array.isArray(storedFixtures) && storedFixtures.length > 0) {
-            fixturesMap.clear();
-            storedFixtures.forEach(([fixId, fixData]) => {
-              fixturesMap.set(fixId, fixData);
-            });
-            fixturesCacheByCamp.set(campId, new Map(fixturesMap));
-            renderNavigation();
-            hasRenderedFromCache = true;
-          }
-        }
-
-        if (!hasRenderedFromCache) {
           fixturesMap.clear();
           const jornadasGrid = document.getElementById("jornadasContainer");
           const matchesList = document.getElementById("matchesContainer");
@@ -1110,11 +1016,6 @@
                 <p class="text-white-50 small mb-0">Sincronizando fixture oficial del campeonato</p>
               </div>`;
           }
-        }
-
-        // Iniciar precarga de datos del campeonato en segundo plano inmediatamente
-        if (typeof preloadEntireChampionshipData === "function") {
-          preloadEntireChampionshipData(campId);
         }
 
         const rawDocsMap = new Map();
@@ -1217,13 +1118,8 @@
             }
             fixturesMap.set(docData.id, docData);
           });
-
-          // Guardar en memoria y disco
+          // Guardar en caché rápida en memoria
           fixturesCacheByCamp.set(campId, new Map(fixturesMap));
-          AppStorage.set(
-            "fixtures_" + campId,
-            Array.from(fixturesMap.entries()),
-          );
           renderNavigation();
 
           // Si el modal está abierto, actualizar la referencia del partido en memoria
@@ -1268,6 +1164,14 @@
           .collection("fixtures")
           .where("campeonatoId", "==", campId)
           .onSnapshot(handleFixtureSnapshot, (e) => console.error(e));
+
+        // Precarga diferida en segundo plano: no satura la red mientras se renderizan las fechas
+        clearTimeout(_preloadChampionshipTimer);
+        _preloadChampionshipTimer = setTimeout(() => {
+          if (typeof preloadEntireChampionshipData === "function") {
+            preloadEntireChampionshipData(campId);
+          }
+        }, 1200);
       }
 
       function isMatchProgrammed(m) {
@@ -1393,18 +1297,11 @@
       }
 
       async function renderMatches() {
-        // Cargar mapa de logos de equipos con soporte de memoria RAM + LocalStorage (0ms de latencia)
+        // Cargar mapa de logos de equipos con soporte de memoria caché instantánea
         const campId = document.getElementById("campSelect").value;
         let logosMap = championshipTeamsCache.get(campId);
         if (!logosMap) {
-          logosMap = AppStorage.get("logos_" + campId) || {};
-          if (Object.keys(logosMap).length > 0) {
-            championshipTeamsCache.set(campId, logosMap);
-          }
-        }
-
-        // Sincronizar logos en segundo plano sin retrasar el renderizado visual
-        (async () => {
+          logosMap = {};
           try {
             const [teamsSnapshot, teamsSnapshot2] = await Promise.all([
               db
@@ -1418,25 +1315,19 @@
                 .get()
                 .catch(() => ({ forEach: () => {} })),
             ]);
-            let hasNewLogos = false;
-            const updatedLogos = { ...logosMap };
-            const processLogoDoc = (doc) => {
+            teamsSnapshot.forEach((doc) => {
               const d = doc.data();
-              if (d.name && d.logo && updatedLogos[d.name] !== d.logo) {
-                updatedLogos[d.name] = d.logo;
-                hasNewLogos = true;
-              }
-            };
-            teamsSnapshot.forEach(processLogoDoc);
-            teamsSnapshot2.forEach(processLogoDoc);
-            if (hasNewLogos) {
-              championshipTeamsCache.set(campId, updatedLogos);
-              AppStorage.set("logos_" + campId, updatedLogos);
-            }
+              if (d.name) logosMap[d.name] = d.logo || "img/logo.png";
+            });
+            teamsSnapshot2.forEach((doc) => {
+              const d = doc.data();
+              if (d.name) logosMap[d.name] = d.logo || "img/logo.png";
+            });
+            championshipTeamsCache.set(campId, logosMap);
           } catch (eLogos) {
             console.warn("Logos fetch warning:", eLogos);
           }
-        })();
+        }
 
         const container = document.getElementById("matchesContainer");
         container.innerHTML = `
@@ -1476,14 +1367,6 @@
         });
 
         matches.forEach((m) => {
-          // Precarga en segundo plano de plantillas completas para ambos equipos (0ms al abrir acta en cualquier dispositivo)
-          if (m.local && m.local !== "DESCANSA") {
-            fetchTeamPlayers(m.local, m._cat, campId);
-          }
-          if (m.visitor && m.visitor !== "DESCANSA") {
-            fetchTeamPlayers(m.visitor, m._cat, campId);
-          }
-
           const cardCol = document.createElement("div");
           cardCol.className = "col";
           const localLogo = logosMap[m.local] || "img/logo.png";
@@ -3045,8 +2928,6 @@
       const teamPlayersMemoryCache = new Map();
       const teamPlayersFetchPromises = new Map();
       const championshipPreloadedSet = new Set();
-      const allPlayersGlobalList = [];
-      const allTeamsGlobalList = [];
       let isFetchingCurrentTeamPlayers = false;
 
       function normalizeTeamName(str) {
@@ -3085,27 +2966,47 @@
         return `${normTeam}___${normCat}___${normCamp}`;
       }
 
-      // Precarga global instantánea de todos los equipos y jugadores
+      // Precarga optimizada en segundo plano de todos los jugadores y equipos del campeonato
       async function preloadEntireChampionshipData(campId) {
+        if (!campId || championshipPreloadedSet.has(campId)) return;
+        championshipPreloadedSet.add(campId);
+
         try {
-          // Consultar TODOS los equipos y jugadores en paralelo para que estén listos en 0ms
-          const [teamsSnap, playersSnap, sancionesSnap] = await Promise.all([
-            db.collection("teams").get().catch(() => ({ forEach: () => {} })),
-            db.collection("players").get().catch(() => ({ forEach: () => {} })),
-            db.collection("sanciones").get().catch(() => ({ forEach: () => {} })),
-          ]);
+          // 1. Consultas paralelas masivas filtradas por campeonato
+          const [teamsSnap1, teamsSnap2, playersSnap1, playersSnap2] =
+            await Promise.all([
+              db
+                .collection("teams")
+                .where("championshipId", "==", campId)
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+              db
+                .collection("teams")
+                .where("campeonatoId", "==", campId)
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+              db
+                .collection("players")
+                .where("campeonatoId", "==", campId)
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+              db
+                .collection("players")
+                .where("championshipId", "==", campId)
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+            ]);
 
           const teamIdToMeta = new Map();
           const teamNormToMeta = new Map();
           const logosMap = {};
 
-          teamsSnap.forEach((doc) => {
+          const registerTeamDoc = (doc) => {
             const t = doc.data();
             if (!t.name) return;
             const norm = normalizeTeamName(t.name);
             const catNorm = normalizeCategory(t.category || "");
             const meta = {
-              id: doc.id,
               name: t.name,
               category: t.category || "",
               norm,
@@ -3115,29 +3016,28 @@
             };
             teamIdToMeta.set(doc.id, meta);
             logosMap[t.name] = t.logo || "img/logo.png";
-            allTeamsGlobalList.push(meta);
 
             if (!teamNormToMeta.has(norm)) teamNormToMeta.set(norm, []);
-            teamNormToMeta.get(norm).push(meta);
-          });
+            teamNormToMeta.get(norm).push({ id: doc.id, ...meta });
+          };
 
-          if (campId && !championshipTeamsCache.has(campId)) {
+          teamsSnap1.forEach(registerTeamDoc);
+          teamsSnap2.forEach(registerTeamDoc);
+
+          if (!championshipTeamsCache.has(campId)) {
             championshipTeamsCache.set(campId, logosMap);
-            AppStorage.set("logos_" + campId, logosMap);
           }
 
           const teamToPlayersMap = new Map();
-          allPlayersGlobalList.length = 0;
 
-          playersSnap.forEach((doc) => {
+          const registerPlayer = (doc) => {
             const p = doc.data();
             if (
               p.status &&
               (p.status.toUpperCase() === "RECALIFICADO" ||
                 p.status.toLowerCase() === "pendiente_aprobacion")
-            ) {
+            )
               return;
-            }
 
             const tMeta = p.teamId ? teamIdToMeta.get(p.teamId) : null;
             const tName = (p.teamName || tMeta?.name || "").trim();
@@ -3156,27 +3056,16 @@
               teamCategory: playerCat,
             };
 
-            allPlayersGlobalList.push(playerObj);
-
-            // Indexación estricta y neutra para acceso instantáneo
+            // Indexación estricta por categoría
             const keys = [
               `${normTeam}___${normCat}___${cleanCamp}`,
               `${normTeam}___${normCat}___`,
-              `${normTeam}______${cleanCamp}`,
-              `${normTeam}______`,
             ];
 
-            const strippedTeam = tName
-              .replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?)\s+/i, "")
-              .trim();
-            if (strippedTeam && strippedTeam !== tName) {
-              const strippedNorm = normalizeTeamName(strippedTeam);
-              keys.push(
-                `${strippedNorm}___${normCat}___${cleanCamp}`,
-                `${strippedNorm}___${normCat}___`,
-                `${strippedNorm}______${cleanCamp}`,
-                `${strippedNorm}______`,
-              );
+            // Si no tiene categoría, indexar también en clave neutra
+            if (!normCat) {
+              keys.push(`${normTeam}______${cleanCamp}`);
+              keys.push(`${normTeam}______`);
             }
 
             keys.forEach((k) => {
@@ -3186,480 +3075,322 @@
                 list.push(playerObj);
               }
             });
-          });
+          };
+
+          playersSnap1.forEach(registerPlayer);
+          playersSnap2.forEach(registerPlayer);
+
+          // Consultar TODOS los jugadores por teamId de cada equipo del campeonato en lotes paralelos
+          const champTeamIds = Array.from(teamIdToMeta.keys());
+          if (champTeamIds.length > 0) {
+            for (let i = 0; i < champTeamIds.length; i += 10) {
+              const chunk = champTeamIds.slice(i, i + 10);
+              const chunkSnaps = await Promise.all(
+                chunk.map((id) =>
+                  db
+                    .collection("players")
+                    .where("teamId", "==", id)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                ),
+              );
+              chunkSnaps.forEach((s) => s.forEach(registerPlayer));
+            }
+          }
 
           teamToPlayersMap.forEach((pList, k) => {
-            pList.sort((a, b) => {
-              const numA =
-                parseInt(
-                  a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999,
-                  10,
-                ) || 999;
-              const numB =
-                parseInt(
-                  b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999,
-                  10,
-                ) || 999;
-              return numA - numB;
-            });
+            pList.sort(
+              (a, b) =>
+                (parseInt(a.numeroJugador || a.num) || 999) -
+                (parseInt(b.numeroJugador || b.num) || 999),
+            );
             teamPlayersMemoryCache.set(k, pList);
-            AppStorage.set("players_" + k, pList);
           });
 
-          // Guardar lista global en disco para 0ms en próximos reinicios
-          AppStorage.set(
-            "all_players_global_cache",
-            allPlayersGlobalList.slice(0, 1000),
-          );
-
-          if (campId) {
-            loadSanctionsForChampionship(campId, null, 1);
-          }
+          loadSanctionsForChampionship(campId, null, 1);
         } catch (err) {
           console.warn("Preload entire championship data error:", err);
         }
       }
 
-      function getCachedPlayersSync(teamName, category, currentCampId) {
+      async function fetchTeamPlayers(teamName, category, currentCampId) {
         if (!teamName) return [];
         const normTeam = normalizeTeamName(teamName);
         const normCat = normalizeCategory(category);
         const cleanCamp = (currentCampId || "").trim().toUpperCase();
-        const strippedTeam = teamName
-          .replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?)\s+/i, "")
-          .trim();
-        const strippedNorm = normalizeTeamName(strippedTeam);
 
         const primaryKey = `${normTeam}___${normCat}___${cleanCamp}`;
         const secondaryKey = `${normTeam}___${normCat}___`;
         const neutralKey = `${normTeam}______${cleanCamp}`;
-        const neutralKey2 = `${normTeam}______`;
 
-        // 1. RAM Exact Keys
-        for (const k of [primaryKey, secondaryKey, neutralKey, neutralKey2]) {
-          if (
-            teamPlayersMemoryCache.has(k) &&
-            teamPlayersMemoryCache.get(k).length > 0
-          ) {
-            return teamPlayersMemoryCache.get(k);
-          }
+        // 1. Verificación instantánea en memoria RAM (0ms)
+        if (
+          teamPlayersMemoryCache.has(primaryKey) &&
+          teamPlayersMemoryCache.get(primaryKey).length > 0
+        ) {
+          return teamPlayersMemoryCache.get(primaryKey);
+        }
+        if (
+          teamPlayersMemoryCache.has(secondaryKey) &&
+          teamPlayersMemoryCache.get(secondaryKey).length > 0
+        ) {
+          return teamPlayersMemoryCache.get(secondaryKey);
+        }
+        if (
+          !normCat &&
+          teamPlayersMemoryCache.has(neutralKey) &&
+          teamPlayersMemoryCache.get(neutralKey).length > 0
+        ) {
+          return teamPlayersMemoryCache.get(neutralKey);
         }
 
-        if (strippedNorm && strippedNorm !== normTeam) {
-          for (const k of [
-            `${strippedNorm}___${normCat}___${cleanCamp}`,
-            `${strippedNorm}___${normCat}___`,
-            `${strippedNorm}______${cleanCamp}`,
-            `${strippedNorm}______`,
-          ]) {
-            if (
-              teamPlayersMemoryCache.has(k) &&
-              teamPlayersMemoryCache.get(k).length > 0
-            ) {
-              return teamPlayersMemoryCache.get(k);
-            }
-          }
-        }
-
-        // 2. RAM Fuzzy Key Search
+        // Búsqueda flexible en memoria por coincidencia de equipo
         for (let [k, list] of teamPlayersMemoryCache) {
-          if (list && list.length > 0) {
-            if (
-              k.startsWith(`${normTeam}___`) ||
-              (strippedNorm && k.startsWith(`${strippedNorm}___`))
-            ) {
-              if (!normCat || k.includes(`___${normCat}___`)) {
-                return list;
-              }
-            }
+          if (list && list.length > 0 && k.startsWith(`${normTeam}___`)) {
+            return list;
           }
         }
 
-        // 3. Search in allPlayersGlobalList
-        if (allPlayersGlobalList && allPlayersGlobalList.length > 0) {
-          let matched = allPlayersGlobalList.filter((p) => {
-            const pTeamNorm = normalizeTeamName(p.teamName || "");
-            const isTeamMatch =
-              pTeamNorm === normTeam ||
-              (strippedNorm && pTeamNorm === strippedNorm) ||
-              (pTeamNorm.length >= 4 && normTeam.includes(pTeamNorm)) ||
-              (normTeam.length >= 4 && pTeamNorm.includes(normTeam));
-            if (!isTeamMatch) return false;
-            if (normCat) {
-              const pCat = normalizeCategory(
-                p.teamCategory || p.category || "",
-              );
-              if (pCat && !categoriesMatch(pCat, category)) return false;
-            }
-            return true;
-          });
-
-          if (matched.length === 0) {
-            matched = allPlayersGlobalList.filter((p) => {
-              const pTeamNorm = normalizeTeamName(p.teamName || "");
-              return (
-                pTeamNorm === normTeam ||
-                (strippedNorm && pTeamNorm === strippedNorm) ||
-                (pTeamNorm.length >= 4 && normTeam.includes(pTeamNorm)) ||
-                (normTeam.length >= 4 && pTeamNorm.includes(normTeam))
-              );
-            });
-          }
-
-          if (matched.length > 0) {
-            matched.sort((a, b) => {
-              const numA =
-                parseInt(
-                  a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999,
-                  10,
-                ) || 999;
-              const numB =
-                parseInt(
-                  b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999,
-                  10,
-                ) || 999;
-              return numA - numB;
-            });
-            teamPlayersMemoryCache.set(primaryKey, matched);
-            teamPlayersMemoryCache.set(secondaryKey, matched);
-            return matched;
-          }
-        }
-
-        // 4. LocalStorage (AppStorage)
-        for (const k of [primaryKey, secondaryKey, neutralKey, neutralKey2]) {
-          const stored = AppStorage.get("players_" + k);
-          if (Array.isArray(stored) && stored.length > 0) {
-            teamPlayersMemoryCache.set(k, stored);
-            return stored;
-          }
-        }
-
-        // Check stored global list
-        const storedGlobal = AppStorage.get("all_players_global_cache");
-        if (Array.isArray(storedGlobal) && storedGlobal.length > 0) {
-          let matched = storedGlobal.filter((p) => {
-            const pTeamNorm = normalizeTeamName(p.teamName || "");
-            const isTeamMatch =
-              pTeamNorm === normTeam ||
-              (strippedNorm && pTeamNorm === strippedNorm) ||
-              (pTeamNorm.length >= 4 && normTeam.includes(pTeamNorm)) ||
-              (normTeam.length >= 4 && pTeamNorm.includes(normTeam));
-            if (!isTeamMatch) return false;
-            if (normCat) {
-              const pCat = normalizeCategory(
-                p.teamCategory || p.category || "",
-              );
-              if (pCat && !categoriesMatch(pCat, category)) return false;
-            }
-            return true;
-          });
-
-          if (matched.length === 0) {
-            matched = storedGlobal.filter((p) => {
-              const pTeamNorm = normalizeTeamName(p.teamName || "");
-              return (
-                pTeamNorm === normTeam ||
-                (strippedNorm && pTeamNorm === strippedNorm) ||
-                (pTeamNorm.length >= 4 && normTeam.includes(pTeamNorm)) ||
-                (normTeam.length >= 4 && pTeamNorm.includes(normTeam))
-              );
-            });
-          }
-
-          if (matched.length > 0) {
-            matched.sort((a, b) => {
-              const numA =
-                parseInt(
-                  a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999,
-                  10,
-                ) || 999;
-              const numB =
-                parseInt(
-                  b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999,
-                  10,
-                ) || 999;
-              return numA - numB;
-            });
-            teamPlayersMemoryCache.set(primaryKey, matched);
-            return matched;
-          }
-        }
-
-        return [];
-      }
-
-      async function fetchTeamPlayers(teamName, category, currentCampId) {
-        if (!teamName) return [];
-        const cached = getCachedPlayersSync(teamName, category, currentCampId);
-        if (cached && cached.length > 0) {
-          return cached;
-        }
-
-        const normTeam = normalizeTeamName(teamName);
-        const normCat = normalizeCategory(category);
-        const cleanCamp = (currentCampId || "").trim().toUpperCase();
-        const primaryKey = `${normTeam}___${normCat}___${cleanCamp}`;
-
+        // 2. Coalescing de promesas en vuelo para evitar llamadas duplicadas simultáneas
         if (teamPlayersFetchPromises.has(primaryKey)) {
           return teamPlayersFetchPromises.get(primaryKey);
         }
 
-        const fetchPromise = fetchTeamPlayersNetwork(
-          teamName,
-          category,
-          currentCampId,
-          primaryKey,
-        );
+        const fetchPromise = (async () => {
+          try {
+            const cleanTeam = teamName.trim().toUpperCase();
+            const strippedTeam = cleanTeam
+              .replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?)\s+/i, "")
+              .trim();
+
+            const queryPromises = [
+              db
+                .collection("players")
+                .where("teamName", "==", teamName)
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+              db
+                .collection("players")
+                .where("teamName", "==", cleanTeam)
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+              db
+                .collection("players")
+                .where("teamName", "==", teamName.replace(/\./g, ""))
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+              db
+                .collection("teams")
+                .where("name", "==", teamName)
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+              db
+                .collection("teams")
+                .where("name", "==", cleanTeam)
+                .get()
+                .catch(() => ({ forEach: () => {} })),
+            ];
+
+            if (strippedTeam && strippedTeam !== cleanTeam) {
+              queryPromises.push(
+                db
+                  .collection("players")
+                  .where("teamName", "==", strippedTeam)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              );
+              queryPromises.push(
+                db
+                  .collection("teams")
+                  .where("name", "==", strippedTeam)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              );
+            }
+
+            if (currentCampId) {
+              queryPromises.push(
+                db
+                  .collection("teams")
+                  .where("championshipId", "==", currentCampId)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              );
+              queryPromises.push(
+                db
+                  .collection("teams")
+                  .where("campeonatoId", "==", currentCampId)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              );
+              queryPromises.push(
+                db
+                  .collection("players")
+                  .where("championshipId", "==", currentCampId)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              );
+              queryPromises.push(
+                db
+                  .collection("players")
+                  .where("campeonatoId", "==", currentCampId)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              );
+            }
+
+            const snaps = await Promise.all(queryPromises);
+
+            const teamMetaMap = new Map();
+            const validTeamIdsForCat = new Set();
+            const allClubTeamIds = new Set();
+
+            const processTeamDoc = (tDoc) => {
+              const tData = tDoc.data();
+              if (
+                tData.name &&
+                (normalizeTeamName(tData.name) === normTeam ||
+                  (strippedTeam &&
+                    normalizeTeamName(tData.name) ===
+                      normalizeTeamName(strippedTeam)))
+              ) {
+                const tCat = tData.category || "";
+                teamMetaMap.set(tDoc.id, { ...tData, category: tCat });
+                allClubTeamIds.add(tDoc.id);
+                if (categoriesMatch(tCat, category)) {
+                  validTeamIdsForCat.add(tDoc.id);
+                }
+              }
+            };
+
+            snaps.forEach((snap) => {
+              if (snap && snap.forEach) {
+                snap.forEach((doc) => {
+                  if (doc.ref?.parent?.id === "teams") {
+                    processTeamDoc(doc);
+                  }
+                });
+              }
+            });
+
+            const playersList = [];
+            const addedPlayerDocIds = new Set();
+
+            const processPlayerDoc = (doc) => {
+              if (addedPlayerDocIds.has(doc.id)) return;
+              const p = doc.data();
+
+              // Descartar si el estado es RECALIFICADO o PENDIENTE_APROBACION
+              if (
+                p.status &&
+                (p.status.toUpperCase() === "RECALIFICADO" ||
+                  p.status.toLowerCase() === "pendiente_aprobacion")
+              )
+                return;
+
+              // Validar que pertenezca a este club
+              const pTeamNorm = normalizeTeamName(p.teamName);
+              const belongsToClub =
+                (p.teamId &&
+                  (allClubTeamIds.has(p.teamId) ||
+                    validTeamIdsForCat.has(p.teamId))) ||
+                (pTeamNorm &&
+                  (pTeamNorm === normTeam ||
+                    (strippedTeam &&
+                      pTeamNorm === normalizeTeamName(strippedTeam)))) ||
+                (p.teamName &&
+                  (p.teamName.trim().toUpperCase() === cleanTeam ||
+                    (strippedTeam &&
+                      p.teamName.trim().toUpperCase() === strippedTeam)));
+
+              if (!belongsToClub) return;
+
+              // FILTRADO POR CATEGORÍA
+              const pDocCat = p.teamCategory || p.category || "";
+              const pTeamDocCat = p.teamId
+                ? teamMetaMap.get(p.teamId)?.category || ""
+                : "";
+              const effectiveCat = pDocCat || pTeamDocCat;
+
+              if (category && effectiveCat) {
+                if (!categoriesMatch(effectiveCat, category)) {
+                  return; // Jugador de otra categoría -> DESCARTAR
+                }
+              }
+
+              addedPlayerDocIds.add(doc.id);
+              playersList.push({
+                ...p,
+                id: doc.id,
+                teamName: p.teamName || teamName,
+                teamCategory: effectiveCat || category || "",
+              });
+            };
+
+            snaps.forEach((snap) => {
+              if (snap && snap.forEach) {
+                snap.forEach((doc) => {
+                  if (doc.ref?.parent?.id === "players") {
+                    processPlayerDoc(doc);
+                  }
+                });
+              }
+            });
+
+            // Traer todos los jugadores vinculados por teamId de los equipos de esta categoría
+            const teamIdsToQuery =
+              validTeamIdsForCat.size > 0 ? validTeamIdsForCat : allClubTeamIds;
+            if (teamIdsToQuery.size > 0) {
+              const idPromises = Array.from(teamIdsToQuery).map((tId) =>
+                db
+                  .collection("players")
+                  .where("teamId", "==", tId)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              );
+              const idSnaps = await Promise.all(idPromises);
+              idSnaps.forEach((s) => s.forEach(processPlayerDoc));
+            }
+
+            playersList.sort((a, b) => {
+              const numA =
+                parseInt(
+                  a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999,
+                  10,
+                ) || 999;
+              const numB =
+                parseInt(
+                  b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999,
+                  10,
+                ) || 999;
+              return numA - numB;
+            });
+
+            teamPlayersMemoryCache.set(primaryKey, playersList);
+            teamPlayersMemoryCache.set(secondaryKey, playersList);
+            if (strippedTeam) {
+              teamPlayersMemoryCache.set(
+                `${normalizeTeamName(strippedTeam)}___${normCat}___${cleanCamp}`,
+                playersList,
+              );
+              teamPlayersMemoryCache.set(
+                `${normalizeTeamName(strippedTeam)}___${normCat}___`,
+                playersList,
+              );
+            }
+            if (!normCat) teamPlayersMemoryCache.set(neutralKey, playersList);
+
+            return playersList;
+          } catch (err) {
+            console.warn("Error in fetchTeamPlayers:", err);
+            return [];
+          } finally {
+            teamPlayersFetchPromises.delete(primaryKey);
+          }
+        })();
+
         teamPlayersFetchPromises.set(primaryKey, fetchPromise);
         return fetchPromise;
-      }
-
-      async function fetchTeamPlayersNetwork(
-        teamName,
-        category,
-        currentCampId,
-        primaryKey,
-        secondaryKey,
-        neutralKey,
-      ) {
-        const normTeam = normalizeTeamName(teamName);
-        const normCat = normalizeCategory(category);
-        const cleanCamp = (currentCampId || "").trim().toUpperCase();
-
-        try {
-          const cleanTeam = teamName.trim().toUpperCase();
-          const strippedTeam = cleanTeam
-            .replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?)\s+/i, "")
-            .trim();
-
-          const queryPromises = [
-            db
-              .collection("players")
-              .where("teamName", "==", teamName)
-              .get()
-              .catch(() => ({ forEach: () => {} })),
-            db
-              .collection("players")
-              .where("teamName", "==", cleanTeam)
-              .get()
-              .catch(() => ({ forEach: () => {} })),
-            db
-              .collection("players")
-              .where("teamName", "==", teamName.replace(/\./g, ""))
-              .get()
-              .catch(() => ({ forEach: () => {} })),
-            db
-              .collection("teams")
-              .where("name", "==", teamName)
-              .get()
-              .catch(() => ({ forEach: () => {} })),
-            db
-              .collection("teams")
-              .where("name", "==", cleanTeam)
-              .get()
-              .catch(() => ({ forEach: () => {} })),
-          ];
-
-          if (strippedTeam && strippedTeam !== cleanTeam) {
-            queryPromises.push(
-              db
-                .collection("players")
-                .where("teamName", "==", strippedTeam)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            );
-            queryPromises.push(
-              db
-                .collection("teams")
-                .where("name", "==", strippedTeam)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            );
-          }
-
-          if (currentCampId) {
-            queryPromises.push(
-              db
-                .collection("teams")
-                .where("championshipId", "==", currentCampId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            );
-            queryPromises.push(
-              db
-                .collection("teams")
-                .where("campeonatoId", "==", currentCampId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            );
-            queryPromises.push(
-              db
-                .collection("players")
-                .where("championshipId", "==", currentCampId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            );
-            queryPromises.push(
-              db
-                .collection("players")
-                .where("campeonatoId", "==", currentCampId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            );
-          }
-
-          const snaps = await Promise.all(queryPromises);
-
-          const teamMetaMap = new Map();
-          const validTeamIdsForCat = new Set();
-          const allClubTeamIds = new Set();
-
-          const processTeamDoc = (tDoc) => {
-            const tData = tDoc.data();
-            if (
-              tData.name &&
-              (normalizeTeamName(tData.name) === normTeam ||
-                (strippedTeam &&
-                  normalizeTeamName(tData.name) ===
-                    normalizeTeamName(strippedTeam)))
-            ) {
-              const tCat = tData.category || "";
-              teamMetaMap.set(tDoc.id, { ...tData, category: tCat });
-              allClubTeamIds.add(tDoc.id);
-              if (categoriesMatch(tCat, category)) {
-                validTeamIdsForCat.add(tDoc.id);
-              }
-            }
-          };
-
-          snaps.forEach((snap) => {
-            if (snap && snap.forEach) {
-              snap.forEach((doc) => {
-                if (doc.ref?.parent?.id === "teams") {
-                  processTeamDoc(doc);
-                }
-              });
-            }
-          });
-
-          const playersList = [];
-          const addedPlayerDocIds = new Set();
-
-          const processPlayerDoc = (doc) => {
-            if (addedPlayerDocIds.has(doc.id)) return;
-            const p = doc.data();
-
-            // Descartar si el estado es RECALIFICADO o PENDIENTE_APROBACION
-            if (
-              p.status &&
-              (p.status.toUpperCase() === "RECALIFICADO" ||
-                p.status.toLowerCase() === "pendiente_aprobacion")
-            )
-              return;
-
-            // Validar que pertenezca a este club
-            const pTeamNorm = normalizeTeamName(p.teamName);
-            const belongsToClub =
-              (p.teamId &&
-                (allClubTeamIds.has(p.teamId) ||
-                  validTeamIdsForCat.has(p.teamId))) ||
-              (pTeamNorm &&
-                (pTeamNorm === normTeam ||
-                  (strippedTeam &&
-                    pTeamNorm === normalizeTeamName(strippedTeam)))) ||
-              (p.teamName &&
-                (p.teamName.trim().toUpperCase() === cleanTeam ||
-                  (strippedTeam &&
-                    p.teamName.trim().toUpperCase() === strippedTeam)));
-
-            if (!belongsToClub) return;
-
-            // FILTRADO POR CATEGORÍA
-            const pDocCat = p.teamCategory || p.category || "";
-            const pTeamDocCat = p.teamId
-              ? teamMetaMap.get(p.teamId)?.category || ""
-              : "";
-            const effectiveCat = pDocCat || pTeamDocCat;
-
-            if (category && effectiveCat) {
-              if (!categoriesMatch(effectiveCat, category)) {
-                return; // Jugador de otra categoría -> DESCARTAR
-              }
-            }
-
-            addedPlayerDocIds.add(doc.id);
-            playersList.push({
-              ...p,
-              id: doc.id,
-              teamName: p.teamName || teamName,
-              teamCategory: effectiveCat || category || "",
-            });
-          };
-
-          snaps.forEach((snap) => {
-            if (snap && snap.forEach) {
-              snap.forEach((doc) => {
-                if (doc.ref?.parent?.id === "players") {
-                  processPlayerDoc(doc);
-                }
-              });
-            }
-          });
-
-          // Traer todos los jugadores vinculados por teamId de los equipos de esta categoría
-          const teamIdsToQuery =
-            validTeamIdsForCat.size > 0 ? validTeamIdsForCat : allClubTeamIds;
-          if (teamIdsToQuery.size > 0) {
-            const idPromises = Array.from(teamIdsToQuery).map((tId) =>
-              db
-                .collection("players")
-                .where("teamId", "==", tId)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            );
-            const idSnaps = await Promise.all(idPromises);
-            idSnaps.forEach((s) => s.forEach(processPlayerDoc));
-          }
-
-          playersList.sort((a, b) => {
-            const numA =
-              parseInt(
-                a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? 999,
-                10,
-              ) || 999;
-            const numB =
-              parseInt(
-                b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? 999,
-                10,
-              ) || 999;
-            return numA - numB;
-          });
-
-          teamPlayersMemoryCache.set(primaryKey, playersList);
-          teamPlayersMemoryCache.set(secondaryKey, playersList);
-          AppStorage.set("players_" + primaryKey, playersList);
-          AppStorage.set("players_" + secondaryKey, playersList);
-
-          if (strippedTeam) {
-            teamPlayersMemoryCache.set(
-              `${normalizeTeamName(strippedTeam)}___${normCat}___${cleanCamp}`,
-              playersList,
-            );
-            teamPlayersMemoryCache.set(
-              `${normalizeTeamName(strippedTeam)}___${normCat}___`,
-              playersList,
-            );
-          }
-          if (!normCat) teamPlayersMemoryCache.set(neutralKey, playersList);
-
-          return playersList;
-        } catch (err) {
-          console.warn("Error in fetchTeamPlayersNetwork:", err);
-          return [];
-        } finally {
-          teamPlayersFetchPromises.delete(primaryKey);
-        }
       }
 
       async function loadSanctionsForChampionship(
@@ -4203,8 +3934,8 @@
           modalEl.className = "modal fade";
           modalEl.style.zIndex = "1060";
           modalEl.innerHTML = `
-                  <div class="modal-dialog modal-dialog-centered modal-xl" style="max-width: 1040px; width: 95vw; transition: max-width 0.25s ease-in-out;">
-                      <div class="modal-content border border-secondary" style="background: rgba(10,10,10,0.98); backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.85);">
+                  <div class="modal-dialog modal-dialog-centered" style="max-width: 640px; transition: max-width 0.25s ease-in-out;">
+                      <div class="modal-content border border-secondary" style="background: rgba(10,10,10,0.97); backdrop-filter: blur(20px); border-radius: 20px; box-shadow: 0 25px 60px rgba(0,0,0,0.85);">
                           <div class="modal-header border-bottom border-secondary border-opacity-50 flex-wrap gap-2 px-4 py-3">
                               <h5 class="modal-title fw-bold text-uppercase text-white mb-0" id="playerSelectorTitle"></h5>
                               <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
@@ -4218,9 +3949,9 @@
         } else {
           const dlg = modalEl.querySelector(".modal-dialog");
           if (dlg) {
-            dlg.className = "modal-dialog modal-dialog-centered modal-xl";
-            dlg.style.maxWidth = "1040px";
-            dlg.style.width = "95vw";
+            dlg.className = "modal-dialog modal-dialog-centered";
+            dlg.style.maxWidth = "640px";
+            dlg.style.width = "";
           }
         }
 
@@ -4230,7 +3961,7 @@
         document.getElementById("playerSelectorTitle").innerHTML =
           isSubstitution
             ? `<i class="fas fa-exchange-alt me-2 text-warning"></i> REGISTRO DE CAMBIO (ENTRA): <span class="text-primary-glow">${teamName}</span>${catBadge}`
-            : `<i class="fas fa-tshirt me-2 text-warning"></i> NÓMINA OFICIAL / CARNETES: <span class="text-primary-glow">${teamName}</span>${catBadge}`;
+            : `<i class="fas fa-tshirt me-2 text-warning"></i> SELECCIÓN POR DORSAL: <span class="text-primary-glow">${teamName}</span>${catBadge}`;
 
         const campSelect = document.getElementById("campSelect");
         const currentCampId =
@@ -4247,12 +3978,41 @@
             : window.currentMatchOpened?.championshipName ||
               "CAMPEONATO ACTIVO";
 
-        // FAST PATH SYNCHRONOUS RESOLUTION (0ms): RAM + Global + LocalStorage
-        const cachedPlayers = getCachedPlayersSync(
-          teamName,
-          category,
-          currentCampId,
-        );
+        // Comprobación síncrona en memoria RAM (0ms) con aislamiento estricto de categoría
+        const normTeam = normalizeTeamName(teamName);
+        const normCat = normalizeCategory(category);
+        const cleanCamp = (currentCampId || "").trim().toUpperCase();
+
+        const primaryKey = `${normTeam}___${normCat}___${cleanCamp}`;
+        const secondaryKey = `${normTeam}___${normCat}___`;
+        const neutralKey = `${normTeam}______${cleanCamp}`;
+
+        let cachedPlayers = null;
+        if (
+          teamPlayersMemoryCache.has(primaryKey) &&
+          teamPlayersMemoryCache.get(primaryKey).length > 0
+        ) {
+          cachedPlayers = teamPlayersMemoryCache.get(primaryKey);
+        } else if (
+          teamPlayersMemoryCache.has(secondaryKey) &&
+          teamPlayersMemoryCache.get(secondaryKey).length > 0
+        ) {
+          cachedPlayers = teamPlayersMemoryCache.get(secondaryKey);
+        } else if (
+          teamPlayersMemoryCache.has(neutralKey) &&
+          teamPlayersMemoryCache.get(neutralKey).length > 0
+        ) {
+          cachedPlayers = teamPlayersMemoryCache.get(neutralKey);
+        }
+
+        if (!cachedPlayers || cachedPlayers.length === 0) {
+          for (let [k, list] of teamPlayersMemoryCache) {
+            if (k.startsWith(`${normTeam}___`) && list.length > 0) {
+              cachedPlayers = list;
+              break;
+            }
+          }
+        }
 
         if (cachedPlayers && cachedPlayers.length > 0) {
           currentTeamPlayersList = cachedPlayers;
@@ -4262,7 +4022,7 @@
           isFetchingCurrentTeamPlayers = true;
         }
 
-        // Renderizado inicial inmediato en 0ms
+        // Renderizado inicial inmediato
         renderPlayerSelectionView();
 
         const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
@@ -4271,6 +4031,7 @@
         setTimeout(() => {
           const inp = document.getElementById("dorsalSearchInput");
           if (inp) {
+            inp.value = "";
             inp.focus();
           }
         }, 80);
@@ -4288,27 +4049,28 @@
             }
             isFetchingCurrentTeamPlayers = false;
 
-            // ACTUALIZAR LA VISTA INMEDIATAMENTE (sin bloquearse por sanciones)
-            if (currentTeamName === teamName) {
+            await loadSanctionsForChampionship(
+              currentCampId,
+              category,
+              window.currentMatchOpened?.jornada,
+            );
+
+            // Si el modal sigue abierto, refrescar la vista reactivamente
+            const modalInstance = bootstrap.Modal.getInstance(modalEl);
+            if (modalInstance && currentTeamName === teamName) {
               const currentInp = document.getElementById("dorsalSearchInput");
               const val = currentInp?.value || dorsalSearchQuery;
               if (val && val.trim()) {
                 window.handleDorsalSearchInput(val);
               } else {
                 renderPlayerSelectionView();
+                setTimeout(() => {
+                  const refreshedInp =
+                    document.getElementById("dorsalSearchInput");
+                  if (refreshedInp) refreshedInp.focus();
+                }, 50);
               }
             }
-
-            // Sincronizar sanciones de forma asíncrona sin bloquear la UI
-            loadSanctionsForChampionship(
-              currentCampId,
-              category,
-              window.currentMatchOpened?.jornada,
-            ).then(() => {
-              if (currentTeamName === teamName) {
-                renderPlayerSelectionView();
-              }
-            }).catch(() => {});
           } catch (e) {
             console.error("Error en openPlayerSelector background fetch:", e);
             isFetchingCurrentTeamPlayers = false;
@@ -4488,375 +4250,85 @@
         return "SIN NOMBRE";
       }
 
-      // Renderiza la vista del selector (Chips Rápidos + Grilla de Nómina Completa o Carnet Individual)
       function renderPlayerSelectionView(lastAddedMessage = "") {
         const modalBody = document.getElementById("playerSelectorBody");
         if (!modalBody) return;
         const status = getRosterFillStatus();
 
-        // 1. Obtener estados de sanción y jugadores en cancha
-        const matchExpulsados =
-          getPlayersWithRedCardInMatch(currentRosterTbodyId);
-        const rosterInfo = getPlayersInMatchRoster(currentRosterTbodyId);
-        const currentEditingTr = currentTargetInput?.closest("tr");
-
-        // 2. Ordenar jugadores por número de dorsal numéricamente
-        const sortedPlayers = [...currentTeamPlayersList].sort((a, b) => {
-          const numA = parseInt(
-            a.numeroJugador ?? a.num ?? a.dorsal ?? a.numero ?? "999",
-            10,
-          );
-          const numB = parseInt(
-            b.numeroJugador ?? b.num ?? b.dorsal ?? b.numero ?? "999",
-            10,
-          );
-          return (isNaN(numA) ? 999 : numA) - (isNaN(numB) ? 999 : numB);
-        });
-
-        // 3. Generar Barra de Dorsales Rápidos (Quick Dorsal Chips)
-        let dorsalChipsHtml = "";
-        if (sortedPlayers.length > 0) {
-          dorsalChipsHtml = sortedPlayers
-            .map((p) => {
-              const pNum = String(
-                p.numeroJugador ?? p.num ?? p.dorsal ?? p.numero ?? "--",
-              ).trim();
-              const normPNum = String(parseInt(pNum, 10) || pNum).trim();
-              const pSanction = getPlayerSanction(p);
-              const pHasRed =
-                matchExpulsados.has(pNum) || matchExpulsados.has(normPNum);
-
-              const inTitular =
-                rosterInfo?.titulares?.get(pNum) ||
-                rosterInfo?.titulares?.get(normPNum);
-              const inCambio =
-                rosterInfo?.cambios?.get(pNum) ||
-                rosterInfo?.cambios?.get(normPNum);
-              let isSameTr = false;
-              if (
-                inTitular &&
-                currentEditingTr &&
-                inTitular.tr === currentEditingTr
-              )
-                isSameTr = true;
-              if (
-                inCambio &&
-                currentSubstitutionRow &&
-                inCambio.tr === currentSubstitutionRow
-              )
-                isSameTr = true;
-              const pIsOnField = (inTitular || inCambio) && !isSameTr;
-
-              let chipBtnClass =
-                "btn-outline-success bg-success bg-opacity-10 text-success border-success";
-              let chipTitle = "Disponible";
-              let chipIcon = "";
-
-              if (pHasRed) {
-                chipBtnClass =
-                  "btn-outline-danger bg-danger bg-opacity-20 text-danger border-danger";
-                chipTitle = "Expulsado (Roja)";
-                chipIcon = `<i class="fas fa-ban me-1"></i>`;
-              } else if (pSanction) {
-                chipBtnClass =
-                  "btn-outline-danger bg-danger bg-opacity-20 text-danger border-danger";
-                chipTitle = `Suspendido (${pSanction.partidos || 1} part.)`;
-                chipIcon = `<i class="fas fa-gavel me-1"></i>`;
-              } else if (pIsOnField) {
-                chipBtnClass =
-                  "btn-outline-warning bg-warning bg-opacity-20 text-warning border-warning";
-                chipTitle = "En Cancha";
-                chipIcon = `<i class="fas fa-user-check me-1"></i>`;
-              }
-
-              const isSelected =
-                selectedPlayerForPreview &&
-                (String(
-                  selectedPlayerForPreview.numeroJugador ??
-                    selectedPlayerForPreview.num ??
-                    "",
-                ).trim() === pNum ||
-                  (selectedPlayerForPreview.id &&
-                    p.id &&
-                    selectedPlayerForPreview.id === p.id));
-
-              if (isSelected) {
-                chipBtnClass += " shadow-lg border-2 ring-2 ring-warning";
-              }
-
-              return `
-              <button type="button" class="btn btn-sm ${chipBtnClass} rounded-pill px-2.5 py-1 fw-bold text-nowrap"
-                      style="font-size: 0.85rem; letter-spacing: 0.5px; transition: transform 0.15s ease;"
-                      title="#${pNum} - ${getPlayerShortName(p)} (${chipTitle})"
-                      onclick="window.selectDorsalChip('${pNum}')">
-                ${chipIcon}#${pNum}
-              </button>
-            `;
-            })
-            .join("");
+        const dlg = document.querySelector(
+          "#playerSelectorModal .modal-dialog",
+        );
+        if (dlg) {
+          dlg.style.maxWidth = "640px";
+          dlg.style.width = "";
         }
 
-        // 4. Filtrar lista para la Grilla de Nómina Completa
-        let filteredPlayers = sortedPlayers;
         if (dorsalSearchQuery) {
-          const q = dorsalSearchQuery.toLowerCase().trim();
-          filteredPlayers = sortedPlayers.filter((p) => {
-            const pNum = String(
-              p.numeroJugador ?? p.num ?? p.dorsal ?? p.numero ?? "",
-            ).toLowerCase();
-            const pNom = (p.nombres || "").toLowerCase();
-            const pApe = (p.apellidos || "").toLowerCase();
-            const pCi = (p.cedula || "").toLowerCase();
-            return (
-              pNum === q ||
-              pNum.startsWith(q) ||
-              pNom.includes(q) ||
-              pApe.includes(q) ||
-              pCi.includes(q)
-            );
-          });
+          selectedPlayerForPreview =
+            window.findPlayerByDorsal(dorsalSearchQuery);
+        } else {
+          selectedPlayerForPreview = null;
         }
 
-        // 5. Renderizar HTML principal del modal
         modalBody.innerHTML = `
-          <!-- Barra Superior de Progreso y Estado de Nómina -->
-          <div class="d-flex justify-content-between align-items-center mb-3 p-2.5 px-3 rounded-4 flex-wrap gap-2" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(46,204,113,0.3);">
+          <!-- Barra de Progreso y Estado de Nómina en Cancha -->
+          <div class="d-flex justify-content-between align-items-center mb-3 p-2 px-3 rounded-4 flex-wrap gap-2" style="background: rgba(255,255,255,0.04); border: 1px solid rgba(46,204,113,0.3);">
               <div class="d-flex align-items-center gap-2 flex-wrap">
                   <span class="badge bg-success px-3 py-1.5 rounded-pill fs-6 fw-bold">
                       <i class="fas fa-users me-1"></i> ${status.filled} / ${status.total} ${status.isChanges ? "Cambios Realizados" : "Jugadores en Cancha"}
                   </span>
                   ${status.filled < status.total ? `<small class="text-warning fw-bold"><i class="fas fa-arrow-right me-1"></i> ${status.isChanges ? "Registrando Cambio #" + (status.currentIndex + 1) : "Casillero actual #" + (status.currentIndex + 1)}</small>` : `<small class="text-success fw-bold"><i class="fas fa-check-double me-1"></i> ¡Nómina Completa!</small>`}
               </div>
-              <div class="d-flex align-items-center gap-2">
-                  ${
-                    selectedPlayerForPreview
-                      ? `<button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold" onclick="window.showFullRosterGrid()"><i class="fas fa-th-large me-1"></i> Ver Toda la Nómina</button>`
-                      : ""
-                  }
-                  <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" data-bs-dismiss="modal">
-                      <i class="fas fa-check-circle text-success me-1"></i> Terminar / Cerrar
-                  </button>
-              </div>
+              <button type="button" class="btn btn-sm btn-outline-light rounded-pill px-3 fw-bold" data-bs-dismiss="modal">
+                  <i class="fas fa-check-circle text-success me-1"></i> Terminar / Cerrar
+              </button>
           </div>
 
           ${lastAddedMessage ? `<div class="alert alert-success py-2 px-3 mb-3 rounded-pill text-center fw-bold animate__animated animate__fadeIn" style="font-size:0.92rem; background: rgba(46,204,113,0.2); border: 1px solid #2ecc71; color:#2ecc71;"><i class="fas fa-check-circle me-1"></i> ${lastAddedMessage}</div>` : ""}
 
-          <!-- Buscador y Selector por Dorsal / Nombre -->
+          <!-- Buscador Único por Número de Dorsal -->
           <div class="p-3 mb-3 rounded-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 193, 7, 0.35);">
-              <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+              <div class="d-flex justify-content-between align-items-center mb-2">
                   <label for="dorsalSearchInput" class="form-label text-warning small fw-bold text-uppercase mb-0" style="letter-spacing:1px;">
-                      <i class="fas fa-search me-1"></i> ${currentSubstitutionRow ? "Buscar Jugador para Cambio:" : "Buscar por Dorsal (#), Nombre o Cédula:"}
+                      <i class="fas fa-tshirt me-1"></i> ${currentSubstitutionRow ? "Ingrese el Dorsal del Jugador que ENTRA:" : "Ingrese el Número de Dorsal:"}
                   </label>
                   <span class="badge bg-dark border border-secondary text-warning small">
                       ${
                         isFetchingCurrentTeamPlayers &&
                         currentTeamPlayersList.length === 0
                           ? `<span class="spinner-border spinner-border-sm text-warning me-1"></span> Sincronizando nómina...`
-                          : `${currentTeamPlayersList.length} jugadores inscritos (${currentTeamCategory || "MÁXIMA"})`
+                          : `${currentTeamPlayersList.length} inscritos (${currentTeamCategory || "MÁXIMA"})`
                       }
                   </span>
               </div>
 
               <div class="input-group input-group-lg my-1">
-                  <span class="input-group-text bg-dark border-secondary text-warning"><i class="fas fa-tshirt fs-4"></i></span>
-                  <input type="text" id="dorsalSearchInput" class="form-control bg-dark text-white border-secondary fw-bold fs-4 text-center shadow-none"
-                         placeholder="Escriba dorsal (#10, #7...) o nombre..." maxlength="30" autocomplete="off"
+                  <span class="input-group-text bg-dark border-secondary text-warning"><i class="fas fa-hashtag fs-3"></i></span>
+                  <input type="text" id="dorsalSearchInput" class="form-control bg-dark text-white border-secondary fw-bold fs-2 text-center shadow-none"
+                         placeholder="Ej: 10, 7, 99..." maxlength="10" autocomplete="off"
                          value="${dorsalSearchQuery}"
                          oninput="window.handleDorsalSearchInput(this.value)"
-                         onkeydown="if(event.key==='Enter') window.handleDorsalSearchSubmit(this.value)">
+                         onkeydown="if(event.key==='Enter') window.handleDorsalSearchSubmit(this.value)" autofocus>
                   ${
-                    dorsalSearchQuery || selectedPlayerForPreview
+                    dorsalSearchQuery
                       ? `
-                  <button class="btn btn-outline-secondary px-3" type="button" onclick="window.clearSearchQuery()" title="Ver todos">
-                      <i class="fas fa-times me-1"></i> Ver Todos
+                  <button class="btn btn-outline-secondary px-3" type="button" onclick="window.clearSearchQuery()" title="Limpiar">
+                      <i class="fas fa-times"></i>
                   </button>`
                       : ""
                   }
-                  <button class="btn btn-warning px-4 fw-bold text-dark" type="button" onclick="window.handleDorsalSearchSubmit(document.getElementById('dorsalSearchInput').value)">
+                  <button class="btn btn-warning px-4 fw-bold" type="button" onclick="window.handleDorsalSearchSubmit(document.getElementById('dorsalSearchInput').value)">
                       <i class="fas fa-search me-1"></i> BUSCAR
                   </button>
               </div>
-
-              <!-- Barra de Acceso Rápido por Dorsal (Chips) -->
-              ${
-                dorsalChipsHtml
-                  ? `
-              <div class="mt-2.5 pt-2 border-top border-secondary border-opacity-25">
-                  <div class="small text-white-50 fw-bold mb-1.5 d-flex align-items-center justify-content-between">
-                      <span><i class="fas fa-th-list me-1 text-warning"></i> ACCESO RÁPIDO POR DORSAL:</span>
-                      <span class="small text-muted">Toque un número para previsualizar</span>
-                  </div>
-                  <div class="d-flex flex-wrap gap-1.5 align-items-center" style="max-height: 90px; overflow-y: auto;">
-                      ${dorsalChipsHtml}
-                  </div>
-              </div>`
-                  : ""
-              }
           </div>
 
-          <!-- Contenedor Principal: Carnet Individual Seleccionado O Grilla de Toda la Nómina -->
-          <div id="playerSelectorMainContainer" class="p-3 rounded-4 border border-secondary border-opacity-50"
+          <!-- Contenedor Centrado de Previsualización del Carnet -->
+          <div class="p-3 rounded-4 border border-secondary border-opacity-50 d-flex flex-column align-items-center justify-content-center"
                style="background: rgba(0,0,0,0.5); min-height: 440px;">
-              ${
-                selectedPlayerForPreview
-                  ? `
-                  <div class="d-flex flex-column align-items-center justify-content-center w-100">
-                      <div class="mb-3 w-100 d-flex justify-content-between align-items-center" style="max-width: 480px;">
-                          <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-3 py-1.5 fw-bold" onclick="window.showFullRosterGrid()">
-                              <i class="fas fa-arrow-left me-1"></i> Volver a toda la nómina (${currentTeamPlayersList.length})
-                          </button>
-                          <span class="badge bg-dark border border-secondary text-white-50">Dorsal #${selectedPlayerForPreview.numeroJugador ?? selectedPlayerForPreview.num ?? "--"}</span>
-                      </div>
-                      <div id="playerCarnetPreviewContainer" class="w-100 d-flex flex-column align-items-center">
-                          ${renderCarnetPreviewContent(selectedPlayerForPreview)}
-                      </div>
-                  </div>
-                  `
-                  : renderFullRosterGridHtml(
-                      filteredPlayers,
-                      matchExpulsados,
-                      rosterInfo,
-                      currentEditingTr,
-                    )
-              }
-          </div>
-        `;
-      }
-
-      // Renderiza la grilla completa con tarjetas limpias enfocadas en el número y estado
-      function renderFullRosterGridHtml(
-        players,
-        matchExpulsados,
-        rosterInfo,
-        currentEditingTr,
-      ) {
-        if (!players || players.length === 0) {
-          if (isFetchingCurrentTeamPlayers) {
-            return `
-              <div class="text-center py-5 text-white-50 d-flex flex-column align-items-center justify-content-center">
-                  <div class="spinner-border text-warning mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-                  <h5 class="fw-bold text-white mb-1">Cargando nómina oficial de ${currentTeamName}...</h5>
-                  <p class="small text-white-50 mb-0">Sincronizando jugadores del campeonato ${currentCampName}...</p>
+              <div id="playerCarnetPreviewContainer" class="w-100 d-flex flex-column align-items-center">
+                  ${renderCarnetPreviewContent(selectedPlayerForPreview)}
               </div>
-            `;
-          }
-          return `
-            <div class="text-center py-5 text-white-50 d-flex flex-column align-items-center justify-content-center">
-                <i class="fas fa-user-slash text-warning opacity-75 mb-3" style="font-size: 3.5rem;"></i>
-                <h5 class="fw-bold text-white mb-2">No se encontraron jugadores</h5>
-                <p class="small text-white-50 mb-3" style="max-width: 380px;">
-                    ${dorsalSearchQuery ? `No hay coincidencias para "<b>${dorsalSearchQuery}</b>" en <b>${currentTeamName}</b>.` : `No hay jugadores inscritos en este equipo para la categoría ${currentTeamCategory || "MÁXIMA"}.`}
-                </p>
-                ${
-                  dorsalSearchQuery
-                    ? `<button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-4 py-2 fw-bold" onclick="window.clearSearchQuery()"><i class="fas fa-times me-1"></i> Limpiar Filtro</button>`
-                    : ""
-                }
-            </div>
-          `;
-        }
-
-        let gridCards = players
-          .map((p) => {
-            const fullName = (
-              (p.nombres || "") +
-              " " +
-              (p.apellidos || "")
-            ).trim();
-            const safeNombre = fullName.replace(/'/g, "\\'");
-            const num = String(
-              p.numeroJugador ?? p.num ?? p.dorsal ?? p.numero ?? "--",
-            ).trim();
-            const normNum = String(parseInt(num, 10) || num).trim();
-            const sanction = getPlayerSanction(p);
-            const hasRedInMatch =
-              num && (matchExpulsados.has(num) || matchExpulsados.has(normNum));
-
-            const inTitular =
-              rosterInfo?.titulares?.get(num) ||
-              rosterInfo?.titulares?.get(normNum);
-            const inCambio =
-              rosterInfo?.cambios?.get(num) ||
-              rosterInfo?.cambios?.get(normNum);
-            let isSameTr = false;
-            if (
-              inTitular &&
-              currentEditingTr &&
-              inTitular.tr === currentEditingTr
-            )
-              isSameTr = true;
-            if (
-              inCambio &&
-              currentSubstitutionRow &&
-              inCambio.tr === currentSubstitutionRow
-            )
-              isSameTr = true;
-            const isOnField = (inTitular || inCambio) && !isSameTr;
-
-            let cardStyle =
-              "border: 1.5px solid rgba(46, 204, 113, 0.45); background: rgba(46, 204, 113, 0.08);";
-            let numColor = "#2ecc71";
-            let defaultBorder = "rgba(46, 204, 113, 0.45)";
-            let statusBadge = `<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 rounded-pill px-2.5 py-1 small fw-bold"><i class="fas fa-check-circle me-1"></i>Disponible</span>`;
-
-            if (hasRedInMatch) {
-              cardStyle =
-                "border: 1.5px solid rgba(231, 76, 60, 0.7); background: rgba(231, 76, 60, 0.1);";
-              numColor = "#ff6b6b";
-              defaultBorder = "rgba(231, 76, 60, 0.7)";
-              statusBadge = `<span class="badge bg-danger text-white rounded-pill px-2.5 py-1 small fw-bold"><i class="fas fa-ban me-1"></i>Expulsado</span>`;
-            } else if (sanction) {
-              cardStyle =
-                "border: 1.5px solid rgba(231, 76, 60, 0.7); background: rgba(231, 76, 60, 0.1);";
-              numColor = "#ff6b6b";
-              defaultBorder = "rgba(231, 76, 60, 0.7)";
-              statusBadge = `<span class="badge bg-danger text-white rounded-pill px-2.5 py-1 small fw-bold"><i class="fas fa-gavel me-1"></i>Suspendido</span>`;
-            } else if (isOnField) {
-              cardStyle =
-                "border: 1.5px solid rgba(243, 156, 18, 0.6); background: rgba(243, 156, 18, 0.1);";
-              numColor = "#f39c12";
-              defaultBorder = "rgba(243, 156, 18, 0.6)";
-              statusBadge = `<span class="badge bg-warning text-dark rounded-pill px-2.5 py-1 small fw-bold"><i class="fas fa-user-check me-1"></i>En Cancha</span>`;
-            }
-
-            return `
-            <div class="col">
-                <div class="card h-100 text-center rounded-4 shadow-sm p-3 position-relative player-num-card"
-                     style="${cardStyle} cursor: pointer; transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;"
-                     onmouseover="this.style.transform='translateY(-3px)'; this.style.borderColor='#ffc107'; this.style.boxShadow='0 8px 25px rgba(255,193,7,0.2)';"
-                     onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='${defaultBorder}'; this.style.boxShadow='';"
-                     onclick="window.selectPlayerForPreview('${p.id || num}', '${num}')"
-                     title="Ver carnet oficial de #${num} ${fullName}">
-                    
-                    <!-- Gran Número de Dorsal -->
-                    <div class="fw-900 mb-1" style="font-size: 2.3rem; line-height: 1; color: ${numColor}; font-family: 'Outfit', sans-serif; letter-spacing: -0.5px;">
-                        #${num}
-                    </div>
-
-                    <!-- Nombre del Jugador Limpio y Truncado -->
-                    <div class="fw-bold text-white text-truncate mb-2.5" style="font-size: 0.88rem; letter-spacing: 0.3px;" title="${fullName}">
-                        ${fullName || "Sin Nombre"}
-                    </div>
-
-                    <!-- Badge de Estado Limpio -->
-                    <div class="mt-auto">
-                        ${statusBadge}
-                    </div>
-                </div>
-            </div>
-          `;
-          })
-          .join("");
-
-        return `
-          <div class="d-flex justify-content-between align-items-center mb-2.5 px-1 flex-wrap gap-2">
-              <span class="text-white-50 small fw-bold text-uppercase">
-                  <i class="fas fa-address-card text-warning me-1"></i> Nómina Oficial (${players.length} jugadores):
-              </span>
-              <span class="small text-warning fw-bold"><i class="fas fa-hand-pointer me-1"></i> Toque una tarjeta para abrir su carnet</span>
-          </div>
-          <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 g-3 gy-3" style="row-gap: 16px;">
-              ${gridCards}
           </div>
         `;
       }
@@ -4888,7 +4360,7 @@
                       No existe ningún jugador registrado con el dorsal <b>#${dorsalSearchQuery}</b> en <b>${currentTeamName}</b> (${currentTeamCategory || "Esta Categoría"}).
                   </p>
                   <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-4 py-2 fw-bold" onclick="window.clearSearchQuery()">
-                      <i class="fas fa-arrow-left me-1"></i> Ver toda la nómina
+                      <i class="fas fa-arrow-left me-1"></i> Intentar con otro dorsal
                   </button>
               </div>
             `;
@@ -4899,9 +4371,9 @@
                 <div class="p-3 rounded-circle mb-3" style="background: rgba(255, 193, 7, 0.1); border: 2px dashed rgba(255, 193, 7, 0.4);">
                     <i class="fas fa-tshirt text-warning" style="font-size: 3.5rem;"></i>
                 </div>
-                <h5 class="fw-bold text-white mb-1">Seleccione un Jugador de la Nómina</h5>
+                <h5 class="fw-bold text-white mb-1">Ingrese el Número de Dorsal</h5>
                 <p class="small text-white-50 mb-3" style="max-width: 320px;">
-                    Seleccione cualquier jugador de la lista o escriba su dorsal para previsualizar al instante su carnet oficial.
+                    Escriba el dorsal del jugador en el buscador de arriba para previsualizar al instante su carnet oficial y habilitarlo.
                 </p>
                 <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center">
                     <span class="badge bg-dark border border-secondary text-warning px-3 py-1.5 rounded-pill">
@@ -4955,8 +4427,8 @@
                     <button type="button" class="btn btn-danger btn-lg rounded-pill w-100 py-3 fw-bold disabled shadow mb-2" disabled style="opacity: 0.7; cursor: not-allowed;">
                         <i class="fas fa-lock me-2"></i> EXPULSADO (NO PERMITIDO)
                     </button>
-                    <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-4 py-2 fw-bold w-100" onclick="window.showFullRosterGrid()">
-                        <i class="fas fa-arrow-left me-1"></i> Volver a la nómina
+                    <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-4 py-2 fw-bold w-100" onclick="window.clearSearchQuery()">
+                        <i class="fas fa-arrow-left me-1"></i> Elegir otro dorsal
                     </button>
                 </div>
             </div>
@@ -4994,8 +4466,8 @@
                     <button type="button" class="btn btn-danger btn-lg rounded-pill w-100 py-3 fw-bold disabled shadow mb-2" disabled style="opacity: 0.7; cursor: not-allowed;">
                         <i class="fas fa-lock me-2"></i> JUGADOR SUSPENDIDO (${suspBtnText})
                     </button>
-                    <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-4 py-2 fw-bold w-100" onclick="window.showFullRosterGrid()">
-                        <i class="fas fa-arrow-left me-1"></i> Volver a la nómina
+                    <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-4 py-2 fw-bold w-100" onclick="window.clearSearchQuery()">
+                        <i class="fas fa-arrow-left me-1"></i> Elegir otro dorsal
                     </button>
                 </div>
             </div>
@@ -5052,8 +4524,8 @@
                     <button type="button" class="btn btn-secondary btn-lg rounded-pill w-100 py-3 fw-bold disabled shadow mb-2" disabled style="opacity: 0.65; cursor: not-allowed;">
                         <i class="fas fa-ban me-2"></i> YA EN CANCHA (NO DUPLICAR)
                     </button>
-                    <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-4 py-2 fw-bold w-100" onclick="window.showFullRosterGrid()">
-                        <i class="fas fa-arrow-left me-1"></i> Volver a la nómina
+                    <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-4 py-2 fw-bold w-100" onclick="window.clearSearchQuery()">
+                        <i class="fas fa-arrow-left me-1"></i> Elegir otro dorsal
                     </button>
                 </div>
             </div>
@@ -5083,8 +4555,8 @@
                   </button>
 
                   <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-4 py-2 fw-bold w-100"
-                          onclick="window.showFullRosterGrid()">
-                      <i class="fas fa-arrow-left me-1"></i> Volver a toda la nómina
+                          onclick="window.clearSearchQuery()">
+                      <i class="fas fa-times me-1"></i> Cancelar / Elegir otro dorsal
                   </button>
               </div>
           </div>
@@ -5093,30 +4565,6 @@
 
       // Alias para mantener compatibilidad total
       const renderCedulaSearchView = renderPlayerSelectionView;
-
-      window.showFullRosterGrid = function () {
-        selectedPlayerForPreview = null;
-        dorsalSearchQuery = "";
-        const inp = document.getElementById("dorsalSearchInput");
-        if (inp) inp.value = "";
-        renderPlayerSelectionView();
-        setTimeout(() => {
-          const refreshedInp = document.getElementById("dorsalSearchInput");
-          if (refreshedInp) refreshedInp.focus();
-        }, 50);
-      };
-
-      window.selectDorsalChip = function (dorsalNum) {
-        if (!dorsalNum || dorsalNum === "--") return;
-        const matched = window.findPlayerByDorsal(dorsalNum);
-        if (matched) {
-          selectedPlayerForPreview = matched;
-          dorsalSearchQuery = String(dorsalNum).trim();
-          renderPlayerSelectionView();
-        } else {
-          window.handleDorsalSearchInput(String(dorsalNum));
-        }
-      };
 
       window.selectPlayerForPreview = function (
         playerIdOrNum,
@@ -5134,42 +4582,50 @@
 
         if (p) {
           selectedPlayerForPreview = p;
-          dorsalSearchQuery = String(
-            p.numeroJugador ?? p.num ?? dorsalFallback ?? "",
-          ).trim();
-          renderPlayerSelectionView();
+          const container = document.getElementById(
+            "playerCarnetPreviewContainer",
+          );
+          if (container) {
+            container.innerHTML = renderCarnetPreviewContent(p);
+          }
         }
       };
 
       window.clearPlayerPreview = function () {
-        window.showFullRosterGrid();
+        window.clearSearchQuery();
       };
 
       window.handleDorsalSearchInput = function (typedVal) {
         dorsalSearchQuery = (typedVal || "").trim();
         if (dorsalSearchQuery) {
-          const exact = window.findPlayerByDorsal(dorsalSearchQuery);
-          if (exact) {
-            selectedPlayerForPreview = exact;
-          } else {
-            selectedPlayerForPreview = null;
-          }
+          selectedPlayerForPreview =
+            window.findPlayerByDorsal(dorsalSearchQuery);
         } else {
           selectedPlayerForPreview = null;
         }
-        renderPlayerSelectionView();
+        const container = document.getElementById(
+          "playerCarnetPreviewContainer",
+        );
+        if (container) {
+          container.innerHTML = renderCarnetPreviewContent(
+            selectedPlayerForPreview,
+          );
+        } else {
+          renderPlayerSelectionView();
+        }
       };
 
       window.handleDorsalSearchSubmit = function (typedVal) {
         const val = (typedVal || "").trim();
-        if (!val) {
-          window.showFullRosterGrid();
-          return;
-        }
+        if (!val) return;
         const exact = window.findPlayerByDorsal(val);
         if (exact) {
           selectedPlayerForPreview = exact;
-          renderPlayerSelectionView();
+          const container = document.getElementById(
+            "playerCarnetPreviewContainer",
+          );
+          if (container)
+            container.innerHTML = renderCarnetPreviewContent(exact);
 
           // Si el jugador está disponible y sin restricciones, seleccionarlo de inmediato al presionar Enter/Buscar
           const sanction = getPlayerSanction(exact);
@@ -5207,12 +4663,29 @@
           }
         } else {
           selectedPlayerForPreview = null;
-          renderPlayerSelectionView();
+          const container = document.getElementById(
+            "playerCarnetPreviewContainer",
+          );
+          if (container) container.innerHTML = renderCarnetPreviewContent(null);
         }
       };
 
       window.clearSearchQuery = function () {
-        window.showFullRosterGrid();
+        dorsalSearchQuery = "";
+        selectedPlayerForPreview = null;
+        const inp = document.getElementById("dorsalSearchInput");
+        if (inp) {
+          inp.value = "";
+          inp.focus();
+        }
+        const container = document.getElementById(
+          "playerCarnetPreviewContainer",
+        );
+        if (container) {
+          container.innerHTML = renderCarnetPreviewContent(null);
+        } else {
+          renderPlayerSelectionView();
+        }
       };
 
       window.confirmSelectPlayer = function (name, number) {
@@ -5551,11 +5024,62 @@
       }
 
       window.showAllCarnetsGrid = function () {
-        window.showFullRosterGrid();
+        const modalBody = document.getElementById("playerSelectorBody");
+        if (!modalBody) return;
+        const status = getRosterFillStatus();
+
+        const dlg = document.querySelector(
+          "#playerSelectorModal .modal-dialog",
+        );
+        if (dlg) {
+          dlg.style.maxWidth = "960px";
+          dlg.style.width = "95vw";
+        }
+
+        let gridHtml = `
+          <div class="d-flex justify-content-between align-items-center mb-3 pb-2 border-bottom border-secondary border-opacity-50 flex-wrap gap-2 sticky-top bg-dark pt-1" style="z-index: 10;">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 fw-bold" onclick="renderPlayerSelectionView()">
+                <i class="fas fa-arrow-left me-1"></i> Volver a Selección por Dorsal
+              </button>
+              <span class="badge bg-success px-2.5 py-1 rounded-pill small fw-bold">
+                <i class="fas fa-users me-1"></i> ${status.filled} / ${status.total} ${status.isChanges ? "Cambios" : ""}
+              </span>
+            </div>
+            <div class="input-group input-group-sm" style="width: 240px;">
+              <span class="input-group-text bg-dark text-white-50 border-secondary"><i class="fas fa-search"></i></span>
+              <input type="text" class="form-control bg-dark text-white border-secondary shadow-none" placeholder="Filtrar número o CI..." oninput="window.filterCarnets(this.value)">
+            </div>
+          </div>
+          <div class="row row-cols-1 row-cols-md-2 g-3 justify-content-center">
+        `;
+
+        currentTeamPlayersList.forEach((p) => {
+          const num = p.numeroJugador || "";
+          const ci = p.cedula || "";
+          gridHtml += `
+            <div class="col carnet-col-filter d-flex justify-content-center" data-dorsal="${num}" data-ci="${ci}">
+              ${renderSingleCarnetHtml(p)}
+            </div>
+          `;
+        });
+
+        gridHtml += "</div>";
+        modalBody.innerHTML = gridHtml;
       };
 
       window.filterCarnets = function (val) {
-        window.handleDorsalSearchInput(val);
+        const cleanVal = (val || "").trim().toLowerCase();
+        const cards = document.querySelectorAll(".carnet-col-filter");
+        cards.forEach((col) => {
+          const d = (col.getAttribute("data-dorsal") || "").toLowerCase();
+          const ci = (col.getAttribute("data-ci") || "").toLowerCase();
+          if (!cleanVal || d.includes(cleanVal) || ci.includes(cleanVal)) {
+            col.classList.remove("d-none");
+          } else {
+            col.classList.add("d-none");
+          }
+        });
       };
 
       function selectPlayer(name, number) {
