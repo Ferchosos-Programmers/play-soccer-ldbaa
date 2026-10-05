@@ -1581,12 +1581,22 @@
       function renderActaInterior(m) {
         const body = document.getElementById("modalVocalBody");
         const ls = m.liveStatus || {};
-        const scoreL =
-          ls.scoreLocal !== undefined
+        
+        const titularL = (m.playersLocal || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+        const cambioL = (m.changesLocal || []).reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0);
+        const titularV = (m.playersVisitor || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+        const cambioV = (m.changesVisitor || []).reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0);
+        const hasRoster = (m.playersLocal && m.playersLocal.length > 0) || (m.changesLocal && m.changesLocal.length > 0) ||
+                          (m.playersVisitor && m.playersVisitor.length > 0) || (m.changesVisitor && m.changesVisitor.length > 0);
+
+        const scoreL = hasRoster
+          ? titularL + cambioL
+          : ls.scoreLocal !== undefined
             ? ls.scoreLocal
             : parseInt(m.vocalReport?.totalGolesLocal) || 0;
-        const scoreV =
-          ls.scoreVisitor !== undefined
+        const scoreV = hasRoster
+          ? titularV + cambioV
+          : ls.scoreVisitor !== undefined
             ? ls.scoreVisitor
             : parseInt(m.vocalReport?.totalGolesVisitor) || 0;
 
@@ -6558,7 +6568,28 @@
           const changesLocal = collectChanges("listaCambiosLocal");
           const changesVisitor = collectChanges("listaCambiosVisitante");
 
+          const finalScoreL =
+            playersLocal.reduce(
+              (acc, p) => acc + (parseInt(p.goles) || 0),
+              0,
+            ) +
+            changesLocal.reduce(
+              (acc, c) => acc + (parseInt(c.goles) || 0),
+              0,
+            );
+          const finalScoreV =
+            playersVisitor.reduce(
+              (acc, p) => acc + (parseInt(p.goles) || 0),
+              0,
+            ) +
+            changesVisitor.reduce(
+              (acc, c) => acc + (parseInt(c.goles) || 0),
+              0,
+            );
+
           const vocalReport = {
+            totalGolesLocal: parseInt(document.getElementById("totalGolesLocal")?.value || finalScoreL) || finalScoreL,
+            totalGolesVisitor: parseInt(document.getElementById("totalGolesVisitante")?.value || finalScoreV) || finalScoreV,
             startTime: document.getElementById("vocal_start_time")?.value || "",
             observations:
               document.getElementById("vocal_observations")?.value || "",
@@ -6677,14 +6708,6 @@
               (m.local === window.currentMatchOpened.local &&
                 m.visitor === window.currentMatchOpened.visitor)
             ) {
-              const finalScoreL = playersLocal.reduce(
-                (acc, p) => acc + (parseInt(p.goles) || 0),
-                0,
-              );
-              const finalScoreV = playersVisitor.reduce(
-                (acc, p) => acc + (parseInt(p.goles) || 0),
-                0,
-              );
               return {
                 ...m,
                 isFinalized: true,

@@ -303,6 +303,25 @@
             .replace(/[̀-ͯ]/g, "")
             .toLowerCase();
 
+          // Helper para verificar si un partido está concluido / vocalía terminada
+          function isMatchFinished(m) {
+            const ls = m.liveStatus || {};
+            if (ls.isLive === true) return false;
+            
+            if (m.isFinalized === true) return true;
+            if (ls.period === "Finalizado") return true;
+            if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor || m.vocalReport.vocalName)) return true;
+            if (m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName)) return true;
+            
+            const hasLocalRoster = (m.playersLocal && m.playersLocal.length > 0) || (m.changesLocal && m.changesLocal.length > 0);
+            const hasVisitorRoster = (m.playersVisitor && m.playersVisitor.length > 0) || (m.changesVisitor && m.changesVisitor.length > 0);
+            if ((hasLocalRoster || hasVisitorRoster) && (!ls.isLive)) return true;
+
+            if (typeof ls.scoreLocal !== 'undefined' && (ls.scoreLocal > 0 || ls.scoreVisitor > 0) && !ls.isLive) return true;
+            
+            return false;
+          }
+
           fixturesSnap.forEach((doc) => {
             const fixture = doc.data();
             const fixCat = (fixture.category || "")
@@ -310,39 +329,33 @@
               .replace(/[̀-ͯ]/g, "")
               .toLowerCase();
 
-            if (fixCat === normalizedSelectedCat) {
+            if (fixCat === normalizedSelectedCat && Array.isArray(fixture.data)) {
               fixture.data.forEach((m) => {
-                if (m.isFinalized) {
-                  // Process Local
-                  (m.playersLocal || []).forEach((p) => {
+                if (isMatchFinished(m)) {
+                  const recordScorer = (p, teamName) => {
                     const goals = parseInt(p.goles) || 0;
-                    if (goals > 0) {
-                      const key = `${p.name.trim().toUpperCase()}|${m.local}`;
+                    const name = (p.name || "").trim();
+                    if (goals > 0 && name && name !== "Seleccionar..." && name !== "Seleccionar Entra...") {
+                      const cleanName = name.toUpperCase();
+                      const key = `${cleanName}|${teamName}`;
                       if (!scorers[key]) {
                         scorers[key] = {
-                          name: p.name.trim().toUpperCase(),
-                          team: m.local,
+                          name: cleanName,
+                          team: teamName,
                           goals: 0,
                         };
                       }
                       scorers[key].goals += goals;
                     }
-                  });
-                  // Process Visitor
-                  (m.playersVisitor || []).forEach((p) => {
-                    const goals = parseInt(p.goles) || 0;
-                    if (goals > 0) {
-                      const key = `${p.name.trim().toUpperCase()}|${m.visitor}`;
-                      if (!scorers[key]) {
-                        scorers[key] = {
-                          name: p.name.trim().toUpperCase(),
-                          team: m.visitor,
-                          goals: 0,
-                        };
-                      }
-                      scorers[key].goals += goals;
-                    }
-                  });
+                  };
+
+                  // Process Local (Titulares + Cambios)
+                  (m.playersLocal || []).forEach(p => recordScorer(p, m.local));
+                  (m.changesLocal || []).forEach(c => recordScorer(c, m.local));
+
+                  // Process Visitor (Titulares + Cambios)
+                  (m.playersVisitor || []).forEach(p => recordScorer(p, m.visitor));
+                  (m.changesVisitor || []).forEach(c => recordScorer(c, m.visitor));
                 }
               });
             }

@@ -212,6 +212,50 @@
         loadTeamsForChampionship(championshipId, currentCategory);
       }
 
+      // Helper para obtener goles oficiales de la vocalía (Titulares + Cambios)
+      function getVocalGoals(m, teamType) {
+        const isLocal = teamType === 'local';
+        const players = isLocal ? (m.playersLocal || []) : (m.playersVisitor || []);
+        const changes = isLocal ? (m.changesLocal || []) : (m.changesVisitor || []);
+        
+        const titularGoals = players.reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+        const cambioGoals = changes.reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0);
+        const sumVocal = titularGoals + cambioGoals;
+
+        const hasRoster = players.length > 0 || changes.length > 0;
+        if (hasRoster) {
+          return sumVocal;
+        }
+
+        const ls = m.liveStatus || {};
+        const lsScore = isLocal ? ls.scoreLocal : ls.scoreVisitor;
+        if (typeof lsScore !== 'undefined') return parseInt(lsScore) || 0;
+
+        const mScore = isLocal ? m.scoreLocal : m.scoreVisitor;
+        if (typeof mScore !== 'undefined') return parseInt(mScore) || 0;
+
+        return 0;
+      }
+
+      // Helper para verificar si un partido está concluido / vocalía terminada
+      function isMatchFinished(m) {
+        const ls = m.liveStatus || {};
+        if (ls.isLive === true) return false;
+        
+        if (m.isFinalized === true) return true;
+        if (ls.period === "Finalizado") return true;
+        if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor || m.vocalReport.vocalName)) return true;
+        if (m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName)) return true;
+        
+        const hasLocalRoster = (m.playersLocal && m.playersLocal.length > 0) || (m.changesLocal && m.changesLocal.length > 0);
+        const hasVisitorRoster = (m.playersVisitor && m.playersVisitor.length > 0) || (m.changesVisitor && m.changesVisitor.length > 0);
+        if ((hasLocalRoster || hasVisitorRoster) && (!ls.isLive)) return true;
+
+        if (typeof ls.scoreLocal !== 'undefined' && (ls.scoreLocal > 0 || ls.scoreVisitor > 0) && !ls.isLive) return true;
+        
+        return false;
+      }
+
       async function loadTeamsForChampionship(championshipId, category) {
         const tableBody = document.getElementById(`${category}TableBody`);
         tableBody.innerHTML = '<tr><td colspan="10" class="py-4"><div class="spinner-border text-success" role="status"></div><br>Calculando estadísticas...</td></tr>';
@@ -236,6 +280,12 @@
             }
           });
 
+          const findTeamKey = (name) => {
+            if (!name) return null;
+            const clean = name.trim().toLowerCase();
+            return Object.keys(teamsData).find(k => k.trim().toLowerCase() === clean) || null;
+          };
+
           // 2. Obtener fixtures (partidos)
           const fixturesSnap = await db.collection('fixtures')
             .where('championshipId', '==', championshipId)
@@ -245,35 +295,57 @@
             const fixture = doc.data();
             const fixCat = (fixture.category || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
-            if (fixCat === normalizedSelectedCat) {
+            if (fixCat === normalizedSelectedCat && Array.isArray(fixture.data)) {
               fixture.data.forEach(m => {
-                if (m.isFinalized && teamsData[m.local] && teamsData[m.visitor]) {
-                  const goalsLocal = (m.playersLocal || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
-                  const goalsVisitor = (m.playersVisitor || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
+                if (isMatchFinished(m)) {
+                  let localKey = findTeamKey(m.local);
+                  let visitorKey = findTeamKey(m.visitor);
 
-                  // Update Local
-                  teamsData[m.local].pj++;
-                  teamsData[m.local].gf += goalsLocal;
-                  teamsData[m.local].gc += goalsVisitor;
+                  if (!localKey && m.local && m.local !== "DESCANSA") {
+                    teamsData[m.local] = {
+                      name: m.local,
+                      logo: 'img/logo.png',
+                      pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0
+                    };
+                    localKey = m.local;
+                  }
+                  if (!visitorKey && m.visitor && m.visitor !== "DESCANSA") {
+                    teamsData[m.visitor] = {
+                      name: m.visitor,
+                      logo: 'img/logo.png',
+                      pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0
+                    };
+                    visitorKey = m.visitor;
+                  }
 
-                  // Update Visitor
-                  teamsData[m.visitor].pj++;
-                  teamsData[m.visitor].gf += goalsVisitor;
-                  teamsData[m.visitor].gc += goalsLocal;
+                  if (localKey && visitorKey) {
+                    const goalsLocal = getVocalGoals(m, 'local');
+                    const goalsVisitor = getVocalGoals(m, 'visitor');
 
-                  if (goalsLocal > goalsVisitor) {
-                    teamsData[m.local].pg++;
-                    teamsData[m.local].pts += 3;
-                    teamsData[m.visitor].pp++;
-                  } else if (goalsLocal < goalsVisitor) {
-                    teamsData[m.visitor].pg++;
-                    teamsData[m.visitor].pts += 3;
-                    teamsData[m.local].pp++;
-                  } else {
-                    teamsData[m.local].pe++;
-                    teamsData[m.local].pts += 1;
-                    teamsData[m.visitor].pe++;
-                    teamsData[m.visitor].pts += 1;
+                    // Update Local
+                    teamsData[localKey].pj++;
+                    teamsData[localKey].gf += goalsLocal;
+                    teamsData[localKey].gc += goalsVisitor;
+
+                    // Update Visitor
+                    teamsData[visitorKey].pj++;
+                    teamsData[visitorKey].gf += goalsVisitor;
+                    teamsData[visitorKey].gc += goalsLocal;
+
+                    if (goalsLocal > goalsVisitor) {
+                      teamsData[localKey].pg++;
+                      teamsData[localKey].pts += 3;
+                      teamsData[visitorKey].pp++;
+                    } else if (goalsLocal < goalsVisitor) {
+                      teamsData[visitorKey].pg++;
+                      teamsData[visitorKey].pts += 3;
+                      teamsData[localKey].pp++;
+                    } else {
+                      teamsData[localKey].pe++;
+                      teamsData[localKey].pts += 1;
+                      teamsData[visitorKey].pe++;
+                      teamsData[visitorKey].pts += 1;
+                    }
                   }
                 }
               });
