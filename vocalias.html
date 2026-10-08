@@ -336,14 +336,25 @@
     <div class="modal fade" id="vocaliaModal">
       <div class="modal-dialog modal-xl">
         <div class="modal-content modal-premium">
-          <div class="modal-header border-0 pb-0">
-            <h5
-              class="modal-title fw-800 text-uppercase"
-              style="letter-spacing: 2px"
-            >
-              <i class="fas fa-microchip me-2 text-primary-glow"></i> ACTA
-              DIGITAL
-            </h5>
+          <div
+            class="modal-header border-0 pb-0 d-flex align-items-center justify-content-between"
+          >
+            <div class="d-flex align-items-center flex-wrap gap-2">
+              <h5
+                class="modal-title fw-800 text-uppercase mb-0"
+                style="letter-spacing: 2px"
+              >
+                <i class="fas fa-microchip me-2 text-primary-glow"></i> ACTA
+                DIGITAL
+              </h5>
+              <span
+                id="actaDraftStatusBadge"
+                class="badge bg-success bg-opacity-15 text-white border border-success border-opacity-25 px-2.5 py-1 rounded-pill small fw-bold d-none align-middle animate__animated animate__fadeIn"
+                style="font-size: 0.68rem; letter-spacing: 0.5px"
+              >
+                <i class="fas fa-cloud-check me-1"></i> Borrador Auto-Guardado
+              </span>
+            </div>
             <button
               type="button"
               class="btn-close btn-close-white"
@@ -929,14 +940,56 @@
         loadChampionships();
         const vocaliaModalEl = document.getElementById("vocaliaModal");
         if (vocaliaModalEl) {
+          // Auto-guardado inmediato antes y después de cerrar el modal
+          vocaliaModalEl.addEventListener("hide.bs.modal", () => {
+            if (typeof window.saveCurrentMatchDraft === "function") {
+              window.saveCurrentMatchDraft();
+            }
+          });
+
           vocaliaModalEl.addEventListener("hidden.bs.modal", () => {
+            if (typeof window.saveCurrentMatchDraft === "function") {
+              window.saveCurrentMatchDraft();
+            }
             if (stopwatchInterval) {
               clearInterval(stopwatchInterval);
               stopwatchInterval = null;
             }
             isStopwatchRunning = false;
           });
+
+          // Auto-guardado continuo en tiempo real al escribir o interactuar
+          vocaliaModalEl.addEventListener("input", () => {
+            if (typeof window.triggerAutoSaveDraft === "function") {
+              window.triggerAutoSaveDraft();
+            }
+          });
+
+          vocaliaModalEl.addEventListener("change", () => {
+            if (typeof window.saveCurrentMatchDraft === "function") {
+              window.saveCurrentMatchDraft();
+            }
+          });
         }
+
+        // Persistencia ante recarga de página o cierre de pestaña del móvil/PC
+        window.addEventListener("beforeunload", () => {
+          if (typeof window.saveCurrentMatchDraft === "function") {
+            window.saveCurrentMatchDraft();
+          }
+        });
+        window.addEventListener("pagehide", () => {
+          if (typeof window.saveCurrentMatchDraft === "function") {
+            window.saveCurrentMatchDraft();
+          }
+        });
+        document.addEventListener("visibilitychange", () => {
+          if (document.visibilityState === "hidden") {
+            if (typeof window.saveCurrentMatchDraft === "function") {
+              window.saveCurrentMatchDraft();
+            }
+          }
+        });
       }
 
       if (document.readyState === "loading") {
@@ -1122,7 +1175,7 @@
           fixturesCacheByCamp.set(campId, new Map(fixturesMap));
           renderNavigation();
 
-          // Si el modal está abierto, actualizar la referencia del partido en memoria
+          // Si el modal está abierto, actualizar la referencia del partido en memoria preservando datos de borrador activo
           const modalEl = document.getElementById("vocaliaModal");
           if (
             modalEl &&
@@ -1143,10 +1196,19 @@
                 );
               });
               if (match) {
+                const curr = window.currentMatchOpened;
                 window.currentMatchOpened = {
                   ...match,
                   _cat: meta.category,
                   _fixId: fixId,
+                  playersLocal: curr.playersLocal || match.playersLocal,
+                  playersVisitor: curr.playersVisitor || match.playersVisitor,
+                  changesLocal: curr.changesLocal || match.changesLocal,
+                  changesVisitor: curr.changesVisitor || match.changesVisitor,
+                  vocalReport: curr.vocalReport || match.vocalReport,
+                  refereeReport: curr.refereeReport || match.refereeReport,
+                  vedorReport: curr.vedorReport || match.vedorReport,
+                  _isDraftRestored: curr._isDraftRestored,
                 };
                 break;
               }
@@ -1419,6 +1481,437 @@
         });
       }
 
+      // ==========================================
+      // MOTOR DE BORRADOR Y AUTO-GUARDADO DEL ACTA DIGITAL
+      // ==========================================
+      const _actaDraftMemoryCache = new Map();
+      let _autoSaveDraftTimer = null;
+
+      function getActaDraftKeys(m) {
+        if (!m) return [];
+        const campSelect = document.getElementById("campSelect");
+        const campId = (
+          campSelect?.value ||
+          m._campId ||
+          m.championshipId ||
+          m.campeonatoId ||
+          ""
+        ).trim();
+        const mId =
+          m.matchId && m.matchId !== "undefined"
+            ? String(m.matchId).trim()
+            : "";
+        const local = String(m.local || "")
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, "_");
+        const visitor = String(m.visitor || "")
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, "_");
+        const cat = String(m._cat || m.category || "")
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, "_");
+        const j = m.jornada || 1;
+
+        const keys = [];
+        if (mId) {
+          if (campId) keys.push(`acta_draft_${campId}_${mId}`);
+          keys.push(`acta_draft_${mId}`);
+        }
+        if (local && visitor) {
+          if (campId) {
+            keys.push(
+              `acta_draft_${campId}_${local}_vs_${visitor}_${cat}_J${j}`,
+            );
+            keys.push(`acta_draft_${campId}_${local}_vs_${visitor}`);
+          }
+          keys.push(`acta_draft_${local}_vs_${visitor}_${cat}_J${j}`);
+          keys.push(`acta_draft_${local}_vs_${visitor}`);
+        }
+        return keys;
+      }
+
+      function getActaDraftKey(m) {
+        const keys = getActaDraftKeys(m);
+        return keys[0] || null;
+      }
+
+      window.saveCurrentMatchDraft = function () {
+        if (!window.currentMatchOpened) return;
+        const m = window.currentMatchOpened;
+        if (m.isFinalized) return; // Las actas ya finalizadas no se sobreescriben
+
+        const draftKeys = getActaDraftKeys(m);
+        if (!draftKeys || draftKeys.length === 0) return;
+        const primaryKey = draftKeys[0];
+
+        // Recolectar titulares
+        const collectPlayersFromDom = (tbodyId) => {
+          const tbody = document.getElementById(tbodyId);
+          if (!tbody) return [];
+          const rows = [];
+          tbody.querySelectorAll("tr").forEach((tr) => {
+            const inputs = tr.querySelectorAll("input");
+            const num = inputs[0]?.value || "";
+            const name = inputs[1]?.value || "";
+            const yellowSlot = tr.querySelector(".yellow-slot");
+            const redSlot = tr.querySelector(".red-slot");
+            const ta = yellowSlot
+              ? yellowSlot.querySelectorAll(".yellow-rect").length
+              : 0;
+            const trCount = redSlot
+              ? redSlot.querySelectorAll(".red-rect").length
+              : 0;
+            const goles = inputs[2]?.value || "";
+            rows.push({ num, name, ta, tr: trCount, goles });
+          });
+          return rows;
+        };
+
+        // Recolectar cambios
+        const collectChangesFromDom = (tbodyId) => {
+          const tbody = document.getElementById(tbodyId);
+          if (!tbody) return [];
+          const rows = [];
+          tbody.querySelectorAll("tr").forEach((tr) => {
+            const inputs = tr.querySelectorAll("input");
+            const entraNum = inputs[0]?.value || "";
+            const name = inputs[1]?.value || "";
+            const saleNum = inputs[2]?.value || "";
+            const yellowSlot = tr.querySelector(".yellow-slot");
+            const redSlot = tr.querySelector(".red-slot");
+            const ta = yellowSlot
+              ? yellowSlot.querySelectorAll(".yellow-rect").length
+              : 0;
+            const trCount = redSlot
+              ? redSlot.querySelectorAll(".red-rect").length
+              : 0;
+            const goles = inputs[3]?.value || "";
+            rows.push({ entraNum, name, saleNum, ta, tr: trCount, goles });
+          });
+          return rows;
+        };
+
+        // Recolectar filas de veedor
+        const collectVedorRowsFromDom = (containerId) => {
+          const container = document.getElementById(containerId);
+          if (!container) return [];
+          const rows = [];
+          container.querySelectorAll(".vedor-row").forEach((row) => {
+            const dorsal = row.querySelector(".inp-dorsal")?.value || "";
+            const min = row.querySelector(".inp-min")?.value || "";
+            rows.push({ dorsal, min });
+          });
+          return rows;
+        };
+
+        const playersLocal = collectPlayersFromDom("listaJugadoresLocal");
+        const playersVisitor = collectPlayersFromDom("listaJugadoresVisitante");
+        const changesLocal = collectChangesFromDom("listaCambiosLocal");
+        const changesVisitor = collectChangesFromDom("listaCambiosVisitante");
+
+        const vocalReport = {
+          startTime: document.getElementById("vocal_start_time")?.value || "",
+          observations:
+            document.getElementById("vocal_observations")?.value || "",
+          vocalName: document.getElementById("vocal_adm_name")?.value || "",
+          vocalClub: document.getElementById("vocal_adm_club")?.value || "",
+          vocalSignature:
+            document.getElementById("vocal_adm_signature")?.value || "",
+          capSignatureLocal:
+            document.getElementById("cap_signature_local")?.value || "",
+          capNoLocal: document.getElementById("cap_no_local")?.value || "",
+          capSignatureVisitor:
+            document.getElementById("cap_signature_visitor")?.value || "",
+          capNoVisitor: document.getElementById("cap_no_visitor")?.value || "",
+          localTA: Array.from({ length: 6 }).map(
+            (_, i) =>
+              document.getElementById(`vocalTA_Local_${i}`)?.value || "",
+          ),
+          localTR: Array.from({ length: 6 }).map(
+            (_, i) =>
+              document.getElementById(`vocalTR_Local_${i}`)?.value || "",
+          ),
+          visitorTA: Array.from({ length: 6 }).map(
+            (_, i) =>
+              document.getElementById(`vocalTA_Visitor_${i}`)?.value || "",
+          ),
+          visitorTR: Array.from({ length: 6 }).map(
+            (_, i) =>
+              document.getElementById(`vocalTR_Visitor_${i}`)?.value || "",
+          ),
+          localChecks: [
+            document.getElementById("check_local_0")?.checked || false,
+            document.getElementById("check_local_1")?.checked || false,
+            document.getElementById("check_local_2")?.checked || false,
+            document.getElementById("check_local_3")?.checked || false,
+            document.getElementById("check_local_4")?.checked || false,
+            document.getElementById("check_local_5")?.checked || false,
+          ],
+          visitorChecks: [
+            document.getElementById("check_visitor_0")?.checked || false,
+            document.getElementById("check_visitor_1")?.checked || false,
+            document.getElementById("check_visitor_2")?.checked || false,
+            document.getElementById("check_visitor_3")?.checked || false,
+            document.getElementById("check_visitor_4")?.checked || false,
+            document.getElementById("check_visitor_5")?.checked || false,
+          ],
+        };
+
+        const refereeReport = {
+          observations:
+            document.getElementById("referee_observations")?.value || "",
+          judgeName: document.getElementById("referee_name")?.value || "",
+          judgeSignature:
+            document.getElementById("referee_signature")?.value || "",
+          judgeRating: document.getElementById("referee_rating")?.value || "",
+          local: {
+            ta: Array.from({ length: 6 }).map((_, i) => ({
+              dorsal: document.getElementById(`refTA_L_D_${i}`)?.value || "",
+              motivo: document.getElementById(`refTA_L_M_${i}`)?.value || "",
+            })),
+            tr: Array.from({ length: 6 }).map((_, i) => ({
+              dorsal: document.getElementById(`refTR_L_D_${i}`)?.value || "",
+              motivo: document.getElementById(`refTR_L_M_${i}`)?.value || "",
+            })),
+            goles: Array.from({ length: 6 }).map((_, i) => ({
+              dorsal: document.getElementById(`refGL_L_D_${i}`)?.value || "",
+              cant: document.getElementById(`refGL_L_C_${i}`)?.value || "",
+            })),
+          },
+          visitor: {
+            ta: Array.from({ length: 6 }).map((_, i) => ({
+              dorsal: document.getElementById(`refTA_V_D_${i}`)?.value || "",
+              motivo: document.getElementById(`refTA_V_M_${i}`)?.value || "",
+            })),
+            tr: Array.from({ length: 6 }).map((_, i) => ({
+              dorsal: document.getElementById(`refTR_V_D_${i}`)?.value || "",
+              motivo: document.getElementById(`refTR_V_M_${i}`)?.value || "",
+            })),
+            goles: Array.from({ length: 6 }).map((_, i) => ({
+              dorsal: document.getElementById(`refGL_V_D_${i}`)?.value || "",
+              cant: document.getElementById(`refGL_V_C_${i}`)?.value || "",
+            })),
+          },
+        };
+
+        const vedorReport = {
+          nombre: document.getElementById("vedor_nombre")?.value || "",
+          club: document.getElementById("vedor_club")?.value || "",
+          juvenilesLocal: collectVedorRowsFromDom("list_juv_local"),
+          arquerosLocal: collectVedorRowsFromDom("list_arq_local"),
+          juvenilesVisitor: collectVedorRowsFromDom("list_juv_visitor"),
+          arquerosVisitor: collectVedorRowsFromDom("list_arq_visitor"),
+          observaciones: document.getElementById("vedor_obs")?.value || "",
+        };
+
+        const draftData = {
+          matchId: m.matchId,
+          local: m.local,
+          visitor: m.visitor,
+          category: m._cat,
+          jornada: m.jornada,
+          playersLocal,
+          playersVisitor,
+          changesLocal,
+          changesVisitor,
+          vocalReport,
+          refereeReport,
+          vedorReport,
+          stopwatch: {
+            seconds: stopwatchSeconds,
+            period: currentStopwatchPeriod,
+            isRunning: isStopwatchRunning,
+          },
+          timestamp: Date.now(),
+        };
+
+        // Guardar en caché y en localStorage para todas las variaciones de clave
+        draftKeys.forEach((k) => {
+          _actaDraftMemoryCache.set(k, draftData);
+        });
+
+        try {
+          const jsonStr = JSON.stringify(draftData);
+          draftKeys.forEach((k) => {
+            localStorage.setItem(k, jsonStr);
+          });
+        } catch (e) {
+          console.warn("No se pudo persistir borrador en localStorage:", e);
+        }
+
+        // Sincronizar propiedades en memoria
+        m.playersLocal = playersLocal;
+        m.playersVisitor = playersVisitor;
+        m.changesLocal = changesLocal;
+        m.changesVisitor = changesVisitor;
+        m.vocalReport = vocalReport;
+        m.refereeReport = refereeReport;
+        m.vedorReport = vedorReport;
+
+        // Mostrar indicador visual en el modal
+        const badge = document.getElementById("actaDraftStatusBadge");
+        if (badge) {
+          badge.classList.remove("d-none");
+        }
+      };
+
+      window.triggerAutoSaveDraft = function () {
+        clearTimeout(_autoSaveDraftTimer);
+        _autoSaveDraftTimer = setTimeout(() => {
+          window.saveCurrentMatchDraft();
+        }, 150);
+      };
+
+      window.loadActaDraft = function (m) {
+        if (!m || m.isFinalized) return null;
+        const keys = getActaDraftKeys(m);
+
+        // 1. Verificar en memoria RAM
+        for (const k of keys) {
+          if (_actaDraftMemoryCache.has(k)) {
+            return _actaDraftMemoryCache.get(k);
+          }
+        }
+
+        // 2. Verificar por claves exactas en localStorage
+        for (const k of keys) {
+          try {
+            const raw = localStorage.getItem(k);
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              if (parsed && typeof parsed === "object") {
+                _actaDraftMemoryCache.set(k, parsed);
+                return parsed;
+              }
+            }
+          } catch (e) {
+            console.warn("Error al cargar borrador de localStorage:", e);
+          }
+        }
+
+        // 3. Búsqueda inteligente por nombre de equipos en localStorage
+        const localNorm = String(m.local || "")
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, "_");
+        const visitorNorm = String(m.visitor || "")
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, "_");
+        if (localNorm && visitorNorm) {
+          try {
+            for (let i = 0; i < localStorage.length; i++) {
+              const lk = localStorage.key(i);
+              if (
+                lk &&
+                lk.startsWith("acta_draft_") &&
+                lk.includes(localNorm) &&
+                lk.includes(visitorNorm)
+              ) {
+                const raw = localStorage.getItem(lk);
+                if (raw) {
+                  const parsed = JSON.parse(raw);
+                  if (parsed && typeof parsed === "object") {
+                    _actaDraftMemoryCache.set(lk, parsed);
+                    return parsed;
+                  }
+                }
+              }
+            }
+          } catch (e) {
+            console.warn("Error en búsqueda secundaria de borrador:", e);
+          }
+        }
+        return null;
+      };
+
+      window.clearActaDraft = function (m) {
+        if (!m) return;
+        const keys = getActaDraftKeys(m);
+        keys.forEach((k) => {
+          _actaDraftMemoryCache.delete(k);
+          try {
+            localStorage.removeItem(k);
+          } catch (e) {}
+        });
+
+        const localNorm = String(m.local || "")
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, "_");
+        const visitorNorm = String(m.visitor || "")
+          .trim()
+          .toUpperCase()
+          .replace(/\s+/g, "_");
+        if (localNorm && visitorNorm) {
+          const keysToRemove = [];
+          try {
+            for (let i = 0; i < localStorage.length; i++) {
+              const lk = localStorage.key(i);
+              if (
+                lk &&
+                lk.startsWith("acta_draft_") &&
+                lk.includes(localNorm) &&
+                lk.includes(visitorNorm)
+              ) {
+                keysToRemove.push(lk);
+              }
+            }
+          } catch (e) {}
+          keysToRemove.forEach((k) => {
+            _actaDraftMemoryCache.delete(k);
+            try {
+              localStorage.removeItem(k);
+            } catch (e) {}
+          });
+        }
+      };
+
+      window.discardActaDraft = async function () {
+        if (!window.currentMatchOpened) return;
+        const m = window.currentMatchOpened;
+        const res = await Swal.fire({
+          title: "¿Descartar borrador?",
+          text: "Se borrará la información no guardada y el acta volverá a su estado inicial.",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Sí, descartar",
+          cancelButtonText: "Cancelar",
+          confirmButtonColor: "#e74c3c",
+          background: "#121212",
+          color: "#ffffff",
+        });
+
+        if (!res.isConfirmed) return;
+
+        window.clearActaDraft(m);
+        delete m._isDraftRestored;
+        delete m.playersLocal;
+        delete m.playersVisitor;
+        delete m.changesLocal;
+        delete m.changesVisitor;
+        delete m.vocalReport;
+        delete m.refereeReport;
+        delete m.vedorReport;
+
+        const badge = document.getElementById("actaDraftStatusBadge");
+        if (badge) badge.classList.add("d-none");
+
+        renderActaInterior(m);
+        Swal.fire({
+          icon: "info",
+          title: "Borrador descartado",
+          text: "El acta ha sido reiniciada a sus datos originales.",
+          timer: 1500,
+          showConfirmButton: false,
+          background: "#121212",
+          color: "#ffffff",
+        });
+      };
+
       window.openVocalActa = function (
         fixIdOrMatchId,
         matchIdOrLocal,
@@ -1540,6 +2033,59 @@
           match.veedorAsignado = match.veedor || "Por Asignar";
         }
 
+        // RESTAURACIÓN AUTOMÁTICA DEL BORRADOR PREVIO (SI EXISTE)
+        if (!match.isFinalized) {
+          const draft = window.loadActaDraft(match);
+          if (draft) {
+            if (draft.playersLocal && Array.isArray(draft.playersLocal)) {
+              match.playersLocal = draft.playersLocal;
+            }
+            if (draft.playersVisitor && Array.isArray(draft.playersVisitor)) {
+              match.playersVisitor = draft.playersVisitor;
+            }
+            if (draft.changesLocal && Array.isArray(draft.changesLocal)) {
+              match.changesLocal = draft.changesLocal;
+            }
+            if (draft.changesVisitor && Array.isArray(draft.changesVisitor)) {
+              match.changesVisitor = draft.changesVisitor;
+            }
+            if (draft.vocalReport && typeof draft.vocalReport === "object") {
+              match.vocalReport = {
+                ...(match.vocalReport || {}),
+                ...draft.vocalReport,
+              };
+            }
+            if (
+              draft.refereeReport &&
+              typeof draft.refereeReport === "object"
+            ) {
+              match.refereeReport = {
+                ...(match.refereeReport || {}),
+                ...draft.refereeReport,
+              };
+            }
+            if (draft.vedorReport && typeof draft.vedorReport === "object") {
+              match.vedorReport = {
+                ...(match.vedorReport || {}),
+                ...draft.vedorReport,
+              };
+            }
+            if (draft.stopwatch && typeof draft.stopwatch === "object") {
+              match.liveStatus = {
+                ...(match.liveStatus || {}),
+                seconds:
+                  draft.stopwatch.seconds !== undefined
+                    ? draft.stopwatch.seconds
+                    : match.liveStatus?.seconds || 0,
+                period:
+                  draft.stopwatch.period || match.liveStatus?.period || "1T",
+                isLive: false,
+              };
+            }
+            match._isDraftRestored = true;
+          }
+        }
+
         window.currentMatchOpened = match; // Guardar referencia para actualizaciones en vivo
 
         const modalBody = document.getElementById("modalVocalBody");
@@ -1581,22 +2127,12 @@
       function renderActaInterior(m) {
         const body = document.getElementById("modalVocalBody");
         const ls = m.liveStatus || {};
-        
-        const titularL = (m.playersLocal || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
-        const cambioL = (m.changesLocal || []).reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0);
-        const titularV = (m.playersVisitor || []).reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0);
-        const cambioV = (m.changesVisitor || []).reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0);
-        const hasRoster = (m.playersLocal && m.playersLocal.length > 0) || (m.changesLocal && m.changesLocal.length > 0) ||
-                          (m.playersVisitor && m.playersVisitor.length > 0) || (m.changesVisitor && m.changesVisitor.length > 0);
-
-        const scoreL = hasRoster
-          ? titularL + cambioL
-          : ls.scoreLocal !== undefined
+        const scoreL =
+          ls.scoreLocal !== undefined
             ? ls.scoreLocal
             : parseInt(m.vocalReport?.totalGolesLocal) || 0;
-        const scoreV = hasRoster
-          ? titularV + cambioV
-          : ls.scoreVisitor !== undefined
+        const scoreV =
+          ls.scoreVisitor !== undefined
             ? ls.scoreVisitor
             : parseInt(m.vocalReport?.totalGolesVisitor) || 0;
 
@@ -1613,8 +2149,34 @@
         const vocalDisplay = m.vocalAsignado || m.vocal || "Por Asignar";
         const veedorDisplay = m.veedorAsignado || m.veedor || "Por Asignar";
 
+        // Actualizar visibilidad del badge de borrador en el header del modal
+        const headerBadge = document.getElementById("actaDraftStatusBadge");
+        if (headerBadge) {
+          if (m._isDraftRestored && !m.isFinalized) {
+            headerBadge.classList.remove("d-none");
+          } else {
+            headerBadge.classList.add("d-none");
+          }
+        }
+
         body.innerHTML = `
             <div class="acta-container p-2" style="max-height: 75vh; overflow-y: auto; overflow-x: hidden;">
+                ${
+                  m._isDraftRestored && !m.isFinalized
+                    ? `
+                <!-- ALERTA DE BORRADOR RECUPERADO -->
+                <div id="draftRestoredAlert" class="alert alert-info bg-info bg-opacity-10 border border-info border-opacity-25 text-info d-flex align-items-center justify-content-between py-2 px-3 mb-3 rounded-3 shadow-sm animate__animated animate__fadeInDown" style="font-size:0.8rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-history text-info fs-6"></i>
+                        <span><strong>Borrador recuperado automáticamente:</strong> Se restauraron los datos que tenías llenados previamente en esta acta.</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill fw-bold" onclick="window.discardActaDraft()" style="font-size:0.68rem; white-space:nowrap;">
+                        <i class="fas fa-trash-alt me-1"></i> Descartar
+                    </button>
+                </div>`
+                    : ""
+                }
+
                 <!-- LIVE MATCH HUD & CRONÓMETRO DIGITAL -->
                 <div class="glass-panel p-3 mb-3 rounded-4 shadow-lg position-relative overflow-hidden"
                      style="background: linear-gradient(135deg, rgba(15, 23, 18, 0.95), rgba(10, 15, 25, 0.95)); border: 2px solid #2ecc71; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
@@ -2613,6 +3175,9 @@
             window.updateStopwatchUI();
             if (stopwatchSeconds % 15 === 0) {
               window.syncLiveMatchToFirestore();
+              if (typeof window.saveCurrentMatchDraft === "function") {
+                window.saveCurrentMatchDraft();
+              }
             }
           }, 1000);
         } else {
@@ -2624,6 +3189,9 @@
         }
         window.updateStopwatchUI();
         window.syncLiveMatchToFirestore();
+        if (typeof window.saveCurrentMatchDraft === "function") {
+          window.saveCurrentMatchDraft();
+        }
       };
 
       window.switchStopwatchPeriod = function () {
@@ -2653,6 +3221,9 @@
             window.updateStopwatchUI();
             if (stopwatchSeconds % 15 === 0) {
               window.syncLiveMatchToFirestore();
+              if (typeof window.saveCurrentMatchDraft === "function") {
+                window.saveCurrentMatchDraft();
+              }
             }
           }, 1000);
           Swal.fire({
@@ -2691,6 +3262,9 @@
         }
         window.updateStopwatchUI();
         window.syncLiveMatchToFirestore();
+        if (typeof window.saveCurrentMatchDraft === "function") {
+          window.saveCurrentMatchDraft();
+        }
       };
 
       window.addStopwatchExtra = function (mins) {
@@ -2698,6 +3272,9 @@
         if (stopwatchSeconds < 0) stopwatchSeconds = 0;
         window.updateStopwatchUI();
         window.syncLiveMatchToFirestore();
+        if (typeof window.saveCurrentMatchDraft === "function") {
+          window.saveCurrentMatchDraft();
+        }
       };
 
       window.resetStopwatch = function () {
@@ -2721,6 +3298,9 @@
             currentStopwatchPeriod = "1T";
             window.updateStopwatchUI();
             window.syncLiveMatchToFirestore();
+            if (typeof window.saveCurrentMatchDraft === "function") {
+              window.saveCurrentMatchDraft();
+            }
           }
         });
       };
@@ -5206,6 +5786,9 @@
             }
           }
           window.syncLiveMatchToFirestore();
+          if (typeof window.saveCurrentMatchDraft === "function") {
+            window.saveCurrentMatchDraft();
+          }
         }
 
         // Flujo continuo para la nómina de 9 jugadores en cancha:
@@ -5418,6 +6001,9 @@
           }
           inputs[2].value = cleanSaleNum;
           window.syncLiveMatchToFirestore();
+          if (typeof window.saveCurrentMatchDraft === "function") {
+            window.saveCurrentMatchDraft();
+          }
         }
 
         const enteringText = enteringNum
@@ -5608,6 +6194,9 @@
         if (team === "visitor" && hudV) hudV.textContent = total;
 
         window.syncLiveMatchToFirestore();
+        if (typeof window.saveCurrentMatchDraft === "function") {
+          window.saveCurrentMatchDraft();
+        }
       };
 
       window.toggleCard = function (cell, color) {
@@ -5636,6 +6225,9 @@
                 '<div class="card-rect red-rect animate__animated animate__shakeX"></div>';
               window.syncVocalReport(); // Re-sincronizar para captar la roja nueva
               window.syncLiveMatchToFirestore();
+              if (typeof window.saveCurrentMatchDraft === "function") {
+                window.saveCurrentMatchDraft();
+              }
             }, 400);
           } else {
             // Reset yellow
@@ -5654,6 +6246,9 @@
         // Sincronizar automáticamente con el Reporte del Vocal y En Vivo
         window.syncVocalReport();
         window.syncLiveMatchToFirestore();
+        if (typeof window.saveCurrentMatchDraft === "function") {
+          window.saveCurrentMatchDraft();
+        }
       };
 
       window.syncVocalReport = function () {
@@ -5767,13 +6362,21 @@
               ${!disabled ? `<button type="button" class="btn btn-sm btn-outline-danger p-1 border-0 opacity-50" onclick="window.removeVedorRow(this)"><i class="fas fa-times"></i></button>` : ""}
           `;
         list.appendChild(row);
+        if (typeof window.saveCurrentMatchDraft === "function") {
+          window.saveCurrentMatchDraft();
+        }
       };
 
       window.removeVedorRow = function (btn) {
         const row = btn.closest(".vedor-row");
         row.classList.remove("animate__fadeInDown");
         row.classList.add("animate__fadeOutRight");
-        setTimeout(() => row.remove(), 300);
+        setTimeout(() => {
+          row.remove();
+          if (typeof window.saveCurrentMatchDraft === "function") {
+            window.saveCurrentMatchDraft();
+          }
+        }, 300);
       };
 
       window.calcRefereeGoles = function (teamName) {
@@ -5802,6 +6405,9 @@
             total += parseInt(input.value) || 0;
           });
         totalSpan.innerText = total;
+        if (typeof window.saveCurrentMatchDraft === "function") {
+          window.saveCurrentMatchDraft();
+        }
       };
 
       window.calculateMatchTotal = function (m, type) {
@@ -6568,28 +7174,7 @@
           const changesLocal = collectChanges("listaCambiosLocal");
           const changesVisitor = collectChanges("listaCambiosVisitante");
 
-          const finalScoreL =
-            playersLocal.reduce(
-              (acc, p) => acc + (parseInt(p.goles) || 0),
-              0,
-            ) +
-            changesLocal.reduce(
-              (acc, c) => acc + (parseInt(c.goles) || 0),
-              0,
-            );
-          const finalScoreV =
-            playersVisitor.reduce(
-              (acc, p) => acc + (parseInt(p.goles) || 0),
-              0,
-            ) +
-            changesVisitor.reduce(
-              (acc, c) => acc + (parseInt(c.goles) || 0),
-              0,
-            );
-
           const vocalReport = {
-            totalGolesLocal: parseInt(document.getElementById("totalGolesLocal")?.value || finalScoreL) || finalScoreL,
-            totalGolesVisitor: parseInt(document.getElementById("totalGolesVisitante")?.value || finalScoreV) || finalScoreV,
             startTime: document.getElementById("vocal_start_time")?.value || "",
             observations:
               document.getElementById("vocal_observations")?.value || "",
@@ -6708,6 +7293,14 @@
               (m.local === window.currentMatchOpened.local &&
                 m.visitor === window.currentMatchOpened.visitor)
             ) {
+              const finalScoreL = playersLocal.reduce(
+                (acc, p) => acc + (parseInt(p.goles) || 0),
+                0,
+              );
+              const finalScoreV = playersVisitor.reduce(
+                (acc, p) => acc + (parseInt(p.goles) || 0),
+                0,
+              );
               return {
                 ...m,
                 isFinalized: true,
@@ -6735,6 +7328,13 @@
           });
 
           await docRef.update({ data: updatedMatches });
+
+          // Limpiar borrador local guardado para este partido
+          if (typeof window.clearActaDraft === "function") {
+            window.clearActaDraft(window.currentMatchOpened);
+          }
+          const badge = document.getElementById("actaDraftStatusBadge");
+          if (badge) badge.classList.add("d-none");
 
           Swal.fire(
             "Éxito",
