@@ -289,8 +289,8 @@
                             <div class="col-md-6">
                                 <div class="mode-card primordial selected" onclick="selectMode('ldbaa', this)">
                                     <i class="fas fa-medal text-warning"></i>
-                                    <h5>Liga LDBAA Oficial (Ida y Vuelta + Nivelación)</h5>
-                                    <p class="small text-white-50">1ª Vuelta (Clasifican 4) + Nivelación (Top 2 de Primera pasan a Máxima en 2ª Vuelta) + 2ª Vuelta (Clasifican 4) + Liguilla (2 Grupos de 4) + Semifinales y Final.</p>
+                                    <h5>Liga LDBAA Oficial (Ida y Vuelta + Liguilla)</h5>
+                                    <p class="small text-white-50">1ª Vuelta + 2ª Vuelta (Todos contra Todos) + Liguilla (2 Grupos de 4) + Semifinales y Final.<br><span class="text-success fw-bold">Ascensos:</span> Top 4 de Primera suben a Máxima. <span class="text-danger fw-bold">Descenso:</span> 1 de Máxima desciende a Primera.</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -542,19 +542,28 @@
             const nDb = normalizeTeamName(dbTeam);
             const nSeed = normalizeTeamName(seed);
             if (nDb === nSeed) return true;
-            const cleanDb = nDb.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO)\b/g, '').replace(/[^A-Z0-9]/g, '').trim();
-            const cleanSeed = nSeed.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO)\b/g, '').replace(/[^A-Z0-9]/g, '').trim();
-            if (cleanDb === cleanSeed) return true;
-            if (cleanDb.includes(cleanSeed) || cleanSeed.includes(cleanDb)) return true;
+
+            // Diferenciar explícitamente CD Spencer de Dep Spencer
+            const isCdDb = nDb.includes('CD') || nDb.includes('C.D.');
+            const isDepDb = nDb.includes('DEP') || nDb.includes('DEPORTIVO');
+            const isCdSeed = nSeed.includes('CD') || nSeed.includes('C.D.');
+            const isDepSeed = nSeed.includes('DEP') || nSeed.includes('DEPORTIVO');
+
+            if (isCdSeed && isDepDb) return false;
+            if (isDepSeed && isCdDb) return false;
+
+            const cleanDb = nDb.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|DEP)\b/g, '').replace(/[^A-Z0-9]/g, '').trim();
+            const cleanSeed = nSeed.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|DEP)\b/g, '').replace(/[^A-Z0-9]/g, '').trim();
+            if (cleanDb === cleanSeed && cleanDb.length > 0) return true;
             return false;
         }
 
         function generateLDBAARounds(teamsList) {
             const cat = (document.getElementById('catSelect')?.value || '').toUpperCase().trim();
             
-            // Semillas oficiales para emparejar exactamente con la 1era Fecha jugada
+            // Semillas oficiales para emparejar exactamente con la 1era Fecha jugada y descanso programado
             const officialSeeds = {
-                'FEMENINO': ['PALMEIRAS', 'VENTANAS', 'ALIANZA JUVENIL', 'SPENCER', 'MANCHESTER', 'AC LATINOS', 'PORTOVIEJO', 'DEP SPENCER'],
+                'FEMENINO': ['PALMEIRAS', 'VENTANAS', 'ALIANZA JUVENIL', 'CD SPENCER', 'CHELSEA', 'MANCHESTER', 'AC LATINOS', 'PORTOVIEJO', 'DEP SPENCER'],
                 'MÁXIMA': ['INDEPENDIENTE', 'FLUMINENSE', 'ESTUDIANTES', 'SOLO PANAS', 'MANCHESTER', 'ALIANZA JUVENIL', 'VENTANAS', 'PORTOVIEJO', 'GALAXY'],
                 'MAXIMA': ['INDEPENDIENTE', 'FLUMINENSE', 'ESTUDIANTES', 'SOLO PANAS', 'MANCHESTER', 'ALIANZA JUVENIL', 'VENTANAS', 'PORTOVIEJO', 'GALAXY'],
                 'PRIMERA': ['AC LATINOS', '3 DE JULIO', 'NAPOLES', 'AMAZONAS', 'LOS PRIMOS', 'LAKERS', 'ARGENTINA', 'PALMEIRAS', 'MARSELLA FC', 'INTER', 'CHELSEA', 'RIVER PLATE', 'ALMAGUER', 'DINAMO FC']
@@ -733,7 +742,7 @@
 
             const result = await Swal.fire({
                 title: '¿Guardar Fixture?',
-                text: 'El esquema lógico quedará registrado para asignar horarios y reemplazará cualquier versión anterior.',
+                text: 'El nuevo fixture mantendrá intactos todos los resultados, vocalías, marcadores y programaciones ya registradas de la Fecha 1.',
                 icon: 'question',
                 showCancelButton: true,
                 confirmButtonText: 'Sí, registrar'
@@ -746,7 +755,9 @@
                     const campId = document.getElementById('campSelect').value;
                     const cat = document.getElementById('catSelect').value;
                     
-                    // Sobreescribir limpiamente: eliminar versiones anteriores de esta categoría
+                    // 1. Obtener datos existentes para preservar resultados, vocalías, marcadores y programaciones ya jugadas
+                    let existingMatches = [];
+                    let oldDocId = null;
                     try {
                         const oldSnap = await db.collection('fixtures')
                             .where('championshipId', '==', campId)
@@ -754,24 +765,62 @@
                             .get();
                         
                         if (!oldSnap.empty) {
-                            const batch = db.batch();
-                            oldSnap.forEach(doc => batch.delete(doc.ref));
-                            await batch.commit();
+                            oldDocId = oldSnap.docs[0].id;
+                            oldSnap.forEach(doc => {
+                                const d = doc.data();
+                                if (Array.isArray(d.data)) {
+                                    existingMatches.push(...d.data);
+                                }
+                            });
                         }
                     } catch (eClean) {
-                        console.warn('Aviso limpiando fixture anterior:', eClean);
+                        console.warn('Aviso leyendo fixture anterior:', eClean);
                     }
 
-                    await db.collection('fixtures').add({
-                        championshipId: campId,
-                        category: cat,
-                        data: generatedFixture,
-                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        status: 'pending_schedule'
+                    // 2. Fusionar datos generados con datos existentes para no perder marcadores ni vocalías
+                    const mergedFixture = generatedFixture.map(newM => {
+                        const found = existingMatches.find(oldM => {
+                            const isSameTeams = (matchSeedTeam(oldM.local, newM.local) && matchSeedTeam(oldM.visitor, newM.visitor)) ||
+                                                (matchSeedTeam(oldM.local, newM.visitor) && matchSeedTeam(oldM.visitor, newM.local));
+                            const isSameRound = (oldM.tag === newM.tag || oldM.fecha === newM.fecha || (oldM.jornada && oldM.jornada === newM.jornada));
+                            return isSameTeams && isSameRound;
+                        });
+
+                        if (found) {
+                            return {
+                                ...newM,
+                                ...found,
+                                local: newM.local,
+                                visitor: newM.visitor,
+                                fecha: newM.fecha,
+                                etiqueta: newM.etiqueta,
+                                tag: newM.tag
+                            };
+                        }
+                        return newM;
                     });
 
-                    Swal.fire('¡Éxito!', 'Fixture guardado correctamente. Ahora puedes gestionar horarios.', 'success')
-                        .then(() => window.location.href = 'programacion-dashboard.html');
+                    // 3. Sobreescribir limpiamente el documento de la categoría
+                    if (oldDocId) {
+                        await db.collection('fixtures').doc(oldDocId).set({
+                            championshipId: campId,
+                            category: cat,
+                            data: mergedFixture,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'active'
+                        }, { merge: true });
+                    } else {
+                        await db.collection('fixtures').add({
+                            championshipId: campId,
+                            category: cat,
+                            data: mergedFixture,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                            status: 'pending_schedule'
+                        });
+                    }
+
+                    Swal.fire('¡Éxito!', 'Fixture guardado correctamente preservando los resultados existentes.', 'success')
+                        .then(() => window.location.href = 'gestion-fixture.html');
                 } catch (error) {
                     console.error("Error guardando fixture:", error);
                     Swal.fire('Error', 'No se pudo guardar el fixture.', 'error');

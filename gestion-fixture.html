@@ -816,7 +816,6 @@
                         <td class="fw-bold text-success">9</td>
                         <td class="fw-bold text-success text-start">MÁXIMA</td>
                         <td><span class="badge bg-success text-dark">X</span></td>
-                        <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-success text-dark">X</span></td>
                         <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-success text-dark">X</span></td>
@@ -826,6 +825,7 @@
                         <td><span class="badge bg-success text-dark">X</span></td>
                         <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-success text-dark">X</span></td>
                         <td class="table-warning"><span class="badge bg-success text-dark fw-bold">X (Fin)</span></td>
                       </tr>
@@ -863,7 +863,6 @@
                       <tr>
                         <td class="fw-bold text-danger">8</td>
                         <td class="fw-bold text-danger text-start">FEMENINO</td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
                         <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-danger text-white">X</span></td>
                         <td><span class="text-white-50">-</span></td>
@@ -872,6 +871,7 @@
                         <td><span class="badge bg-danger text-white">X</span></td>
                         <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-danger text-white">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-danger text-white">X</span></td>
                         <td class="table-success"><span class="badge bg-danger text-white fw-bold">X (Fin)</span></td>
                       </tr>
@@ -894,15 +894,15 @@
                         <td class="fw-bold text-success">11</td>
                         <td class="fw-bold text-success text-start">MÁXIMA</td>
                         <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
                         <td><span class="badge bg-success text-dark">X</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td><span class="text-white-50">-</span></td>
                         <td class="table-success"><span class="badge bg-success text-dark fw-bold">X (Fin)</span></td>
                       </tr>
                     </tbody>
@@ -1262,7 +1262,7 @@
           } else if (is2daVuelta) {
             let offset = 13;
             if (normCat.includes("MAXIMA")) offset = 9;
-            else if (normCat === "FEMENINO") offset = 7;
+            else if (normCat === "FEMENINO") offset = 9;
             fechaRelativa = etapaNum > offset ? (etapaNum - offset) : etapaNum;
           }
         }
@@ -1270,17 +1270,16 @@
         if (is1raVuelta) {
           // 1RA VUELTA (Jornadas 1 a 13 del Calendario Maestro)
           if (normCat === "PRIMERA") {
-            // Juega 13 semanas continuas (J1 a J13)
+            // PRIMERA juega todas las semanas consecutivas (J1 a J13)
             return Math.min(13, Math.max(1, fechaRelativa || etapaNum));
           } else if (normCat === "FEMENINO") {
-            // 7 Fechas jugadas cada 15 días: J1, J3, J5, J7, J9, J11, J13 (Termina en J13)
-            const mapFem1 = [1, 3, 5, 7, 9, 11, 13];
+            // FEMENINO juega en semanas impares (J1, J3, J5, J7, J9, J11, J13)
+            const mapFem1 = [1, 3, 5, 7, 9, 11, 13, 13, 13];
             const idx = Math.min(mapFem1.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
             return mapFem1[idx];
           } else if (normCat.includes("MAXIMA")) {
-            // 8 o 9 Fechas jugadas cada 15 días y remate al final para coincidir en J13:
-            // J1, J3, J5, J7, J9, J11, J12, J13 (Termina en J13)
-            const mapMax1 = [1, 3, 5, 7, 9, 11, 12, 13, 13];
+            // MÁXIMA jugó Fecha 1 en J1 (inaugural), Fecha 2 en J2 (oficial), y luego alterna en semanas pares (J4, J6, J8, J10, J12) y remata en J13
+            const mapMax1 = [1, 2, 4, 6, 8, 10, 12, 13, 13];
             const idx = Math.min(mapMax1.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
             return mapMax1[idx];
           } else {
@@ -1290,14 +1289,18 @@
           }
         } else if (is2daVuelta) {
           // 2DA VUELTA (Jornadas 14 a 24 del Calendario Maestro - 11 semanas)
-          if (normCat === "PRIMERA" || normCat.includes("MAXIMA")) {
-            // Juegan las 11 semanas consecutivas de 2da vuelta (J14 a J24)
+          if (normCat === "PRIMERA") {
+            // PRIMERA juega las 11 semanas consecutivas de 2da vuelta (J14 a J24)
             const r = Math.min(11, Math.max(1, fechaRelativa || 1));
             return 13 + r; // 14 a 24
+          } else if (normCat.includes("MAXIMA")) {
+            // MÁXIMA juega en semanas pares de 2da vuelta (J14, J16, J18, J20, J22, J24)
+            const mapMax2 = [14, 16, 18, 20, 22, 24];
+            const idx = Math.min(mapMax2.length - 1, Math.max(0, (fechaRelativa || 1) - 1));
+            return mapMax2[idx];
           } else if (normCat === "FEMENINO") {
-            // 7 Fechas jugadas cada 15 días y rematando en la semana 11 (J24):
-            // J14, J16, J18, J20, J22, J23, J24 (Termina en J24)
-            const mapFem2 = [14, 16, 18, 20, 22, 23, 24];
+            // FEMENINO juega en semanas impares de 2da vuelta (J15, J17, J19, J21, J23, J24)
+            const mapFem2 = [15, 17, 19, 21, 23, 24, 24, 24, 24];
             const idx = Math.min(mapFem2.length - 1, Math.max(0, (fechaRelativa || 1) - 1));
             return mapFem2[idx];
           } else {
@@ -1624,11 +1627,11 @@
       }
 
       function matchTeamFlex(dbTeam, target) {
-        const nDb = normalizeTeamText(dbTeam);
-        const nTarget = normalizeTeamText(target);
+        const nDb = normalizeTeamText(dbTeam).replace(/PALMERAS/g, "PALMEIRAS");
+        const nTarget = normalizeTeamText(target).replace(/PALMERAS/g, "PALMEIRAS");
         if (nDb === nTarget) return true;
-        const cleanDb = nDb.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
-        const cleanTarget = nTarget.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
+        const cleanDb = nDb.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|S\.D\.|SD)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
+        const cleanTarget = nTarget.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|S\.D\.|SD)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
         if (cleanDb === cleanTarget) return true;
         if (cleanDb.includes(cleanTarget) || cleanTarget.includes(cleanDb)) return true;
         return false;
@@ -1657,28 +1660,85 @@
         { cat: "PRIMERA", local: "ARGENTINA", visitor: "PALMEIRAS", day: "Domingo", time: "17:00", camL: "2", camV: "4", vocal: "SOLO PANAS", veedor: "ALIANZA JUVENIL" }
       ];
 
+      const officialJornada2Data = [
+        // SÁBADO 10-10-2026
+        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "CHELSEA", day: "Sábado", time: "09:40", camL: "2", camV: "4", vocal: "ALMAGUER", veedor: "AC LATINOS" },
+        { cat: "PRIMERA", local: "ALMAGUER", visitor: "AC LATINOS", day: "Sábado", time: "11:20", camL: "1", camV: "3", vocal: "3 DE JULIO", veedor: "CHELSEA" },
+        { cat: "PRIMERA", local: "LAKERS", visitor: "SD ARGENTINA", day: "Sábado", time: "13:00", camL: "2", camV: "4", vocal: "MANCHESTER", veedor: "SOLO PANAS" },
+        { cat: "MÁXIMA", local: "SOLO PANAS", visitor: "MANCHESTER", day: "Sábado", time: "14:40", camL: "1", camV: "3", vocal: "SD ARGENTINA", veedor: "LAKERS" },
+        { cat: "MÁXIMA", local: "FLUMINENSE", visitor: "ALIANZA JUVENIL", day: "Sábado", time: "16:20", camL: "2", camV: "4", vocal: "PALMEIRAS", veedor: "LOS PRIMOS" },
+        { cat: "PRIMERA", local: "LOS PRIMOS", visitor: "PALMEIRAS", day: "Sábado", time: "18:00", camL: "1", camV: "3", vocal: "ALIANZA JUVENIL", veedor: "FLUMINENSE" },
+
+        // DOMINGO 11-10-2026
+        { cat: "MÁXIMA", local: "GALAXY", visitor: "VENTANAS SC", day: "Domingo", time: "09:40", camL: "2", camV: "4", vocal: "AMAZONAS FC", veedor: "MARSELLA FC" },
+        { cat: "PRIMERA", local: "AMAZONAS FC", visitor: "MARSELLA FC", day: "Domingo", time: "11:20", camL: "1", camV: "3", vocal: "GALAXY", veedor: "VENTANAS SC" },
+        { cat: "PRIMERA", local: "CD NAPOLES", visitor: "INTER", day: "Domingo", time: "13:00", camL: "2", camV: "4", vocal: "RIVER PLATE", veedor: "DINAMO" },
+        { cat: "MÁXIMA", local: "PORTOVIEJO", visitor: "INDEPENDIENTE", day: "Domingo", time: "14:40", camL: "1", camV: "3", vocal: "INTER", veedor: "CD NAPOLES" },
+        { cat: "PRIMERA", local: "DINAMO", visitor: "RIVER PLATE", day: "Domingo", time: "16:20", camL: "2", camV: "4", vocal: "INDEPENDIENTE", veedor: "PORTOVIEJO" }
+      ];
+
       function aplicarProgramacionOficialFecha1() {
         let appliedCount = 0;
+
+        // 1. Reubicar partidos de 2da vuelta si tuvieran erróneamente jornada 1
         fixturesMap.forEach((meta) => {
+          const cat = meta.category;
+          let totalEtapasCat = 0;
           meta.data.forEach((m) => {
-            if (m.jornada === 1 && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA") {
-              const found = officialJornada1Data.find((item) => {
-                const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
-                const locMatch = matchTeamFlex(m.local, item.local);
-                const visMatch = matchTeamFlex(m.visitor, item.visitor);
-                return catMatch && locMatch && visMatch;
-              });
-              if (found) {
-                m.fechaRealAsignadaText = found.day;
-                m.horaRealAsignada = found.time;
-                m.camerinoLocal = found.camL;
-                m.camerinoVisitor = found.camV;
-                m.vocalAsignado = found.vocal;
-                m.veedorAsignado = found.veedor;
-                appliedCount++;
-              }
+            const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            if (j > totalEtapasCat) totalEtapasCat = j;
+          });
+
+          meta.data.forEach((m) => {
+            const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+            const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+            if (is2daVuelta) {
+              const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
             }
           });
+        });
+
+        // 2. Programar Fecha 1 Oficial únicamente en 1ra Vuelta
+        officialJornada1Data.forEach((item) => {
+          let matchFound = null;
+
+          fixturesMap.forEach((meta) => {
+            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            if (!catMatch) return;
+
+            meta.data.forEach((m) => {
+              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+              const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              if (is2daVuelta) return;
+
+              const locMatch = matchTeamFlex(m.local, item.local);
+              const visMatch = matchTeamFlex(m.visitor, item.visitor);
+              const locInverted = matchTeamFlex(m.local, item.visitor);
+              const visInverted = matchTeamFlex(m.visitor, item.local);
+
+              if ((locMatch && visMatch) || (locInverted && visInverted)) {
+                matchFound = m;
+              }
+            });
+          });
+
+          if (matchFound) {
+            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+              const temp = matchFound.local;
+              matchFound.local = matchFound.visitor;
+              matchFound.visitor = temp;
+            }
+            matchFound.jornada = 1;
+            matchFound.fechaRealAsignadaText = item.day;
+            matchFound.horaRealAsignada = item.time;
+            matchFound.camerinoLocal = item.camL;
+            matchFound.camerinoVisitor = item.camV;
+            matchFound.vocalAsignado = item.vocal;
+            matchFound.veedorAsignado = item.veedor;
+            appliedCount++;
+          }
         });
 
         renderMatches();
@@ -1698,6 +1758,114 @@
         });
       }
 
+      function aplicarProgramacionOficialFecha2() {
+        let appliedCount = 0;
+
+        // 1. Limpiar cualquier partido de 2da vuelta o liguilla que tenga jornada 2
+        fixturesMap.forEach((meta) => {
+          const cat = meta.category;
+          let totalEtapasCat = 0;
+          meta.data.forEach((m) => {
+            const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            if (j > totalEtapasCat) totalEtapasCat = j;
+          });
+
+          meta.data.forEach((m) => {
+            const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+            const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+            if (is2daVuelta) {
+              const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+            }
+          });
+        });
+
+        // 2. Reubicar y programar exactamente los 11 partidos oficiales de la 2da Fecha únicamente en 1ra Vuelta
+        officialJornada2Data.forEach((item) => {
+          let matchFound = null;
+
+          fixturesMap.forEach((meta) => {
+            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            if (!catMatch) return;
+
+            meta.data.forEach((m) => {
+              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+              const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              if (is2daVuelta) return; // Solo emparejar en 1ra Vuelta
+
+              const locMatch = matchTeamFlex(m.local, item.local);
+              const visMatch = matchTeamFlex(m.visitor, item.visitor);
+              const locInverted = matchTeamFlex(m.local, item.visitor);
+              const visInverted = matchTeamFlex(m.visitor, item.local);
+
+              if ((locMatch && visMatch) || (locInverted && visInverted)) {
+                matchFound = m;
+              }
+            });
+          });
+
+          if (matchFound) {
+            // Ajustar orden Local / Visitante si estuviera invertido en el fixture general
+            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+              const temp = matchFound.local;
+              matchFound.local = matchFound.visitor;
+              matchFound.visitor = temp;
+            }
+            matchFound.jornada = 2;
+            matchFound.fechaRealAsignadaText = item.day;
+            matchFound.horaRealAsignada = item.time;
+            matchFound.camerinoLocal = item.camL;
+            matchFound.camerinoVisitor = item.camV;
+            matchFound.vocalAsignado = item.vocal;
+            matchFound.veedorAsignado = item.veedor;
+            appliedCount++;
+          }
+        });
+
+        // 3. Cualquier otro partido de 1ra Vuelta que haya quedado erróneamente en Jornada 2 pero NO sea de estos 11 oficiales, recalcular su jornada
+        fixturesMap.forEach((meta) => {
+          const cat = meta.category;
+          let totalEtapasCat = 0;
+          meta.data.forEach((m) => {
+            const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            if (j > totalEtapasCat) totalEtapasCat = j;
+          });
+
+          meta.data.forEach((m) => {
+            if (m.jornada === 2 && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA") {
+              const isOfficialJ2 = officialJornada2Data.some((item) => {
+                const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(cat);
+                const locMatch = matchTeamFlex(m.local, item.local) && matchTeamFlex(m.visitor, item.visitor);
+                const locInverted = matchTeamFlex(m.local, item.visitor) && matchTeamFlex(m.visitor, item.local);
+                return catMatch && (locMatch || locInverted);
+              });
+
+              if (!isOfficialJ2) {
+                const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+                m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+              }
+            }
+          });
+        });
+
+        renderMatches();
+
+        Swal.fire({
+          title: "¡Fecha 2 Oficial Programada!",
+          html: `
+            <div class="text-start small">
+              <p class="mb-2 text-white">✅ Se cargó la programación oficial para los <strong>${appliedCount} partidos exactos</strong> con días (Sábado 10, Domingo 11), horarios exactos (09:40 a 18:00), mesas y camerinos.</p>
+              <p class="mb-0 text-success fw-bold">👉 Recuerda presionar el botón <strong>'Guardar'</strong> para guardar los cambios en la base de datos.</p>
+            </div>
+          `,
+          icon: "success",
+          confirmButtonColor: "#2ecc71",
+          background: "#121212",
+          color: "#ffffff",
+        });
+      }
+
       function openProgramacionModal() {
         if (!currentJornada) {
           return Swal.fire("Aviso", "Selecciona una jornada primero.", "info");
@@ -1705,6 +1873,11 @@
 
         if (currentJornada === 1) {
           aplicarProgramacionOficialFecha1();
+          return;
+        }
+
+        if (currentJornada === 2) {
+          aplicarProgramacionOficialFecha2();
           return;
         }
 
@@ -2409,6 +2582,16 @@
                   </div>
                 </div>
                 <div class="d-flex gap-2 flex-wrap align-items-center">
+                  ${currentJornada === 1 ? `
+                    <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha1()" title="Cargar días, horas, mesas y camerinos oficiales de la Fecha 1">
+                      <i class="fas fa-file-invoice me-1"></i> Cargar Fecha 1 Oficial
+                    </button>
+                  ` : ''}
+                  ${currentJornada === 2 ? `
+                    <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha2()" title="Cargar días, horas, mesas y camerinos oficiales de la Fecha 2">
+                      <i class="fas fa-file-invoice me-1"></i> Cargar Fecha 2 Oficial
+                    </button>
+                  ` : ''}
                   <button class="btn btn-outline-success rounded-pill px-3 btn-sm fw-bold shadow-sm" onclick="exportarTodoElFixtureExcel()" title="Descargar todo el fixture oficial de todas las fechas">
                     <i class="fas fa-file-excel me-1"></i> Todo el Fixture
                   </button>
