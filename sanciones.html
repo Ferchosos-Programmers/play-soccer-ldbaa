@@ -275,6 +275,50 @@
       .italic {
         font-style: italic;
       }
+      /* Marca de Agua para Partidos Sancionados */
+      .watermark-sancionada {
+        position: absolute;
+        top: 48%;
+        left: 50%;
+        transform: translate(-50%, -50%) rotate(-22deg);
+        border: 3.5px solid #ef4444;
+        color: #ff4d4d;
+        background: rgba(20, 5, 5, 0.82);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        padding: 8px 24px;
+        font-size: 1.15rem;
+        font-weight: 900;
+        letter-spacing: 3.5px;
+        text-transform: uppercase;
+        border-radius: 10px;
+        box-shadow: 0 0 25px rgba(239, 68, 68, 0.5), inset 0 0 15px rgba(239, 68, 68, 0.25);
+        pointer-events: none;
+        z-index: 10;
+        white-space: nowrap;
+        text-shadow: 0 0 12px rgba(239, 68, 68, 0.9);
+        animation: pulseStamp 3s infinite ease-in-out;
+      }
+      @keyframes pulseStamp {
+        0%, 100% {
+          opacity: 0.92;
+          transform: translate(-50%, -50%) rotate(-22deg) scale(1);
+        }
+        50% {
+          opacity: 1;
+          transform: translate(-50%, -50%) rotate(-22deg) scale(1.03);
+          box-shadow: 0 0 35px rgba(239, 68, 68, 0.7), inset 0 0 20px rgba(239, 68, 68, 0.35);
+        }
+      }
+      .jornada-card-elite.is-sanctioned {
+        border-color: rgba(239, 68, 68, 0.45) !important;
+        background: linear-gradient(145deg, rgba(239, 68, 68, 0.08), rgba(20, 20, 20, 0.95)) !important;
+        box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15) !important;
+      }
+      .jornada-card-elite.is-sanctioned:hover {
+        border-color: #ef4444 !important;
+        box-shadow: 0 15px 40px rgba(239, 68, 68, 0.35) !important;
+      }
     </style>
   </head>
   <body>
@@ -769,6 +813,7 @@
       let lastMatchVisitor = null;
       let currentSelectedJornada = 1;
       let lastMatchJornada = 1;
+      let lastMatchFixId = null;
 
       // Cargar campeonatos al iniciar
       auth.onAuthStateChanged((user) => {
@@ -983,14 +1028,30 @@
         partidosLista.innerHTML =
           '<div class="col-12 text-center py-5"><div class="spinner-border text-primary" role="status"></div></div>';
 
-        // Cargar mapa de logos de equipos (como en vocalias.html)
-        const teamsSnapshot = await db
-          .collection("teams")
-          .where("championshipId", "==", campeonatoActual)
-          .get();
+        // Cargar mapa de logos y equipos + sanciones activas en paralelo
+        const [teamsSnapshot, sancionesSnapshot] = await Promise.all([
+          db
+            .collection("teams")
+            .where("championshipId", "==", campeonatoActual)
+            .get(),
+          db
+            .collection("sanciones")
+            .where("campeonatoId", "==", campeonatoActual)
+            .where("estado", "==", "activa")
+            .get(),
+        ]);
+
         const logosMap = {};
+        const teamNameToIdMap = {};
         teamsSnapshot.forEach((doc) => {
-          logosMap[doc.data().name] = doc.data().logo || "img/logo.png";
+          const t = doc.data();
+          logosMap[t.name] = t.logo || "img/logo.png";
+          teamNameToIdMap[t.name] = doc.id;
+        });
+
+        const activeSanctions = [];
+        sancionesSnapshot.forEach((sDoc) => {
+          activeSanctions.push({ id: sDoc.id, ...sDoc.data() });
         });
 
         partidosLista.innerHTML = "";
@@ -1027,12 +1088,31 @@
         matches.forEach((m) => {
           const localLogo = logosMap[m.local] || "img/logo.png";
           const visitorLogo = logosMap[m.visitor] || "img/logo.png";
+          const localId = teamNameToIdMap[m.local];
+          const visitorId = teamNameToIdMap[m.visitor];
+
+          // Filtrar sanciones de este partido en esta jornada
+          const matchSanctions = activeSanctions.filter((s) => {
+            const sJornada = parseInt(s.jornada) || 1;
+            if (sJornada !== jornada) return false;
+            if (s.matchId && m.matchId && s.matchId === m.matchId) return true;
+            if (s.teamId && (s.teamId === localId || s.teamId === visitorId)) return true;
+            if (s.teamName && (s.teamName === m.local || s.teamName === m.visitor)) return true;
+            return false;
+          });
+
+          const isSanctioned = !!(m.isSanctioned || m.sancionado || matchSanctions.length > 0);
+          const sanctionCount = matchSanctions.length;
 
           const card = `
             <div class="col">
-              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4" onclick="verDetallesMatch('${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}')">
+              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 ${isSanctioned ? 'is-sanctioned' : ''}" style="position: relative; overflow: hidden;" onclick="verDetallesMatch('${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}')">
+                  ${isSanctioned ? `<div class="watermark-sancionada"><i class="fas fa-gavel me-2"></i>SANCIONADA</div>` : ''}
                   <div class="mb-3 text-center">
-                      <span class="badge bg-primary-glass mb-4 text-uppercase" style="font-size:0.5rem; letter-spacing:2px; opacity:0.7">${m._cat}</span>
+                      <div class="d-flex justify-content-between align-items-center mb-3">
+                          <span class="badge bg-primary-glass text-uppercase" style="font-size:0.5rem; letter-spacing:2px; opacity:0.8">${m._cat}</span>
+                          ${isSanctioned ? `<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50" style="font-size:0.55rem; letter-spacing:1px"><i class="fas fa-check-circle me-1"></i>SANCIONADA${sanctionCount > 0 ? ` (${sanctionCount})` : ''}</span>` : `<span class="badge bg-secondary bg-opacity-25 text-white-50 border border-white border-opacity-10" style="font-size:0.55rem; letter-spacing:1px">PENDIENTE</span>`}
+                      </div>
                       <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
                           <div style="flex:1">
                               <img src="${localLogo}" alt="Logo Local" class="mb-2" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid rgba(255,255,255,0.1)">
@@ -1094,10 +1174,64 @@
         }
         if (!match) return;
         lastMatchJornada = parseInt(match.jornada) || currentSelectedJornada || 1;
+        lastMatchFixId = match._fixId;
+
+        // Verificar si tiene sanciones activas
+        let isSanctioned = !!(match.isSanctioned || match.sancionado);
+        try {
+          const sSnap = await db
+            .collection("sanciones")
+            .where("campeonatoId", "==", campeonatoActual)
+            .where("estado", "==", "activa")
+            .get();
+
+          sSnap.forEach((sDoc) => {
+            const s = sDoc.data();
+            const sJornada = parseInt(s.jornada) || 1;
+            if (sJornada === lastMatchJornada) {
+              if (
+                (s.matchId && match.matchId && s.matchId === match.matchId) ||
+                s.teamName === match.local ||
+                s.teamName === match.visitor
+              ) {
+                isSanctioned = true;
+              }
+            }
+          });
+        } catch (e) {
+          console.warn("Error checking match sanctions in modal:", e);
+        }
 
         const body = document.getElementById("vocaliaCompletaBody");
         body.innerHTML = `
           <div class="row g-4">
+            <!-- Barra Superior de Estado de Sanción -->
+            <div class="col-12">
+              <div class="glass-panel p-3 d-flex flex-wrap justify-content-between align-items-center gap-3" style="background: ${isSanctioned ? 'linear-gradient(90deg, rgba(239,68,68,0.18), rgba(20,20,20,0.85))' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${isSanctioned ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)'}; border-radius: 16px;">
+                <div class="d-flex align-items-center gap-3">
+                  <div style="width: 44px; height: 44px; border-radius: 12px; background: ${isSanctioned ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.05)'}; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: ${isSanctioned ? '#ff4d4d' : '#888'};">
+                    <i class="fas ${isSanctioned ? 'fa-gavel' : 'fa-clock'}"></i>
+                  </div>
+                  <div>
+                    <div class="d-flex align-items-center gap-2">
+                      <span class="badge ${isSanctioned ? 'bg-danger text-white' : 'bg-warning text-dark'} fw-bold text-uppercase" style="font-size:0.65rem; letter-spacing:1px">
+                        ${isSanctioned ? 'PARTIDO SANCIONADO' : 'PENDIENTE DE SANCIÓN'}
+                      </span>
+                      <span class="text-white-50 small">Jornada ${match.jornada || currentSelectedJornada} - ${match._cat || ''}</span>
+                    </div>
+                    <div class="text-white-50" style="font-size: 0.75rem; margin-top: 2px;">
+                      ${isSanctioned ? 'Este encuentro ya cuenta con sanciones procesadas o marcadas (Marca de agua activa).' : 'Aún no se ha marcado este encuentro como sancionado.'}
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <button class="btn ${isSanctioned ? 'btn-outline-danger' : 'btn-outline-success'} btn-sm px-3 fw-bold" onclick="window.toggleMatchSanctionStatus('${match.matchId}', '${match._fixId}', ${!isSanctioned})">
+                    <i class="fas ${isSanctioned ? 'fa-undo' : 'fa-check-circle'} me-2"></i>${isSanctioned ? 'Marcar como Pendiente' : 'Marcar como Sancionada'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Columna Local -->
             <div class="col-lg-6">
               <div class="glass-panel p-4 h-100 border-0">
@@ -1519,7 +1653,12 @@
             db.collection("sanciones")
               .add({
                 jugadorId: pId,
+                nombreJugador: pNombre,
+                numeroJugador: pData.numeroJugador || pData.num || "",
+                cedula: pData.cedula || "",
+                teamName: nombreEquipo || "",
                 teamId: targetTeamId || "",
+                matchId: lastMatchId || "",
                 tipo: "amarilla",
                 articulo: null,
                 literal: null,
@@ -1530,7 +1669,8 @@
                 estado: "activa",
                 campeonatoId: campeonatoActual,
               })
-              .then(() => {
+              .then(async () => {
+                await autoMarkCurrentMatchAsSanctioned();
                 Swal.fire({
                   title: "¡Aplicada!",
                   text: "Tarjeta Amarilla registrada correctamente.",
@@ -1588,7 +1728,9 @@
           db.collection("sanciones")
             .add({
               jugadorId: id,
+              nombreJugador: nombre,
               teamId: teamId || equipoActual || "",
+              matchId: lastMatchId || "",
               tipo: "amarilla",
               articulo: null,
               literal: null,
@@ -1599,7 +1741,8 @@
               estado: "activa",
               campeonatoId: campeonatoActual,
             })
-            .then(() => {
+            .then(async () => {
+              await autoMarkCurrentMatchAsSanctioned();
               Swal.fire({
                 title: "¡Aplicada!",
                 text: "Tarjeta Amarilla registrada correctamente.",
@@ -2019,6 +2162,7 @@
             cedula: pExtra.cedula || "",
             teamName: pExtra.teamName || "",
             teamId: sancionTeamId || equipoActual || "",
+            matchId: lastMatchId || "",
             tipo: tipo,
             articulo: art || null,
             literal: lit || null,
@@ -2030,7 +2174,8 @@
             estado: "activa",
             campeonatoId: campeonatoActual,
           })
-          .then(() => {
+          .then(async () => {
+            await autoMarkCurrentMatchAsSanctioned();
             Swal.fire({
               title: "¡Guardado!",
               text: "La sanción se ha registrado correctamente.",
@@ -2193,16 +2338,19 @@
         db.collection("sanciones")
           .add({
             teamId: id,
+            matchId: lastMatchId || "",
             tipo: tipo,
             articulo: art,
             literal: lit,
             valor: valor,
+            jornada: lastMatchJornada || currentSelectedJornada || 1,
             fecha: new Date(),
             createdAt: new Date(),
             estado: "activa",
             campeonatoId: campeonatoActual,
           })
-          .then(() => {
+          .then(async () => {
+            await autoMarkCurrentMatchAsSanctioned();
             Swal.fire({
               title: "¡Multa Aplicada!",
               text: "La multa se ha guardado correctamente.",
@@ -2224,6 +2372,105 @@
             console.error("Error al guardar multa:", error);
             Swal.fire("Error", "No se pudo guardar la multa.", "error");
           });
+      };
+
+      async function autoMarkCurrentMatchAsSanctioned() {
+        if (!lastMatchFixId || !lastMatchId) return;
+        try {
+          const fixDocRef = db.collection("fixtures").doc(lastMatchFixId);
+          const fixDoc = await fixDocRef.get();
+          if (fixDoc.exists) {
+            const fData = fixDoc.data();
+            const matchesArray = fData.data || [];
+            let changed = false;
+            matchesArray.forEach((m) => {
+              if (
+                (m.matchId === lastMatchId && m.matchId !== "undefined") ||
+                (m.local === lastMatchLocal && m.visitor === lastMatchVisitor)
+              ) {
+                if (!m.isSanctioned) {
+                  m.isSanctioned = true;
+                  m.sancionado = true;
+                  changed = true;
+                }
+              }
+            });
+            if (changed) {
+              await fixDocRef.update({ data: matchesArray });
+              if (fixturesMap.has(lastMatchFixId)) {
+                fixturesMap.get(lastMatchFixId).data = matchesArray;
+              }
+            }
+          }
+        } catch (e) {
+          console.warn("Auto-mark sanction error:", e);
+        }
+      }
+
+      window.toggleMatchSanctionStatus = async function (
+        matchId,
+        fixId,
+        newStatus,
+      ) {
+        try {
+          Swal.fire({
+            title: newStatus
+              ? "Marcando como sancionada..."
+              : "Desmarcando sanción...",
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading(),
+          });
+
+          if (!fixId && lastMatchFixId) fixId = lastMatchFixId;
+          const fixDocRef = db.collection("fixtures").doc(fixId);
+          const fixDoc = await fixDocRef.get();
+          if (!fixDoc.exists)
+            throw new Error("Documento de fixture no encontrado.");
+
+          const fData = fixDoc.data();
+          const matchesArray = fData.data || [];
+          let updated = false;
+
+          matchesArray.forEach((m) => {
+            if (
+              (m.matchId === matchId && m.matchId !== "undefined") ||
+              (m.local === lastMatchLocal && m.visitor === lastMatchVisitor)
+            ) {
+              m.isSanctioned = newStatus;
+              m.sancionado = newStatus;
+              updated = true;
+            }
+          });
+
+          if (updated) {
+            await fixDocRef.update({ data: matchesArray });
+            if (fixturesMap.has(fixId)) {
+              fixturesMap.get(fixId).data = matchesArray;
+            }
+          }
+
+          Swal.fire({
+            title: newStatus ? "¡Partido Sancionado!" : "¡Estado Actualizado!",
+            text: newStatus
+              ? "El partido ahora tiene la marca de agua SANCIONADA visible en la jornada."
+              : "El partido se marcó como pendiente.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+
+          // Refrescar modal
+          if (lastMatchId) {
+            verDetallesMatch(lastMatchId, lastMatchLocal, lastMatchVisitor);
+          }
+        } catch (err) {
+          console.error("Error updating match sanction status:", err);
+          Swal.fire(
+            "Error",
+            "No se pudo actualizar el estado del partido.",
+            "error",
+          );
+        }
       };
 
       window.verMultasEquipo = function (equipoId, equipoNombre) {
