@@ -2353,6 +2353,7 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <i class="fas fa-wallet text-warning" style="font-size:0.7rem"></i>
                                         <span class="text-white-50 small fw-bold" style="letter-spacing:1px">DEUDA</span>
+                                        <span id="deudaBadgeLocal" class="badge rounded-pill fw-bold font-monospace" style="font-size:0.75rem; display:none;">$0.00</span>
                                     </div>
                                     <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 fw-bold"
                                             onclick="window.viewReceiptDetail('local')"
@@ -2453,6 +2454,7 @@
                                     <div class="d-flex align-items-center gap-2">
                                         <i class="fas fa-wallet text-warning" style="font-size:0.7rem"></i>
                                         <span class="text-white-50 small fw-bold" style="letter-spacing:1px">DEUDA</span>
+                                        <span id="deudaBadgeVisitor" class="badge rounded-pill fw-bold font-monospace" style="font-size:0.75rem; display:none;">$0.00</span>
                                     </div>
                                     <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3 py-1 fw-bold"
                                             onclick="window.viewReceiptDetail('visitor')"
@@ -2963,6 +2965,9 @@
             </div>
           `;
         loadNominasDigitales(m);
+        if (typeof window.updateDeudaBadges === "function") {
+          window.updateDeudaBadges(m);
+        }
       }
 
       function loadNominasDigitales(m) {
@@ -6422,100 +6427,190 @@
       const teamReceiptSanctionsCache = new Map();
       const teamIdMemoryCache = new Map();
 
-      async function fetchTeamPendingSanctions(teamName, category, campId) {
-        if (!teamName) return { prevYellows: [], prevReds: [], prevExtras: [] };
-        const cacheKey = `${teamName}_${campId || ""}`.toUpperCase();
-        if (teamReceiptSanctionsCache.has(cacheKey)) {
+      const normalizeTeamStr = (str) =>
+        String(str || "")
+          .trim()
+          .toUpperCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "");
+
+      async function fetchTeamPendingSanctions(teamName, category, campId, forceRefresh = false) {
+        if (!teamName) return { prevYellows: [], prevReds: [], prevExtras: [], totalDebt: 0 };
+        const normTeam = normalizeTeamStr(teamName);
+        const normCat = normalizeTeamStr(category);
+        const cleanCamp = String(campId || "").trim();
+        const cacheKey = `${normTeam}_${normCat}_${cleanCamp}`;
+
+        if (!forceRefresh && teamReceiptSanctionsCache.has(cacheKey)) {
           return teamReceiptSanctionsCache.get(cacheKey);
         }
 
         try {
-          let teamId = teamIdMemoryCache.get(teamName.toUpperCase());
-          if (!teamId && typeof db !== "undefined") {
-            let tQuery = db.collection("teams").where("name", "==", teamName);
-            if (campId) tQuery = tQuery.where("championshipId", "==", campId);
-            let tSnap = await tQuery.get();
-            if (tSnap.empty && campId) {
-              tSnap = await db
-                .collection("teams")
-                .where("name", "==", teamName)
-                .get();
-            }
-            if (!tSnap.empty) {
-              teamId = tSnap.docs[0].id;
-              teamIdMemoryCache.set(teamName.toUpperCase(), teamId);
-            }
+          if (typeof db === "undefined") {
+            return { prevYellows: [], prevReds: [], prevExtras: [], totalDebt: 0 };
+          }
+
+          // 1. Resolver los IDs de equipo correspondientes a este nombre y categoría
+          let targetTeamIds = [];
+          try {
+            let tQuery = db.collection("teams");
+            if (cleanCamp) tQuery = tQuery.where("championshipId", "==", cleanCamp);
+            const tSnap = await tQuery.get();
+
+            const matchedDocs = [];
+            const fallbackDocs = [];
+            tSnap.forEach((doc) => {
+              const d = doc.data();
+              const dName = normalizeTeamStr(d.name);
+              const dCat = normalizeTeamStr(d.category);
+              if (dName === normTeam) {
+                fallbackDocs.push(doc.id);
+                if (!normCat || dCat === normCat) {
+                  matchedDocs.push(doc.id);
+                }
+              }
+            });
+
+            targetTeamIds = matchedDocs.length > 0 ? matchedDocs : fallbackDocs;
+          } catch (eTeams) {
+            console.warn("Error resolviendo equipos en fetchTeamPendingSanctions:", eTeams);
+          }
+
+          // 2. Consultar sanciones activas del campeonato
+          let sancQuery = db.collection("sanciones").where("estado", "==", "activa");
+          if (cleanCamp) {
+            sancQuery = sancQuery.where("campeonatoId", "==", cleanCamp);
+          }
+          const [sancSnap, playersList] = await Promise.all([
+            sancQuery.get(),
+            typeof fetchTeamPlayers === "function"
+              ? fetchTeamPlayers(teamName, category, cleanCamp)
+              : Promise.resolve([]),
+          ]);
+
+          const playersNumMap = new Map();
+          if (Array.isArray(playersList)) {
+            playersList.forEach((p) => {
+              const pNum = p.numeroJugador ? `#${p.numeroJugador}` : "";
+              const pName = `${p.nombres || ""} ${p.apellidos || ""}`.trim();
+              playersNumMap.set(p.id, pNum || pName || "N/A");
+            });
           }
 
           let prevYellows = [];
           let prevReds = [];
           let prevExtras = [];
 
-          if (teamId && typeof db !== "undefined") {
-            const [sancSnap, playersList] = await Promise.all([
-              db
-                .collection("sanciones")
-                .where("teamId", "==", teamId)
-                .where("estado", "==", "activa")
-                .get(),
-              fetchTeamPlayers(teamName, category, campId),
-            ]);
+          sancSnap.forEach((sDoc) => {
+            const s = sDoc.data();
+            const sTeamId = s.teamId || "";
+            const sTeamName = normalizeTeamStr(s.teamName || s.equipo || "");
+            const sCat = normalizeTeamStr(s.categoria || s.category || "");
 
-            const playersNumMap = new Map();
-            if (Array.isArray(playersList)) {
-              playersList.forEach((p) => {
-                const pNum = p.numeroJugador ? `#${p.numeroJugador}` : "";
-                const pName = `${p.nombres || ""} ${p.apellidos || ""}`.trim();
-                playersNumMap.set(p.id, pNum || pName || "N/A");
+            const matchById = targetTeamIds.includes(sTeamId);
+            const matchByName = sTeamName === normTeam && (!normCat || !sCat || sCat === normCat);
+
+            if (!matchById && !matchByName) return;
+
+            const pLabel =
+              (s.jugadorId && playersNumMap.get(s.jugadorId)) ||
+              (s.numeroJugador ? `#${s.numeroJugador}` : "") ||
+              s.nombreJugador ||
+              s.jugadorNombre ||
+              "";
+
+            const val = parseFloat(s.valor || 0);
+
+            if (s.tipo === "amarilla") {
+              prevYellows.push({
+                num: pLabel || "N/A",
+                val: val > 0 ? val : 0.5,
+                sanctionId: sDoc.id,
+              });
+            } else if (s.tipo === "roja") {
+              prevReds.push({
+                num: pLabel || "N/A",
+                val: val > 0 ? val : 1.0,
+                sanctionId: sDoc.id,
+              });
+            } else {
+              let cleanTipo = s.tipo || "Multa";
+              if (cleanTipo === "no_veedor") cleanTipo = "No Asistencia de Veedor";
+              else if (cleanTipo === "multa_barra") cleanTipo = "Multa a la Barra";
+              else if (cleanTipo === "balon_implementos") cleanTipo = "Balón / Implementos";
+              else if (cleanTipo === "vocalia_veeduria") cleanTipo = "Vocalía / Veeduría";
+              else if (cleanTipo === "no_presentacion") cleanTipo = "No Presentación";
+              else if (cleanTipo === "sesiones_asambleas") cleanTipo = "Sesiones y Asambleas";
+              else if (cleanTipo === "mingas_comisiones") cleanTipo = "Mingas y Comisiones";
+              else if (cleanTipo === "cuotas_garantias") cleanTipo = "Cuotas y Garantías";
+              else if (cleanTipo === "amarilla_banca") cleanTipo = "Tarjeta Amarilla (Banca)";
+              else if (cleanTipo === "roja_banca") cleanTipo = "Tarjeta Roja (Banca)";
+              else cleanTipo = cleanTipo.replace(/_/g, " ").toUpperCase();
+
+              const desc = s.literal
+                ? `${cleanTipo} (Lit. ${s.literal})`
+                : s.motivo || cleanTipo;
+
+              prevExtras.push({
+                desc: pLabel ? `${desc} (${pLabel})` : desc,
+                val: val,
+                sanctionId: sDoc.id,
               });
             }
+          });
 
-            sancSnap.forEach((sDoc) => {
-              const s = sDoc.data();
-              const pLabel =
-                (s.jugadorId && playersNumMap.get(s.jugadorId)) ||
-                (s.jugadorNumero
-                  ? `#${s.jugadorNumero}`
-                  : s.jugadorNombre || "");
+          const yellowsTotal = prevYellows.reduce((a, c) => a + (c.val || 0.5), 0);
+          const redsTotal = prevReds.reduce((a, c) => a + (c.val || 1.0), 0);
+          const extrasTotal = prevExtras.reduce((a, c) => a + (c.val || 0), 0);
+          const totalDebt = yellowsTotal + redsTotal + extrasTotal;
 
-              if (s.tipo === "amarilla") {
-                prevYellows.push({ num: pLabel || "N/A", sanctionId: sDoc.id });
-              } else if (s.tipo === "roja") {
-                prevReds.push({ num: pLabel || "N/A", sanctionId: sDoc.id });
-              } else {
-                let cleanTipo = s.tipo || "Multa";
-                if (cleanTipo === "no_veedor")
-                  cleanTipo = "No Asistencia de Veedor";
-                else if (cleanTipo === "amarilla_banca")
-                  cleanTipo = "Tarjeta Amarilla (Banca)";
-                else if (cleanTipo === "roja_banca")
-                  cleanTipo = "Tarjeta Roja (Banca)";
-                else cleanTipo = cleanTipo.replace(/_/g, " ").toUpperCase();
-
-                const desc = s.literal
-                  ? `${cleanTipo} (Lit. ${s.literal})`
-                  : s.motivo || cleanTipo;
-                prevExtras.push({
-                  desc: pLabel ? `${desc} (${pLabel})` : desc,
-                  val: parseFloat(s.valor || 0),
-                  sanctionId: sDoc.id,
-                });
-              }
-            });
-          }
-
-          const result = { prevYellows, prevReds, prevExtras };
+          const result = { prevYellows, prevReds, prevExtras, totalDebt };
           teamReceiptSanctionsCache.set(cacheKey, result);
           return result;
         } catch (err) {
           console.warn("Error in fetchTeamPendingSanctions:", err);
-          return { prevYellows: [], prevReds: [], prevExtras: [] };
+          return { prevYellows: [], prevReds: [], prevExtras: [], totalDebt: 0 };
         }
       }
 
       window.preloadTeamReceiptData = function (teamName, category, campId) {
         if (!teamName) return;
-        fetchTeamPendingSanctions(teamName, category, campId).catch(() => {});
+        fetchTeamPendingSanctions(teamName, category, campId, false).catch(() => {});
+      };
+
+      window.updateDeudaBadges = async function (m) {
+        if (!m) return;
+        const campSelect = document.getElementById("campSelect");
+        const campId =
+          campSelect?.value ||
+          m._campId ||
+          (m._fixId && fixturesMap?.get(m._fixId)?.championshipId) ||
+          "";
+
+        const updateBadge = async (teamName, badgeId) => {
+          const badgeEl = document.getElementById(badgeId);
+          if (!badgeEl || !teamName) return;
+          try {
+            const data = await fetchTeamPendingSanctions(teamName, m._cat, campId, true);
+            const debt = data.totalDebt || 0;
+            badgeEl.style.display = "inline-block";
+            badgeEl.textContent = `$${debt.toFixed(2)}`;
+            if (debt > 0) {
+              badgeEl.className =
+                "badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 px-2 py-0.5 rounded-pill fw-bold font-monospace";
+              badgeEl.title = `Deuda pendiente acumulada: $${debt.toFixed(2)}`;
+            } else {
+              badgeEl.className =
+                "badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2 py-0.5 rounded-pill fw-bold font-monospace";
+              badgeEl.title = "Sin deudas pendientes ($0.00)";
+            }
+          } catch (err) {
+            console.warn("Error updating deuda badge:", err);
+          }
+        };
+
+        updateBadge(m.local, "deudaBadgeLocal");
+        updateBadge(m.visitor, "deudaBadgeVisitor");
       };
 
       function renderReceiptToModal(billing, match, type) {
@@ -6767,7 +6862,7 @@
         }
       }
 
-      window.viewReceiptDetail = function (type, match) {
+      window.viewReceiptDetail = async function (type, match) {
         // Si no se pasa el objeto match, usar el partido activo abierto
         if (!match && window.currentMatchOpened) {
           match = window.currentMatchOpened;
@@ -6816,7 +6911,6 @@
           return;
         }
 
-        // Si no hay cobro oficial, calcular inmediatamente desde la memoria caché
         const arbVal =
           match._cat && match._cat.toUpperCase() === "FEMENINO" ? 8.5 : 9.5;
         const canVal = 2.0;
@@ -6830,24 +6924,24 @@
             fixturesMap.get(window.currentMatchOpened._fixId)
               ?.championshipId) ||
           "";
-        const cacheKey = `${teamName}_${campId || ""}`.toUpperCase();
 
-        const cached = teamReceiptSanctionsCache.get(cacheKey) || {
-          prevYellows: [],
-          prevReds: [],
-          prevExtras: [],
-        };
+        // Obtener datos frescos de sanciones previas
+        const freshData = await fetchTeamPendingSanctions(teamName, match._cat, campId, true);
 
         let extrasSum = 0;
-        cached.prevExtras.forEach((e) => {
+        freshData.prevExtras.forEach((e) => {
           extrasSum += parseFloat(e.val || 0);
         });
+
+        const yellowsSum = freshData.prevYellows.reduce((a, c) => a + (c.val || 0.5), 0);
+        const redsSum = freshData.prevReds.reduce((a, c) => a + (c.val || 1.0), 0);
+
         const totalCalculated =
           arbVal +
           canVal +
           cemVal +
-          cached.prevYellows.length * 0.5 +
-          cached.prevReds.length * 1.0 +
+          yellowsSum +
+          redsSum +
           extrasSum;
 
         billing = {
@@ -6859,60 +6953,21 @@
           cem: cemVal,
           timestamp: new Date(),
           ta: {
-            count: cached.prevYellows.length,
+            count: freshData.prevYellows.length,
             val: 0.5,
-            players: cached.prevYellows,
+            players: freshData.prevYellows,
           },
           tr: {
-            count: cached.prevReds.length,
+            count: freshData.prevReds.length,
             val: 1.0,
-            players: cached.prevReds,
+            players: freshData.prevReds,
           },
-          extras: cached.prevExtras,
+          extras: freshData.prevExtras,
           isPreview: true,
         };
 
-        // Renderizado e inicio del modal INMEDIATO (0ms)
+        // Renderizado en el modal
         renderReceiptToModal(billing, match, type);
-
-        // Si no estaba en caché, actualizar en segundo plano y refrescar sin bloquear
-        if (!teamReceiptSanctionsCache.has(cacheKey)) {
-          fetchTeamPendingSanctions(teamName, match._cat, campId).then(
-            (freshData) => {
-              let freshExtrasSum = 0;
-              freshData.prevExtras.forEach((e) => {
-                freshExtrasSum += parseFloat(e.val || 0);
-              });
-              const freshTotal =
-                arbVal +
-                canVal +
-                cemVal +
-                freshData.prevYellows.length * 0.5 +
-                freshData.prevReds.length * 1.0 +
-                freshExtrasSum;
-              const freshBilling = {
-                ...billing,
-                total: freshTotal,
-                ta: {
-                  count: freshData.prevYellows.length,
-                  val: 0.5,
-                  players: freshData.prevYellows,
-                },
-                tr: {
-                  count: freshData.prevReds.length,
-                  val: 1.0,
-                  players: freshData.prevReds,
-                },
-                extras: freshData.prevExtras,
-              };
-              const receiptModalEl =
-                document.getElementById("receiptViewModal");
-              if (receiptModalEl && receiptModalEl.classList.contains("show")) {
-                renderReceiptToModal(freshBilling, match, type);
-              }
-            },
-          );
-        }
       };
 
       window.sendReceiptByWA = async function () {

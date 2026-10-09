@@ -1333,11 +1333,23 @@
 
       window.obtenerIdEquipoYMultar = async function (nombreEquipo, categoria) {
         try {
-          const snap = await db
-            .collection("teams")
-            .where("name", "==", nombreEquipo)
-            .where("category", "==", categoria)
-            .get();
+          let snap = null;
+          if (campeonatoActual) {
+            let q = db.collection("teams").where("name", "==", nombreEquipo).where("championshipId", "==", campeonatoActual);
+            if (categoria) q = q.where("category", "==", categoria);
+            snap = await q.get();
+            if (snap.empty && categoria) {
+              snap = await db.collection("teams").where("name", "==", nombreEquipo).where("championshipId", "==", campeonatoActual).get();
+            }
+          }
+          if (!snap || snap.empty) {
+            let q2 = db.collection("teams").where("name", "==", nombreEquipo);
+            if (categoria) q2 = q2.where("category", "==", categoria);
+            snap = await q2.get();
+          }
+          if (snap.empty) {
+            snap = await db.collection("teams").where("name", "==", nombreEquipo).get();
+          }
 
           if (snap.empty) throw new Error("Equipo no encontrado");
 
@@ -1388,17 +1400,22 @@
 
           // 2. Si no hay ID o falló, buscar por nombre dentro del equipo filtrando por categoría
           if (!playerDoc) {
-            let teamQuery = db
-              .collection("teams")
-              .where("name", "==", nombreEquipo);
-            if (categoria) {
-              teamQuery = teamQuery.where("category", "==", categoria);
+            let teamSnap = null;
+            if (campeonatoActual) {
+              let tQuery = db.collection("teams").where("name", "==", nombreEquipo).where("championshipId", "==", campeonatoActual);
+              if (categoria) tQuery = tQuery.where("category", "==", categoria);
+              teamSnap = await tQuery.get();
+              if (teamSnap.empty && categoria) {
+                teamSnap = await db.collection("teams").where("name", "==", nombreEquipo).where("championshipId", "==", campeonatoActual).get();
+              }
+            }
+            if (!teamSnap || teamSnap.empty) {
+              let tQuery = db.collection("teams").where("name", "==", nombreEquipo);
+              if (categoria) tQuery = tQuery.where("category", "==", categoria);
+              teamSnap = await tQuery.get();
             }
 
-            const teamSnap = await teamQuery.get();
-
-            if (teamSnap.empty) {
-              // Reintento sin categoría si falló con ella (por si acaso el nombre de categoría varió)
+            if (!teamSnap || teamSnap.empty) {
               const fallbackTeamSnap = await db
                 .collection("teams")
                 .where("name", "==", nombreEquipo)
@@ -1408,7 +1425,6 @@
                   `Equipo "${nombreEquipo}" no encontrado en la base de datos.`,
                 );
 
-              // Si lo encontramos sin categoría, avisar pero seguir
               console.warn("Equipo encontrado solo sin filtro de categoría.");
               var targetTeamId = fallbackTeamSnap.docs[0].id;
             } else {
