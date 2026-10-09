@@ -2340,9 +2340,13 @@
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="text-center mb-1">
-          <h5 class="modal-title text-white fw-800 mb-0 text-uppercase tracking-widest" style="font-size: 0.9rem">
+          <h5 class="modal-title text-white fw-800 mb-2 text-uppercase tracking-widest" style="font-size: 0.9rem">
             <i class="fas fa-file-invoice-dollar me-2 text-primary"></i> GESTIÓN DE COBRO DE PARTIDO
           </h5>
+          <div id="modalArbInfoBanner" class="d-inline-flex align-items-center gap-2 px-3 py-1.5 rounded-pill bg-dark border border-warning border-opacity-50 text-white-50 small shadow-sm" style="font-size: 0.75rem;">
+            <i class="fas fa-whistle text-warning"></i>
+            <span id="modalArbInfoText">Recaudación: <strong class="text-warning">$18.00</strong> ($9.00/equipo) &bull; <strong class="text-success">Pago al Árbitro: $17.00</strong></span>
+          </div>
         </div>
         <div class="modal-body p-4 pt-2">
           <div class="row g-4 mt-1">
@@ -2404,8 +2408,9 @@
                   <div class="col-md-4">
                     <div class="invoice-input-group">
                       <label>Arbitraje</label>
-                      <input type="number" class="form-control invoice-input" id="inv_arb_local" value="9.50"
+                      <input type="number" class="form-control invoice-input" id="inv_arb_local" value="9.00"
                         step="0.01" oninput="calculateTotal('local')">
+                      <small class="text-white-50 d-block mt-1" style="font-size: 0.65rem;" id="inv_arb_hint_local">$9.00/equipo (Total: $18.00 - Árbitro: $17.00)</small>
                     </div>
                   </div>
                   <div class="col-md-4">
@@ -2537,8 +2542,9 @@
                   <div class="col-md-4">
                     <div class="invoice-input-group">
                       <label>Arbitraje</label>
-                      <input type="number" class="form-control invoice-input" id="inv_arb_visitor" value="9.50"
+                      <input type="number" class="form-control invoice-input" id="inv_arb_visitor" value="9.00"
                         step="0.01" oninput="calculateTotal('visitor')">
+                      <small class="text-white-50 d-block mt-1" style="font-size: 0.65rem;" id="inv_arb_hint_visitor">$9.00/equipo (Total: $18.00 - Árbitro: $17.00)</small>
                     </div>
                   </div>
                   <div class="col-md-4">
@@ -5032,16 +5038,36 @@
         document.querySelector('.invoice-num-local').textContent = "001-001-" + String(currentSeq + 1).padStart(9, '0');
         document.querySelector('.invoice-num-visitor').textContent = "001-001-" + String(currentSeq + 2).padStart(9, '0');
 
-        // Defaults based on category - Femenino 8.50, Primera/Maxima 9.50
-        let defaultArb = 9.50;
-        if (cat.includes('femenino') || cat.includes('fem')) defaultArb = 8.50;
-        else if (cat.includes('primera') || cat.includes('maxima')) defaultArb = 9.50;
+        // Defaults based on category - Femenino $8.50 ($17.00 total - $16.00 árbitro), Primera/Maxima $9.00 ($18.00 total - $17.00 árbitro)
+        let defaultArb = 9.00;
+        let totalArbMatch = 18.00;
+        let arbPayout = 17.00;
+        if (cat.includes('femenino') || cat.includes('fem') || cat.includes('mujeres')) {
+          defaultArb = 8.50;
+          totalArbMatch = 17.00;
+          arbPayout = 16.00;
+        } else {
+          defaultArb = 9.00;
+          totalArbMatch = 18.00;
+          arbPayout = 17.00;
+        }
+
+        // Actualizar banner informativo en el modal
+        const infoText = document.getElementById('modalArbInfoText');
+        if (infoText) {
+          infoText.innerHTML = `Categoría <strong>${match._cat || 'Oficial'}</strong> &bull; Recaudación: <strong class="text-warning">$${totalArbMatch.toFixed(2)}</strong> ($${defaultArb.toFixed(2)}/equipo) &bull; <span class="badge ${arbPayout === 16 ? 'bg-info' : 'bg-success'} bg-opacity-25 text-white border ${arbPayout === 16 ? 'border-info' : 'border-success'} border-opacity-50 ms-1 px-2.5 py-1"><i class="fas fa-hand-holding-usd text-warning me-1"></i>Pago al Árbitro: <strong class="text-warning">$${arbPayout.toFixed(2)}</strong></span>`;
+        }
 
         // Reset inputs and dynamic lists
         for (const team of ['local', 'visitor']) {
           document.getElementById('inv_can_' + team).value = "2.00";
           document.getElementById('inv_arb_' + team).value = defaultArb.toFixed(2);
           document.getElementById('inv_cem_' + team).value = "0.50";
+
+          const arbHint = document.getElementById(`inv_arb_hint_${team}`);
+          if (arbHint) {
+            arbHint.textContent = `$${defaultArb.toFixed(2)}/equipo (Recaudación: $${totalArbMatch.toFixed(2)} &bull; Árbitro: $${arbPayout.toFixed(2)})`;
+          }
 
           // Card Prices (Match Screenshots)
           document.getElementById('inv_ta_val_' + team).value = "0.50";

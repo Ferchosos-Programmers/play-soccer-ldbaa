@@ -2149,6 +2149,15 @@
         const vocalDisplay = m.vocalAsignado || m.vocal || "Por Asignar";
         const veedorDisplay = m.veedorAsignado || m.veedor || "Por Asignar";
 
+        // Arbitraje y valores informativos por categoría
+        const catUpper = String(m._cat || "").toUpperCase();
+        const isFemenino =
+          catUpper.includes("FEMENINO") || catUpper.includes("FEM");
+        const arbFeePerTeam = isFemenino ? 8.5 : 9.0;
+        const arbTotalCobrado = isFemenino ? 17.0 : 18.0;
+        const arbPagoArbitro = isFemenino ? 16.0 : 17.0;
+        const catNameDisplay = m._cat || (isFemenino ? "FEMENINO" : "MÁXIMA");
+
         // Actualizar visibilidad del badge de borrador en el header del modal
         const headerBadge = document.getElementById("actaDraftStatusBadge");
         if (headerBadge) {
@@ -2252,7 +2261,12 @@
                    </div>
                    <div class="col-md-3">
                        <div class="small text-white-50 text-uppercase" style="font-size:0.7rem">Categoría</div>
-                       <div class="fw-bold text-warning text-uppercase" style="font-size:0.9rem">${m._cat || "MÁXIMA"}</div>
+                       <div class="fw-bold text-warning text-uppercase" style="font-size:0.9rem">${catNameDisplay}</div>
+                       <div class="mt-1">
+                           <span class="badge ${isFemenino ? "bg-info text-info border-info" : "bg-warning text-warning border-warning"} bg-opacity-10 border border-opacity-50 px-2 py-0.5" style="font-size:0.68rem; font-weight:600;">
+                               Pago Árbitro: <strong>$${arbPagoArbitro.toFixed(2)}</strong>
+                           </span>
+                       </div>
                    </div>
                    ${
                      m.isFinalized
@@ -2272,6 +2286,16 @@
                    <div class="col-md-6 mt-3">
                        <div class="small text-white-50 text-uppercase" style="font-size:0.7rem">Veedor</div>
                        <div class="fw-bold text-white" style="font-size:0.9rem">${veedorDisplay}</div>
+                   </div>
+                   <div class="col-12 mt-3 pt-2 border-top border-secondary border-opacity-25 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                       <div class="small text-white-50" style="font-size:0.75rem;">
+                           <i class="fas fa-info-circle text-info me-1"></i>
+                           <span style="font-size:12pt">Control de Arbitraje:</span>
+                           Cobro por equipo: <strong class="text-white">$${arbFeePerTeam.toFixed(2)}</strong> (Total recaudado: <strong class="text-white">$${arbTotalCobrado.toFixed(2)}</strong>)
+                       </div>
+                       <div class="badge ${isFemenino ? "bg-info text-white border-info" : "bg-success text-white border-success"} bg-opacity-20 border border-opacity-50 px-3 py-1.5 rounded-pill shadow-sm" style="font-size:11pt ;">
+                           <i class="fas fa-hand-holding-usd me-1"></i> <strong>Debe pagar al Árbitro: $${arbPagoArbitro.toFixed(2)}</strong>
+                       </div>
                    </div>
                 </div>
 
@@ -6416,8 +6440,10 @@
       };
 
       window.calculateMatchTotal = function (m, type) {
-        if (!m) return 12.0;
-        let arb = m._cat && m._cat.toUpperCase() === "FEMENINO" ? 8.5 : 9.5;
+        if (!m) return 11.5;
+        const catUpper = String(m._cat || "").toUpperCase();
+        let arb =
+          catUpper.includes("FEMENINO") || catUpper.includes("FEM") ? 8.5 : 9.0;
         let can = 2;
         let cem = 0.5;
         return arb + can + cem;
@@ -6434,8 +6460,19 @@
           .normalize("NFD")
           .replace(/[\u0300-\u036f]/g, "");
 
-      async function fetchTeamPendingSanctions(teamName, category, campId, forceRefresh = false) {
-        if (!teamName) return { prevYellows: [], prevReds: [], prevExtras: [], totalDebt: 0 };
+      async function fetchTeamPendingSanctions(
+        teamName,
+        category,
+        campId,
+        forceRefresh = false,
+      ) {
+        if (!teamName)
+          return {
+            prevYellows: [],
+            prevReds: [],
+            prevExtras: [],
+            totalDebt: 0,
+          };
         const normTeam = normalizeTeamStr(teamName);
         const normCat = normalizeTeamStr(category);
         const cleanCamp = String(campId || "").trim();
@@ -6447,14 +6484,20 @@
 
         try {
           if (typeof db === "undefined") {
-            return { prevYellows: [], prevReds: [], prevExtras: [], totalDebt: 0 };
+            return {
+              prevYellows: [],
+              prevReds: [],
+              prevExtras: [],
+              totalDebt: 0,
+            };
           }
 
           // 1. Resolver los IDs de equipo correspondientes a este nombre y categoría
           let targetTeamIds = [];
           try {
             let tQuery = db.collection("teams");
-            if (cleanCamp) tQuery = tQuery.where("championshipId", "==", cleanCamp);
+            if (cleanCamp)
+              tQuery = tQuery.where("championshipId", "==", cleanCamp);
             const tSnap = await tQuery.get();
 
             const matchedDocs = [];
@@ -6473,11 +6516,16 @@
 
             targetTeamIds = matchedDocs.length > 0 ? matchedDocs : fallbackDocs;
           } catch (eTeams) {
-            console.warn("Error resolviendo equipos en fetchTeamPendingSanctions:", eTeams);
+            console.warn(
+              "Error resolviendo equipos en fetchTeamPendingSanctions:",
+              eTeams,
+            );
           }
 
           // 2. Consultar sanciones activas del campeonato
-          let sancQuery = db.collection("sanciones").where("estado", "==", "activa");
+          let sancQuery = db
+            .collection("sanciones")
+            .where("estado", "==", "activa");
           if (cleanCamp) {
             sancQuery = sancQuery.where("campeonatoId", "==", cleanCamp);
           }
@@ -6508,7 +6556,8 @@
             const sCat = normalizeTeamStr(s.categoria || s.category || "");
 
             const matchById = targetTeamIds.includes(sTeamId);
-            const matchByName = sTeamName === normTeam && (!normCat || !sCat || sCat === normCat);
+            const matchByName =
+              sTeamName === normTeam && (!normCat || !sCat || sCat === normCat);
 
             if (!matchById && !matchByName) return;
 
@@ -6535,16 +6584,26 @@
               });
             } else {
               let cleanTipo = s.tipo || "Multa";
-              if (cleanTipo === "no_veedor") cleanTipo = "No Asistencia de Veedor";
-              else if (cleanTipo === "multa_barra") cleanTipo = "Multa a la Barra";
-              else if (cleanTipo === "balon_implementos") cleanTipo = "Balón / Implementos";
-              else if (cleanTipo === "vocalia_veeduria") cleanTipo = "Vocalía / Veeduría";
-              else if (cleanTipo === "no_presentacion") cleanTipo = "No Presentación";
-              else if (cleanTipo === "sesiones_asambleas") cleanTipo = "Sesiones y Asambleas";
-              else if (cleanTipo === "mingas_comisiones") cleanTipo = "Mingas y Comisiones";
-              else if (cleanTipo === "cuotas_garantias") cleanTipo = "Cuotas y Garantías";
-              else if (cleanTipo === "amarilla_banca") cleanTipo = "Tarjeta Amarilla (Banca)";
-              else if (cleanTipo === "roja_banca") cleanTipo = "Tarjeta Roja (Banca)";
+              if (cleanTipo === "no_veedor")
+                cleanTipo = "No Asistencia de Veedor";
+              else if (cleanTipo === "multa_barra")
+                cleanTipo = "Multa a la Barra";
+              else if (cleanTipo === "balon_implementos")
+                cleanTipo = "Balón / Implementos";
+              else if (cleanTipo === "vocalia_veeduria")
+                cleanTipo = "Vocalía / Veeduría";
+              else if (cleanTipo === "no_presentacion")
+                cleanTipo = "No Presentación";
+              else if (cleanTipo === "sesiones_asambleas")
+                cleanTipo = "Sesiones y Asambleas";
+              else if (cleanTipo === "mingas_comisiones")
+                cleanTipo = "Mingas y Comisiones";
+              else if (cleanTipo === "cuotas_garantias")
+                cleanTipo = "Cuotas y Garantías";
+              else if (cleanTipo === "amarilla_banca")
+                cleanTipo = "Tarjeta Amarilla (Banca)";
+              else if (cleanTipo === "roja_banca")
+                cleanTipo = "Tarjeta Roja (Banca)";
               else cleanTipo = cleanTipo.replace(/_/g, " ").toUpperCase();
 
               const desc = s.literal
@@ -6559,7 +6618,10 @@
             }
           });
 
-          const yellowsTotal = prevYellows.reduce((a, c) => a + (c.val || 0.5), 0);
+          const yellowsTotal = prevYellows.reduce(
+            (a, c) => a + (c.val || 0.5),
+            0,
+          );
           const redsTotal = prevReds.reduce((a, c) => a + (c.val || 1.0), 0);
           const extrasTotal = prevExtras.reduce((a, c) => a + (c.val || 0), 0);
           const totalDebt = yellowsTotal + redsTotal + extrasTotal;
@@ -6569,13 +6631,20 @@
           return result;
         } catch (err) {
           console.warn("Error in fetchTeamPendingSanctions:", err);
-          return { prevYellows: [], prevReds: [], prevExtras: [], totalDebt: 0 };
+          return {
+            prevYellows: [],
+            prevReds: [],
+            prevExtras: [],
+            totalDebt: 0,
+          };
         }
       }
 
       window.preloadTeamReceiptData = function (teamName, category, campId) {
         if (!teamName) return;
-        fetchTeamPendingSanctions(teamName, category, campId, false).catch(() => {});
+        fetchTeamPendingSanctions(teamName, category, campId, false).catch(
+          () => {},
+        );
       };
 
       window.updateDeudaBadges = async function (m) {
@@ -6591,7 +6660,12 @@
           const badgeEl = document.getElementById(badgeId);
           if (!badgeEl || !teamName) return;
           try {
-            const data = await fetchTeamPendingSanctions(teamName, m._cat, campId, true);
+            const data = await fetchTeamPendingSanctions(
+              teamName,
+              m._cat,
+              campId,
+              true,
+            );
             const debt = data.totalDebt || 0;
             badgeEl.style.display = "inline-block";
             badgeEl.textContent = `$${debt.toFixed(2)}`;
@@ -6911,8 +6985,9 @@
           return;
         }
 
+        const catUpper = String(match._cat || "").toUpperCase();
         const arbVal =
-          match._cat && match._cat.toUpperCase() === "FEMENINO" ? 8.5 : 9.5;
+          catUpper.includes("FEMENINO") || catUpper.includes("FEM") ? 8.5 : 9.0;
         const canVal = 2.0;
         const cemVal = 0.5;
         const teamName = type === "local" ? match.local : match.visitor;
@@ -6926,23 +7001,29 @@
           "";
 
         // Obtener datos frescos de sanciones previas
-        const freshData = await fetchTeamPendingSanctions(teamName, match._cat, campId, true);
+        const freshData = await fetchTeamPendingSanctions(
+          teamName,
+          match._cat,
+          campId,
+          true,
+        );
 
         let extrasSum = 0;
         freshData.prevExtras.forEach((e) => {
           extrasSum += parseFloat(e.val || 0);
         });
 
-        const yellowsSum = freshData.prevYellows.reduce((a, c) => a + (c.val || 0.5), 0);
-        const redsSum = freshData.prevReds.reduce((a, c) => a + (c.val || 1.0), 0);
+        const yellowsSum = freshData.prevYellows.reduce(
+          (a, c) => a + (c.val || 0.5),
+          0,
+        );
+        const redsSum = freshData.prevReds.reduce(
+          (a, c) => a + (c.val || 1.0),
+          0,
+        );
 
         const totalCalculated =
-          arbVal +
-          canVal +
-          cemVal +
-          yellowsSum +
-          redsSum +
-          extrasSum;
+          arbVal + canVal + cemVal + yellowsSum + redsSum + extrasSum;
 
         billing = {
           invoiceId: "001-001-PREVIEW",
