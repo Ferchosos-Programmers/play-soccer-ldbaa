@@ -814,6 +814,7 @@
       let currentSelectedJornada = 1;
       let lastMatchJornada = 1;
       let lastMatchFixId = null;
+      let lastMatchCat = "";
 
       // Cargar campeonatos al iniciar
       auth.onAuthStateChanged((user) => {
@@ -1104,9 +1105,10 @@
           const isSanctioned = !!(m.isSanctioned || m.sancionado || matchSanctions.length > 0);
           const sanctionCount = matchSanctions.length;
 
+          const matchJornadaNum = parseInt(m.jornada) || parseInt(jornada) || 1;
           const card = `
             <div class="col">
-              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 ${isSanctioned ? 'is-sanctioned' : ''}" style="position: relative; overflow: hidden;" onclick="verDetallesMatch('${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}')">
+              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 ${isSanctioned ? 'is-sanctioned' : ''}" style="position: relative; overflow: hidden;" onclick="verDetallesMatch('${m._fixId}', '${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}', ${matchJornadaNum}, '${(m._cat || '').replace(/'/g, "\\'")}')">
                   ${isSanctioned ? `<div class="watermark-sancionada"><i class="fas fa-gavel me-2"></i>SANCIONADA</div>` : ''}
                   <div class="mb-3 text-center">
                       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1154,27 +1156,88 @@
         document.getElementById("jornadasSection").style.display = "block";
       }
 
-      async function verDetallesMatch(matchId, local, visitor) {
+      async function verDetallesMatch(fixId, matchId, local, visitor, jornada, category) {
         // Guardar para refrescar después
+        lastMatchFixId = fixId || lastMatchFixId;
         lastMatchId = matchId;
         lastMatchLocal = local;
         lastMatchVisitor = visitor;
+        lastMatchJornada = parseInt(jornada) || currentSelectedJornada || 1;
+        lastMatchCat = category || lastMatchCat || "";
 
         let match = null;
-        for (let [fixId, meta] of fixturesMap) {
-          const found = meta.data.find(
-            (m) =>
-              (m.matchId === matchId && m.matchId !== "undefined") ||
-              (m.local === local && m.visitor === visitor),
-          );
+
+        // 1. Buscar directamente en el fixture correspondiente
+        if (fixId && fixturesMap.has(fixId)) {
+          const meta = fixturesMap.get(fixId);
+          const found = meta.data.find((m) => {
+            if (m.matchId && matchId && m.matchId === matchId && m.matchId !== "undefined") return true;
+            const mJornada = parseInt(m.jornada) || 1;
+            return (
+              m.local === local &&
+              m.visitor === visitor &&
+              mJornada === lastMatchJornada
+            );
+          });
           if (found) {
             match = { ...found, _cat: meta.category, _fixId: fixId };
-            break;
           }
         }
-        if (!match) return;
+
+        // 2. Si no se encontró, buscar en la misma categoría y jornada
+        if (!match) {
+          for (let [fId, meta] of fixturesMap) {
+            if (
+              lastMatchCat &&
+              meta.category &&
+              meta.category.trim().toUpperCase() !== lastMatchCat.trim().toUpperCase()
+            ) {
+              continue;
+            }
+            const found = meta.data.find((m) => {
+              if (m.matchId && matchId && m.matchId === matchId && m.matchId !== "undefined") return true;
+              const mJornada = parseInt(m.jornada) || 1;
+              return (
+                m.local === local &&
+                m.visitor === visitor &&
+                mJornada === lastMatchJornada
+              );
+            });
+            if (found) {
+              match = { ...found, _cat: meta.category, _fixId: fId };
+              lastMatchFixId = fId;
+              break;
+            }
+          }
+        }
+
+        // 3. Fallback estricto con jornada (nunca mezclar jornadas)
+        if (!match) {
+          for (let [fId, meta] of fixturesMap) {
+            const found = meta.data.find((m) => {
+              const mJornada = parseInt(m.jornada) || 1;
+              return (
+                m.local === local &&
+                m.visitor === visitor &&
+                mJornada === lastMatchJornada
+              );
+            });
+            if (found) {
+              match = { ...found, _cat: meta.category, _fixId: fId };
+              lastMatchFixId = fId;
+              break;
+            }
+          }
+        }
+
+        if (!match) {
+          console.error("Match not found:", { fixId, matchId, local, visitor, jornada, category });
+          return;
+        }
+
         lastMatchJornada = parseInt(match.jornada) || currentSelectedJornada || 1;
         lastMatchFixId = match._fixId;
+        lastMatchCat = match._cat || "";
 
         // Verificar si tiene sanciones activas
         let isSanctioned = !!(match.isSanctioned || match.sancionado);
@@ -1341,11 +1404,15 @@
                 ${
                   p.ta > 0 || p.tr > 0
                     ? `
-                  <button class="btn btn-xs btn-outline-warning" onclick="window.sancionarDesdeVocal('${p.name.replace(/'/g, "\\'")}', '${teamName.replace(/'/g, "\\'")}', '${p.tr > 0 || p.ta >= 2 ? "roja" : "amarilla"}', '${p.playerId || p.id || ""}', '${category}')">
-                    Sancionar
+                  <button class="btn btn-xs btn-warning text-dark fw-bold px-2" onclick="window.sancionarDesdeVocal('${p.name.replace(/'/g, "\\'")}', '${teamName.replace(/'/g, "\\'")}', '${p.tr > 0 || p.ta >= 2 ? "roja" : "amarilla"}', '${p.playerId || p.id || ""}', '${category}')">
+                    <i class="fas fa-gavel me-1"></i>Sancionar
                   </button>
                 `
-                    : ""
+                    : `
+                  <button class="btn btn-xs btn-outline-secondary opacity-75" title="Sancionar Jugador" onclick="window.sancionarDesdeVocal('${p.name.replace(/'/g, "\\'")}', '${teamName.replace(/'/g, "\\'")}', 'roja', '${p.playerId || p.id || ""}', '${category}')">
+                    <i class="fas fa-gavel"></i>
+                  </button>
+                `
                 }
               </td>
             </tr>
@@ -1380,11 +1447,15 @@
                   ${
                     c.ta > 0 || c.tr > 0
                       ? `
-                    <button class="btn btn-xs btn-outline-warning" onclick="window.sancionarDesdeVocal('${c.name.replace(/'/g, "\\'")}', '${teamName.replace(/'/g, "\\'")}', '${c.tr > 0 || c.ta >= 2 ? "roja" : "amarilla"}', '${c.playerId || c.id || ""}', '${category}')">
-                      Sancionar
+                    <button class="btn btn-xs btn-warning text-dark fw-bold px-2" onclick="window.sancionarDesdeVocal('${c.name.replace(/'/g, "\\'")}', '${teamName.replace(/'/g, "\\'")}', '${c.tr > 0 || c.ta >= 2 ? "roja" : "amarilla"}', '${c.playerId || c.id || ""}', '${category}')">
+                      <i class="fas fa-gavel me-1"></i>Sancionar
                     </button>
                   `
-                      : ""
+                      : `
+                    <button class="btn btn-xs btn-outline-secondary opacity-75" title="Sancionar Jugador" onclick="window.sancionarDesdeVocal('${c.name.replace(/'/g, "\\'")}', '${teamName.replace(/'/g, "\\'")}', 'roja', '${c.playerId || c.id || ""}', '${category}')">
+                      <i class="fas fa-gavel"></i>
+                    </button>
+                  `
                   }
                 </td>
               </tr>
@@ -1681,11 +1752,14 @@
 
                 // Refrescar vistas
                 if (equipoActual) mostrarJugadores(equipoActual, "");
-                if (lastMatchId)
+                if (lastMatchId || lastMatchFixId)
                   verDetallesMatch(
+                    lastMatchFixId,
                     lastMatchId,
                     lastMatchLocal,
                     lastMatchVisitor,
+                    lastMatchJornada,
+                    lastMatchCat,
                   );
               })
               .catch((error) => {
@@ -1753,8 +1827,15 @@
 
               // Refrescar vistas
               if (equipoActual) mostrarJugadores(equipoActual, "");
-              if (lastMatchId)
-                verDetallesMatch(lastMatchId, lastMatchLocal, lastMatchVisitor);
+              if (lastMatchId || lastMatchFixId)
+                verDetallesMatch(
+                  lastMatchFixId,
+                  lastMatchId,
+                  lastMatchLocal,
+                  lastMatchVisitor,
+                  lastMatchJornada,
+                  lastMatchCat,
+                );
             })
             .catch((error) => {
               console.error("Error al aplicar amarilla manual:", error);
@@ -2191,8 +2272,15 @@
 
             // Refrescar vistas
             if (equipoActual) mostrarJugadores(equipoActual, "");
-            if (lastMatchId)
-              verDetallesMatch(lastMatchId, lastMatchLocal, lastMatchVisitor);
+            if (lastMatchId || lastMatchFixId)
+              verDetallesMatch(
+                lastMatchFixId,
+                lastMatchId,
+                lastMatchLocal,
+                lastMatchVisitor,
+                lastMatchJornada,
+                lastMatchCat,
+              );
           })
           .catch((error) => {
             console.error("Error al guardar sanción:", error);
@@ -2365,8 +2453,15 @@
             if (modalInstance) modalInstance.hide();
 
             // Refrescar vistas
-            if (lastMatchId)
-              verDetallesMatch(lastMatchId, lastMatchLocal, lastMatchVisitor);
+            if (lastMatchId || lastMatchFixId)
+              verDetallesMatch(
+                lastMatchFixId,
+                lastMatchId,
+                lastMatchLocal,
+                lastMatchVisitor,
+                lastMatchJornada,
+                lastMatchCat,
+              );
           })
           .catch((error) => {
             console.error("Error al guardar multa:", error);
@@ -2460,8 +2555,15 @@
           });
 
           // Refrescar modal
-          if (lastMatchId) {
-            verDetallesMatch(lastMatchId, lastMatchLocal, lastMatchVisitor);
+          if (lastMatchId || lastMatchFixId) {
+            verDetallesMatch(
+              lastMatchFixId,
+              lastMatchId,
+              lastMatchLocal,
+              lastMatchVisitor,
+              lastMatchJornada,
+              lastMatchCat,
+            );
           }
         } catch (err) {
           console.error("Error updating match sanction status:", err);
