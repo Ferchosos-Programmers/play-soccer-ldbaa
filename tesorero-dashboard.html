@@ -2449,11 +2449,19 @@
                   <div class="col-12">
                     <div class="invoice-input-group">
                       <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label class="mb-0">Otras Multas / Sanciones</label>
-                        <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="addMultaRow('local')"
-                          title="Añadir Multa">
-                          <i class="fas fa-plus"></i>
-                        </button>
+                        <label class="mb-0 text-white-50 small fw-bold text-uppercase">
+                          <i class="fas fa-gavel text-warning me-1"></i> Otras Multas / Sanciones
+                        </label>
+                        <div class="d-flex align-items-center gap-1">
+                          <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-0.5 fw-bold" onclick="window.openQuickFinanciarSelector('local')"
+                            title="Financiar deudas en cuotas" style="font-size: 0.68rem;">
+                            <i class="fas fa-hand-holding-usd me-1"></i> Financiar
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="addMultaRow('local')"
+                            title="Añadir Multa Manual">
+                            <i class="fas fa-plus"></i>
+                          </button>
+                        </div>
                       </div>
                       <div id="multas_list_local" class="d-flex flex-column gap-2">
                         <!-- Dynamic multas -->
@@ -2583,11 +2591,19 @@
                   <div class="col-12">
                     <div class="invoice-input-group">
                       <div class="d-flex justify-content-between align-items-center mb-2">
-                        <label class="mb-0">Otras Multas / Sanciones</label>
-                        <button class="btn btn-sm btn-outline-primary rounded-circle" onclick="addMultaRow('visitor')"
-                          title="Añadir Multa">
-                          <i class="fas fa-plus"></i>
-                        </button>
+                        <label class="mb-0 text-white-50 small fw-bold text-uppercase">
+                          <i class="fas fa-gavel text-warning me-1"></i> Otras Multas / Sanciones
+                        </label>
+                        <div class="d-flex align-items-center gap-1">
+                          <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-2.5 py-0.5 fw-bold" onclick="window.openQuickFinanciarSelector('visitor')"
+                            title="Financiar deudas en cuotas" style="font-size: 0.68rem;">
+                            <i class="fas fa-hand-holding-usd me-1"></i> Financiar
+                          </button>
+                          <button type="button" class="btn btn-sm btn-outline-primary rounded-circle" onclick="addMultaRow('visitor')"
+                            title="Añadir Multa Manual">
+                            <i class="fas fa-plus"></i>
+                          </button>
+                        </div>
                       </div>
                       <div id="multas_list_visitor" class="d-flex flex-column gap-2">
                         <!-- Dynamic multas -->
@@ -5066,7 +5082,7 @@
 
           const arbHint = document.getElementById(`inv_arb_hint_${team}`);
           if (arbHint) {
-            arbHint.textContent = `$${defaultArb.toFixed(2)}/equipo (Recaudación: $${totalArbMatch.toFixed(2)} &bull; Árbitro: $${arbPayout.toFixed(2)})`;
+            arbHint.textContent = `$${defaultArb.toFixed(2)}/equipo (Recaudación: $${totalArbMatch.toFixed(2)} • Árbitro: $${arbPayout.toFixed(2)})`;
           }
 
           // Card Prices (Match Screenshots)
@@ -5104,9 +5120,17 @@
                 if (cleanTipo === "no_veedor") cleanTipo = "No Asistencia de Veedor";
                 else if (cleanTipo === "amarilla_banca") cleanTipo = "Tarjeta Amarilla (Banca)";
                 else if (cleanTipo === "roja_banca") cleanTipo = "Tarjeta Roja (Banca)";
+                else if (cleanTipo === "multa_financiada") cleanTipo = "Cuota Financiada";
                 else cleanTipo = cleanTipo.replace(/_/g, " ").toUpperCase();
 
-                const desc = s.literal ? `${cleanTipo} (Lit. ${s.literal})` : cleanTipo;
+                let desc = s.descripcion || s.motivo;
+                if (!desc) {
+                  desc = s.literal ? `${cleanTipo} (Lit. ${s.literal})` : cleanTipo;
+                }
+                if (s.cuota && s.totalCuotas && !desc.includes(`(${s.cuota} de ${s.totalCuotas})`) && !desc.includes(`Cuota ${s.cuota}`)) {
+                  desc += ` (${s.cuota} de ${s.totalCuotas})`;
+                }
+
                 window.addMultaRow(team, desc, s.valor, sDoc.id);
               });
 
@@ -5185,15 +5209,275 @@
         const container = document.getElementById('multas_list_' + team);
         const rowId = 'multa_' + Date.now() + Math.random().toString(36).substr(2, 5);
         container.insertAdjacentHTML('beforeend', `
-            <div class="input-group multa-item-row" id="${rowId}" data-sanction-id="${sanctionId}">
-                <input type="text" class="form-control invoice-input" placeholder="Descripción detallada de la sanción..." value="${description}" style="font-size: 0.75rem; flex: 3">
-                <input type="number" class="form-control invoice-input multa-val-dynamic" value="${parseFloat(value).toFixed(2)}" step="0.01" oninput="calculateTotal('${team}')" style="flex: 1; max-width: 90px; text-align: right">
-                <button class="btn btn-outline-danger border-0 bg-danger bg-opacity-10" onclick="removeMultaRow('${rowId}', '${team}')">
+            <div class="input-group multa-item-row align-items-center" id="${rowId}" data-sanction-id="${sanctionId}">
+                <input type="text" class="form-control invoice-input multa-desc-input" placeholder="Descripción detallada de la sanción..." value="${description}" style="font-size: 0.75rem; flex: 3">
+                <input type="number" class="form-control invoice-input multa-val-dynamic" value="${parseFloat(value).toFixed(2)}" step="0.01" oninput="calculateTotal('${team}')" style="flex: 1; max-width: 85px; text-align: right">
+                <button type="button" class="btn btn-outline-warning border-0 bg-warning bg-opacity-10 px-2.5 py-1.5" onclick="window.openFinanciarModal('${rowId}', '${team}')" title="Financiar esta deuda en cuotas / fechas">
+                    <i class="fas fa-hand-holding-usd text-warning"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger border-0 bg-danger bg-opacity-10 px-2 py-1.5" onclick="removeMultaRow('${rowId}', '${team}')" title="Eliminar sanción">
                     <i class="fas fa-times text-danger"></i>
                 </button>
             </div>
         `);
-      }
+      };
+
+      window.openQuickFinanciarSelector = function (team) {
+        const rows = document.querySelectorAll(`#multas_list_${team} .multa-item-row`);
+        if (rows.length === 0) {
+          Swal.fire({
+            icon: 'info',
+            title: 'Sin Sanciones',
+            text: 'Este equipo no tiene multas o sanciones activas registradas para financiar.',
+            background: '#111',
+            color: '#fff'
+          });
+          return;
+        }
+        if (rows.length === 1) {
+          window.openFinanciarModal(rows[0].id, team);
+          return;
+        }
+
+        // Si hay varias, listar opciones
+        let optionsHtml = '<div class="d-flex flex-column gap-2 text-start mt-3">';
+        rows.forEach((r, i) => {
+          const desc = (r.querySelector('.multa-desc-input')?.value || 'Multa').trim();
+          const val = parseFloat(r.querySelector('.multa-val-dynamic')?.value) || 0;
+          optionsHtml += `
+            <button type="button" class="btn btn-outline-warning text-start p-3 rounded-3 d-flex justify-content-between align-items-center" onclick="Swal.close(); window.openFinanciarModal('${r.id}', '${team}')">
+              <span class="fw-bold text-white small text-truncate pe-2">${desc}</span>
+              <span class="badge bg-warning bg-opacity-25 text-warning font-monospace fs-6">$${val.toFixed(2)}</span>
+            </button>
+          `;
+        });
+        optionsHtml += '</div>';
+
+        Swal.fire({
+          title: '<div class="d-flex align-items-center justify-content-center gap-2 text-warning fs-5"><i class="fas fa-hand-holding-usd"></i> <span>SELECCIONE DEUDA A FINANCIAR</span></div>',
+          html: optionsHtml,
+          background: '#14171d',
+          color: '#fff',
+          showConfirmButton: false,
+          showCancelButton: true,
+          cancelButtonText: 'CERRAR',
+          customClass: { popup: 'rounded-4 border border-warning border-opacity-25' }
+        });
+      };
+
+      window.openFinanciarModal = async function (rowId, team) {
+        const row = document.getElementById(rowId);
+        if (!row) return;
+
+        const descInp = row.querySelector('.multa-desc-input') || row.querySelector('input[type="text"]');
+        const valInp = row.querySelector('.multa-val-dynamic');
+
+        const isCurrentlyFinanced = row.getAttribute('data-financed') === 'true';
+        let originalVal = parseFloat(row.getAttribute('data-original-val'));
+        if (isNaN(originalVal) || originalVal <= 0) {
+          originalVal = parseFloat(valInp.value) || 0;
+        }
+
+        let baseDesc = row.getAttribute('data-base-desc') || descInp.value;
+        baseDesc = baseDesc.replace(/\s*\(\s*(cuota\s*)?\d+\s*de\s*\d+\s*\)/gi, '').trim();
+
+        if (originalVal <= 0) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Valor Inválido',
+            text: 'El valor de la deuda debe ser mayor a $0.00 para poder financiar.',
+            background: '#111',
+            color: '#fff'
+          });
+          return;
+        }
+
+        let selectedCuotas = parseInt(row.getAttribute('data-total-cuotas')) || 2;
+        if (selectedCuotas < 2) selectedCuotas = 2;
+
+        const calcHtml = (nCuotas) => {
+          const valPerCuota = originalVal / nCuotas;
+          const saldoRestante = originalVal - valPerCuota;
+          const cuotasRestantes = nCuotas - 1;
+          return `
+            <div class="p-3 rounded-3 border border-warning border-opacity-25 mt-3" style="background: rgba(255, 193, 7, 0.05);">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small text-white-50">Cuota 1 a cobrar hoy:</span>
+                <strong class="text-success font-monospace fs-5">$${valPerCuota.toFixed(2)}</strong>
+              </div>
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="small text-white-50">Descripción en factura:</span>
+                <strong class="text-white small text-end">${baseDesc} (1 de ${nCuotas})</strong>
+              </div>
+              <div class="d-flex justify-content-between align-items-center pt-2 border-top border-secondary border-opacity-25">
+                <span class="small text-white-50">Saldo diferido para prox. fechas:</span>
+                <span class="text-info font-monospace small fw-bold">$${saldoRestante.toFixed(2)} (${cuotasRestantes} ${cuotasRestantes === 1 ? 'cuota' : 'cuotas'} de $${valPerCuota.toFixed(2)})</span>
+              </div>
+            </div>
+          `;
+        };
+
+        const modalHtml = `
+          <div class="text-start mt-2">
+            <div class="p-3 rounded-3 mb-3" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);">
+              <div class="small text-white-50 text-uppercase fw-bold mb-1" style="font-size:0.65rem;">Sanción / Deuda Seleccionada</div>
+              <div class="fw-bold text-white fs-6 mb-1 text-truncate">${baseDesc}</div>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <span class="text-white-50 small">Monto Total Original:</span>
+                <span class="fs-5 fw-bold text-warning font-monospace">$${originalVal.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <label class="form-label text-white-50 small fw-bold mb-2 text-uppercase" style="font-size:0.7rem; letter-spacing:0.5px">
+              <i class="fas fa-calendar-alt text-warning me-1"></i> Seleccione número de fechas / cuotas:
+            </label>
+            <div class="row g-2 mb-2" id="cuotasBtnGroup">
+              <div class="col-3">
+                <button type="button" class="btn btn-sm ${selectedCuotas === 2 ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary text-white'} w-100 py-2 cuota-opt-btn" data-cuotas="2">
+                  2 Fechas
+                </button>
+              </div>
+              <div class="col-3">
+                <button type="button" class="btn btn-sm ${selectedCuotas === 3 ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary text-white'} w-100 py-2 cuota-opt-btn" data-cuotas="3">
+                  3 Fechas
+                </button>
+              </div>
+              <div class="col-3">
+                <button type="button" class="btn btn-sm ${selectedCuotas === 4 ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary text-white'} w-100 py-2 cuota-opt-btn" data-cuotas="4">
+                  4 Fechas
+                </button>
+              </div>
+              <div class="col-3">
+                <button type="button" class="btn btn-sm ${selectedCuotas > 4 ? 'btn-warning text-dark fw-bold' : 'btn-outline-secondary text-white'} w-100 py-2 cuota-opt-btn" data-cuotas="custom">
+                  Otro...
+                </button>
+              </div>
+            </div>
+
+            <div id="cuotaCustomWrap" class="mb-2 ${selectedCuotas > 4 ? '' : 'd-none'}">
+              <label class="small text-white-50 mb-1" style="font-size:0.7rem">Ingrese número de fechas (2 a 12):</label>
+              <input type="number" id="cuotaCustomNum" class="form-control invoice-input text-center font-monospace fs-5 py-1" min="2" max="12" value="${selectedCuotas > 4 ? selectedCuotas : 5}">
+            </div>
+
+            <div id="financiarPreviewWrap">
+              ${calcHtml(selectedCuotas)}
+            </div>
+
+            ${isCurrentlyFinanced ? `
+              <div class="text-center mt-3">
+                <button type="button" id="btnQuitarFinanciamiento" class="btn btn-sm btn-outline-danger py-1 px-3 rounded-pill fw-bold" style="font-size:0.75rem;">
+                  <i class="fas fa-undo me-1"></i> Quitar Financiamiento (Restaurar $${originalVal.toFixed(2)})
+                </button>
+              </div>
+            ` : ''}
+          </div>
+        `;
+
+        let currentChoice = selectedCuotas;
+
+        const result = await Swal.fire({
+          title: '<div class="d-flex align-items-center justify-content-center gap-2 text-warning fs-5"><i class="fas fa-hand-holding-usd"></i> <span>FINANCIAR DEUDA</span></div>',
+          html: modalHtml,
+          background: '#14171d',
+          color: '#fff',
+          showCancelButton: true,
+          confirmButtonColor: '#f1c40f',
+          cancelButtonColor: 'rgba(255,255,255,0.1)',
+          confirmButtonText: '<span class="text-dark fw-bold"><i class="fas fa-check me-1"></i> APLICAR FINANCIAMIENTO</span>',
+          cancelButtonText: 'CANCELAR',
+          customClass: { popup: 'rounded-4 border border-warning border-opacity-25 shadow-lg' },
+          didOpen: () => {
+            const popup = Swal.getPopup();
+            const btns = popup.querySelectorAll('.cuota-opt-btn');
+            const customWrap = popup.querySelector('#cuotaCustomWrap');
+            const customInp = popup.querySelector('#cuotaCustomNum');
+            const previewWrap = popup.querySelector('#financiarPreviewWrap');
+            const btnQuitar = popup.querySelector('#btnQuitarFinanciamiento');
+
+            const updateUI = (c) => {
+              currentChoice = c;
+              btns.forEach(b => {
+                const val = b.getAttribute('data-cuotas');
+                if ((val === 'custom' && c > 4) || (val === String(c))) {
+                  b.className = 'btn btn-sm btn-warning text-dark fw-bold w-100 py-2 cuota-opt-btn';
+                } else {
+                  b.className = 'btn btn-sm btn-outline-secondary text-white w-100 py-2 cuota-opt-btn';
+                }
+              });
+              if (c > 4) {
+                customWrap.classList.remove('d-none');
+              } else {
+                customWrap.classList.add('d-none');
+              }
+              previewWrap.innerHTML = calcHtml(c);
+            };
+
+            btns.forEach(b => {
+              b.addEventListener('click', () => {
+                const val = b.getAttribute('data-cuotas');
+                if (val === 'custom') {
+                  const num = parseInt(customInp.value) || 5;
+                  updateUI(num > 1 ? num : 5);
+                } else {
+                  updateUI(parseInt(val));
+                }
+              });
+            });
+
+            if (customInp) {
+              customInp.addEventListener('input', () => {
+                let num = parseInt(customInp.value) || 2;
+                if (num < 2) num = 2;
+                if (num > 12) num = 12;
+                currentChoice = num;
+                previewWrap.innerHTML = calcHtml(num);
+              });
+            }
+
+            if (btnQuitar) {
+              btnQuitar.addEventListener('click', () => {
+                row.removeAttribute('data-financed');
+                row.removeAttribute('data-total-cuotas');
+                row.removeAttribute('data-cuota-actual');
+                row.removeAttribute('data-original-val');
+                row.removeAttribute('data-base-desc');
+                descInp.value = baseDesc;
+                valInp.value = originalVal.toFixed(2);
+
+                const badge = row.querySelector('.cuota-badge-pill');
+                if (badge) badge.remove();
+
+                calculateTotal(team);
+                Swal.close();
+              });
+            }
+          }
+        });
+
+        if (result.isConfirmed) {
+          const valPerCuota = originalVal / currentChoice;
+          row.setAttribute('data-financed', 'true');
+          row.setAttribute('data-original-val', originalVal.toFixed(2));
+          row.setAttribute('data-base-desc', baseDesc);
+          row.setAttribute('data-total-cuotas', currentChoice);
+          row.setAttribute('data-cuota-actual', 1);
+
+          descInp.value = `${baseDesc} (1 de ${currentChoice})`;
+          valInp.value = valPerCuota.toFixed(2);
+
+          let badge = row.querySelector('.cuota-badge-pill');
+          if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 py-1 px-1.5 font-monospace align-self-center cuota-badge-pill ms-1';
+            badge.style.fontSize = '0.65rem';
+            row.insertBefore(badge, row.querySelector('.btn-outline-danger'));
+          }
+          badge.textContent = `1 de ${currentChoice}`;
+          badge.title = `Financiado a ${currentChoice} fechas ($${valPerCuota.toFixed(2)} c/u)`;
+
+          calculateTotal(team);
+        }
+      };
 
       function removeMultaRow(id, team) {
         document.getElementById(id).remove();
@@ -5253,9 +5537,14 @@
             })).filter(p => p.num)
           },
           extras: Array.from(document.querySelectorAll(`#multas_list_${team} .multa-item-row`)).map(row => ({
-            desc: row.querySelector('input[type="text"]').value || 'Multa Adicional',
+            desc: (row.querySelector('.multa-desc-input')?.value || row.querySelector('input[type="text"]')?.value || 'Multa Adicional').trim(),
             val: parseFloat(row.querySelector('.multa-val-dynamic').value) || 0,
-            sanctionId: row.getAttribute('data-sanction-id') || ""
+            sanctionId: row.getAttribute('data-sanction-id') || "",
+            isFinanced: row.getAttribute('data-financed') === 'true',
+            originalVal: parseFloat(row.getAttribute('data-original-val')) || (parseFloat(row.querySelector('.multa-val-dynamic').value) || 0),
+            baseDesc: row.getAttribute('data-base-desc') || row.querySelector('input[type="text"]').value,
+            totalCuotas: parseInt(row.getAttribute('data-total-cuotas')) || 1,
+            cuotaActual: parseInt(row.getAttribute('data-cuota-actual')) || 1
           })),
           total: totalValue,
           whatsapp: document.getElementById('inv_wa_' + team).value.trim(),
@@ -5326,20 +5615,74 @@
             // 2. Create entry in centralized "invoices" collection
             await db.collection("invoices").add(billingData);
 
-            // 3. Mark auto-fetched sanctions as "cobrada" (Teams & Cards)
-            const teamSanctions = billingData.extras.filter(e => e.sanctionId);
+            // 3. Mark player sanctions as "cobrada"
             const playerSanctions = [
               ...billingData.ta.players.filter(p => p.sanctionId),
               ...billingData.tr.players.filter(p => p.sanctionId)
             ];
-
-            const allToMark = [...teamSanctions, ...playerSanctions];
-            for (const s of allToMark) {
+            for (const s of playerSanctions) {
               await db.collection("sanciones").doc(s.sanctionId).update({
                 estado: "cobrada",
                 paidAt: new Date(),
                 invoiceId: billingData.invoiceId
               });
+            }
+
+            // 4. Mark team sanctions and process installments (Financiamiento)
+            for (const e of billingData.extras) {
+              if (e.isFinanced && e.totalCuotas > 1) {
+                // Sanción original pagada (Cuota 1)
+                if (e.sanctionId) {
+                  await db.collection("sanciones").doc(e.sanctionId).update({
+                    estado: "cobrada",
+                    paidAt: new Date(),
+                    invoiceId: billingData.invoiceId,
+                    financiada: true,
+                    totalCuotas: e.totalCuotas,
+                    cuotaPagada: 1,
+                    valorCobrado: e.val,
+                    valorOriginal: e.originalVal
+                  });
+                }
+
+                // Obtener ID del equipo
+                let targetTeamId = "";
+                try {
+                  const tSnap = await db.collection("teams").where("name", "==", teamName).where("championshipId", "==", billingData.championshipId).get();
+                  if (!tSnap.empty) targetTeamId = tSnap.docs[0].id;
+                } catch(errT) {}
+
+                // Crear las cuotas pendientes restantes en la colección de sanciones (activas para las próximas fechas)
+                const cuotaVal = parseFloat(e.val) || (e.originalVal / e.totalCuotas);
+                for (let c = 2; c <= e.totalCuotas; c++) {
+                  await db.collection("sanciones").add({
+                    teamId: targetTeamId,
+                    teamName: teamName,
+                    categoria: cat,
+                    campeonatoId: billingData.championshipId,
+                    tipo: "multa_financiada",
+                    descripcion: `${e.baseDesc} (${c} de ${e.totalCuotas})`,
+                    motivo: `${e.baseDesc} (${c} de ${e.totalCuotas})`,
+                    valor: cuotaVal,
+                    cuota: c,
+                    totalCuotas: e.totalCuotas,
+                    parentSanctionId: e.sanctionId || "",
+                    originalSanctionId: e.sanctionId || "",
+                    originalVal: e.originalVal,
+                    estado: "activa",
+                    createdAt: new Date(),
+                    fecha: new Date(),
+                    jornada: (parseInt(currentJornada) || 1) + (c - 1)
+                  });
+                }
+              } else if (e.sanctionId) {
+                // Multa normal
+                await db.collection("sanciones").doc(e.sanctionId).update({
+                  estado: "cobrada",
+                  paidAt: new Date(),
+                  invoiceId: billingData.invoiceId
+                });
+              }
             }
 
             showDigitalReceipt(team, finalInvoiceNum, billingData);

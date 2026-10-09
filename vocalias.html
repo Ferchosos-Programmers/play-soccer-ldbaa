@@ -6604,11 +6604,19 @@
                 cleanTipo = "Tarjeta Amarilla (Banca)";
               else if (cleanTipo === "roja_banca")
                 cleanTipo = "Tarjeta Roja (Banca)";
+              else if (cleanTipo === "multa_financiada")
+                cleanTipo = "Cuota Financiada";
               else cleanTipo = cleanTipo.replace(/_/g, " ").toUpperCase();
 
-              const desc = s.literal
-                ? `${cleanTipo} (Lit. ${s.literal})`
-                : s.motivo || cleanTipo;
+              let desc = s.descripcion || s.motivo;
+              if (!desc) {
+                desc = s.literal
+                  ? `${cleanTipo} (Lit. ${s.literal})`
+                  : cleanTipo;
+              }
+              if (s.cuota && s.totalCuotas && !desc.includes(`(${s.cuota} de ${s.totalCuotas})`) && !desc.includes(`Cuota ${s.cuota}`)) {
+                desc += ` (${s.cuota} de ${s.totalCuotas})`;
+              }
 
               prevExtras.push({
                 desc: pLabel ? `${desc} (${pLabel})` : desc,
