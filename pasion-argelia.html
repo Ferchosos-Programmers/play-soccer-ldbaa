@@ -1058,8 +1058,17 @@
 
         let allGoleadores = {}; // clave: "Jugador|Equipo"
 
+        const latestFixtures = {};
         fixturesSnap.forEach(doc => {
           const fixture = doc.data();
+          const fixCat = (fixture.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          const docTime = fixture.updatedAt?.toMillis ? fixture.updatedAt.toMillis() : (fixture.createdAt?.toMillis ? fixture.createdAt.toMillis() : 0);
+          if (!latestFixtures[fixCat] || docTime >= latestFixtures[fixCat]._time) {
+            latestFixtures[fixCat] = { id: doc.id, _time: docTime, ...fixture };
+          }
+        });
+
+        Object.values(latestFixtures).forEach(fixture => {
           const fixCat = (fixture.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
           if (fixCat === normalizedCat && Array.isArray(fixture.data)) {

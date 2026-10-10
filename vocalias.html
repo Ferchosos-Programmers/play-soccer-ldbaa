@@ -3430,14 +3430,26 @@
           const doc = await docRef.get();
           if (doc.exists) {
             const fData = doc.data();
-            const updatedMatches = fData.data.map((m) => {
+            let syncUpdated = false;
+            const updatedMatches = (fData.data || []).map((m, idx) => {
+              const fallbackMatch = window.currentMatchOpened && 
+                m.local === window.currentMatchOpened.local &&
+                m.visitor === window.currentMatchOpened.visitor &&
+                ((m.fecha && window.currentMatchOpened.fecha && m.fecha === window.currentMatchOpened.fecha) ||
+                 (m.tag && window.currentMatchOpened.tag && m.tag === window.currentMatchOpened.tag) ||
+                 (m.jornada && window.currentMatchOpened.jornada && m.jornada === window.currentMatchOpened.jornada) ||
+                 idx === window.currentMatchOpened._idx);
+
               if (
-                (m.matchId === matchId && m.matchId !== "undefined") ||
-                (m.local === window.currentMatchOpened.local &&
-                  m.visitor === window.currentMatchOpened.visitor)
+                !syncUpdated && (
+                  (matchId && m.matchId && m.matchId === matchId && m.matchId !== "undefined") ||
+                  fallbackMatch
+                )
               ) {
+                syncUpdated = true;
                 return {
                   ...m,
+                  matchId: m.matchId || matchId || `${fixId}_${idx}_${(m.local || "").replace(/\s+/g, "")}_${(m.visitor || "").replace(/\s+/g, "")}`,
                   liveStatus: liveStatus,
                 };
               }
@@ -7331,12 +7343,23 @@
           if (!doc.exists) throw new Error("Documento no encontrado");
 
           const fixtureData = doc.data();
-          const updatedMatches = fixtureData.data.map((m) => {
+          let matchFinalizedUpdated = false;
+          const updatedMatches = (fixtureData.data || []).map((m, idx) => {
+            const fallbackMatch = window.currentMatchOpened &&
+              m.local === window.currentMatchOpened.local &&
+              m.visitor === window.currentMatchOpened.visitor &&
+              ((m.fecha && window.currentMatchOpened.fecha && m.fecha === window.currentMatchOpened.fecha) ||
+               (m.tag && window.currentMatchOpened.tag && m.tag === window.currentMatchOpened.tag) ||
+               (m.jornada && window.currentMatchOpened.jornada && m.jornada === window.currentMatchOpened.jornada) ||
+               idx === window.currentMatchOpened._idx);
+
             if (
-              (m.matchId === matchId && m.matchId !== "undefined") ||
-              (m.local === window.currentMatchOpened.local &&
-                m.visitor === window.currentMatchOpened.visitor)
+              !matchFinalizedUpdated && (
+                (matchId && m.matchId && m.matchId === matchId && m.matchId !== "undefined") ||
+                fallbackMatch
+              )
             ) {
+              matchFinalizedUpdated = true;
               const finalScoreL = playersLocal.reduce(
                 (acc, p) => acc + (parseInt(p.goles) || 0),
                 0,
@@ -7347,6 +7370,7 @@
               );
               return {
                 ...m,
+                matchId: m.matchId || matchId || `${fixId}_${idx}_${(m.local || "").replace(/\s+/g, "")}_${(m.visitor || "").replace(/\s+/g, "")}`,
                 isFinalized: true,
                 playersLocal,
                 playersVisitor,

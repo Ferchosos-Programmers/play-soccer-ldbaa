@@ -109,14 +109,21 @@
     <div class="container py-5">
       <!-- Selector de Módulos (Cards de Navegación) -->
       <div class="row justify-content-center g-4 mb-5">
-        <div class="col-md-5">
+        <div class="col-md-4">
           <div class="dashboard-card p-4 text-center cursor-pointer border border-primary border-opacity-25" id="nav-btn-usuarios" onclick="switchSection('usuarios')" style="background: rgba(46, 204, 113, 0.1); border-color: var(--primary);">
             <i class="fas fa-users-cog fs-1 text-primary mb-3"></i>
             <h3 class="h4 text-white fw-bold uppercase">Gestión de Usuarios</h3>
             <p class="text-white-50 small mb-0">Crea, edita, elimina y gestiona roles de acceso de la liga.</p>
           </div>
         </div>
-        <div class="col-md-5">
+        <div class="col-md-4">
+          <div class="dashboard-card p-4 text-center cursor-pointer border border-white border-opacity-10" id="nav-btn-vocalias" onclick="switchSection('vocalias')">
+            <i class="fas fa-clipboard-list fs-1 text-warning mb-3"></i>
+            <h3 class="h4 text-white fw-bold uppercase">Gestor de Vocalías</h3>
+            <p class="text-white-50 small mb-0">Supervisa, edita o resetea actas de partido y marcadores individuales.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
           <div class="dashboard-card p-4 text-center cursor-pointer border border-white border-opacity-10" id="nav-btn-database" onclick="switchSection('database')">
             <i class="fas fa-database fs-1 text-danger mb-3"></i>
             <h3 class="h4 text-white fw-bold uppercase">Base de Datos General</h3>
@@ -183,7 +190,112 @@
         </div>
       </div>
 
-      <!-- SECCIÓN 2: BASE DE DATOS -->
+      <!-- SECCIÓN 2: GESTOR DE VOCALÍAS Y ACTAS -->
+      <div id="section-vocalias" class="d-none">
+        <div class="text-center mb-4 mt-2">
+          <p class="text-uppercase tracking-widest text-warning mb-2 fw-bold" style="letter-spacing: 3px; font-size: 0.8rem">
+            Control Operativo de Partidos
+          </p>
+          <h1 class="section-title">
+            Gestor de <span class="text-warning">Vocalías y Actas</span>
+          </h1>
+          <p class="text-white-50 mx-auto" style="max-width: 650px; font-size: 1.05rem">
+            Supervisa, consulta, edita o anula vocalías registradas. Si una vocalía se guardó con error o fue duplicada, puedes restablecerla a "Por Jugar" de forma individual con un solo clic.
+          </p>
+        </div>
+
+        <!-- Filtros y Métricas -->
+        <div class="row justify-content-center mb-4">
+          <div class="col-lg-11">
+            <div class="glass-panel p-4 rounded-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.1);">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="fas fa-trophy me-1 text-warning"></i>Campeonato</label>
+                  <select id="vocaliaCampSelect" class="form-select glass-input py-2" onchange="loadAdminVocalias()">
+                    <option value="">Cargando campeonatos...</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="fas fa-layer-group me-1 text-info"></i>Categoría</label>
+                  <select id="vocaliaCatSelect" class="form-select glass-input py-2" onchange="filterAdminVocalias()">
+                    <option value="all">Todas las Categorías</option>
+                    <option value="maxima">Máxima</option>
+                    <option value="primera">Primera</option>
+                    <option value="femenino">Femenino</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="fas fa-flag-checkered me-1 text-success"></i>Estado</label>
+                  <select id="vocaliaStatusSelect" class="form-select glass-input py-2" onchange="filterAdminVocalias()">
+                    <option value="all">Todos los Estados</option>
+                    <option value="finalized">Solo Finalizados</option>
+                    <option value="live">En Vivo (Jugando)</option>
+                    <option value="pending">Por Jugar (Pendientes)</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="far fa-calendar-alt me-1 text-primary"></i>Jornada / Fecha</label>
+                  <select id="vocaliaFechaSelect" class="form-select glass-input py-2" onchange="filterAdminVocalias()">
+                    <option value="all">Todas las Fechas</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="fas fa-search me-1 text-white-50"></i>Buscar Equipo</label>
+                  <input type="text" id="vocaliaSearchInput" class="form-control glass-input py-2" placeholder="Ej: AC Latinos, Almaguer..." onkeyup="filterAdminVocalias()" />
+                </div>
+              </div>
+
+              <!-- Quick Stats Pills -->
+              <div class="d-flex flex-wrap gap-3 mt-4 pt-3 border-top border-white border-opacity-10 justify-content-between align-items-center">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                  <span class="badge bg-secondary rounded-pill px-3 py-2 fw-bold" id="badgeTotalPartidos">Total: 0 partidos</span>
+                  <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2 fw-bold" id="badgeFinalizados">Finalizados: 0</span>
+                  <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold" id="badgeEnVivo">En Vivo: 0</span>
+                  <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fw-bold" id="badgePorJugar">Por Jugar: 0</span>
+                </div>
+                <div>
+                  <button class="btn btn-outline-light btn-sm rounded-pill px-3 py-1.5 fw-bold" onclick="loadAdminVocalias()">
+                    <i class="fas fa-sync-alt me-1"></i> Refrescar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabla de Vocalías -->
+        <div class="row justify-content-center">
+          <div class="col-lg-11">
+            <div class="table-premium-container p-0 overflow-hidden mb-5" style="background: transparent; border: none; box-shadow: none">
+              <div class="table-responsive">
+                <table class="table-premium">
+                  <thead>
+                    <tr>
+                      <th class="py-3 text-center" style="width: 110px;">Categoría</th>
+                      <th class="py-3 text-center" style="width: 140px;">Fecha / Jornada</th>
+                      <th class="py-3 text-start ps-3">Partido (Local vs Visitante)</th>
+                      <th class="py-3 text-center" style="width: 120px;">Marcador</th>
+                      <th class="py-3 text-center" style="width: 130px;">Estado</th>
+                      <th class="py-3 text-start ps-3" style="width: 220px;">Vocal / Árbitro</th>
+                      <th class="py-3 text-end pe-4" style="width: 190px;">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody id="vocaliasTableBody">
+                    <tr>
+                      <td colspan="7" class="text-center py-5">
+                        <div class="spinner-border text-warning" role="status"></div>
+                        <div class="mt-2 text-white-50">Cargando vocalías del campeonato...</div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: BASE DE DATOS -->
       <div id="section-database" class="d-none">
         <div class="text-center mb-5 mt-2">
           <p class="text-uppercase tracking-widest text-white-50 mb-2 fw-bold" style="letter-spacing: 3px; font-size: 0.8rem">
@@ -924,24 +1036,338 @@
 
       function switchSection(target) {
         const secUsuarios = document.getElementById('section-usuarios');
+        const secVocalias = document.getElementById('section-vocalias');
         const secDatabase = document.getElementById('section-database');
         const btnUsuarios = document.getElementById('nav-btn-usuarios');
+        const btnVocalias = document.getElementById('nav-btn-vocalias');
         const btnDatabase = document.getElementById('nav-btn-database');
+
+        secUsuarios.classList.add('d-none');
+        secVocalias.classList.add('d-none');
+        secDatabase.classList.add('d-none');
+        btnUsuarios.style.background = '';
+        btnUsuarios.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        btnVocalias.style.background = '';
+        btnVocalias.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        btnDatabase.style.background = '';
+        btnDatabase.style.borderColor = 'rgba(255, 255, 255, 0.1)';
 
         if (target === 'usuarios') {
           secUsuarios.classList.remove('d-none');
-          secDatabase.classList.add('d-none');
           btnUsuarios.style.background = 'rgba(46, 204, 113, 0.1)';
           btnUsuarios.style.borderColor = 'var(--primary)';
-          btnDatabase.style.background = '';
-          btnDatabase.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        } else if (target === 'vocalias') {
+          secVocalias.classList.remove('d-none');
+          btnVocalias.style.background = 'rgba(241, 196, 15, 0.1)';
+          btnVocalias.style.borderColor = '#f1c40f';
+          if (!window._adminVocaliasLoaded) {
+            loadAdminVocalias();
+          }
         } else {
-          secUsuarios.classList.add('d-none');
           secDatabase.classList.remove('d-none');
-          btnUsuarios.style.background = '';
-          btnUsuarios.style.borderColor = 'rgba(255, 255, 255, 0.1)';
           btnDatabase.style.background = 'rgba(231, 76, 60, 0.1)';
           btnDatabase.style.borderColor = '#e74c3c';
+        }
+      }
+
+      // ==========================================
+      // GESTOR DE VOCALÍAS Y ACTAS (SUPER ADMIN)
+      // ==========================================
+      let adminAllMatches = [];
+
+      async function loadAdminVocalias() {
+        const campSelect = document.getElementById("vocaliaCampSelect");
+        const tbody = document.getElementById("vocaliasTableBody");
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-warning"></div><div class="mt-2 text-white-50">Cargando vocalías...</div></td></tr>';
+
+        try {
+          if (campSelect.options.length <= 1) {
+            const champsSnap = await db.collection("championships").orderBy("createdAt", "desc").get();
+            campSelect.innerHTML = '';
+            champsSnap.forEach(d => {
+              const opt = document.createElement("option");
+              opt.value = d.id;
+              opt.textContent = d.data().name || d.id;
+              campSelect.appendChild(opt);
+            });
+          }
+
+          const currentCampId = campSelect.value;
+          if (!currentCampId) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-4 text-white-50">Seleccione un campeonato para ver sus vocalías.</td></tr>';
+            return;
+          }
+
+          const fixSnap = await db.collection("fixtures").where("championshipId", "==", currentCampId).get();
+          adminAllMatches = [];
+          const fechasSet = new Set();
+
+          const teamsSnap = await db.collection("teams").where("championshipId", "==", currentCampId).get();
+          const logosMap = {};
+          teamsSnap.forEach(t => {
+            logosMap[t.data().name] = t.data().logo || "img/logo.png";
+          });
+
+          const latestFixtures = {};
+          fixSnap.forEach(doc => {
+            const fData = doc.data();
+            const cat = (fData.category || "General").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const docTime = fData.updatedAt?.toMillis ? fData.updatedAt.toMillis() : (fData.createdAt?.toMillis ? fData.createdAt.toMillis() : 0);
+            if (!latestFixtures[cat] || docTime >= latestFixtures[cat]._time) {
+              latestFixtures[cat] = { id: doc.id, _time: docTime, ...fData };
+            }
+          });
+
+          Object.values(latestFixtures).forEach(fixture => {
+            const cat = fixture.category || "General";
+            (fixture.data || []).forEach((m, idx) => {
+              const fechaStr = m.fecha || m.jornada || m.tag || m.etiqueta || `Fecha ${idx + 1}`;
+              fechasSet.add(fechaStr);
+              adminAllMatches.push({
+                ...m,
+                _docId: fixture.id,
+                _idx: idx,
+                _cat: cat,
+                _localLogo: logosMap[m.local] || "img/logo.png",
+                _visitorLogo: logosMap[m.visitor] || "img/logo.png"
+              });
+            });
+          });
+
+          const fechaSelect = document.getElementById("vocaliaFechaSelect");
+          const curFecha = fechaSelect.value;
+          fechaSelect.innerHTML = '<option value="all">Todas las Fechas</option>';
+          Array.from(fechasSet).forEach(f => {
+            const opt = document.createElement("option");
+            opt.value = f;
+            opt.textContent = f;
+            fechaSelect.appendChild(opt);
+          });
+          if (curFecha && Array.from(fechasSet).includes(curFecha)) {
+            fechaSelect.value = curFecha;
+          }
+
+          window._adminVocaliasLoaded = true;
+          filterAdminVocalias();
+        } catch (e) {
+          console.error("Error al cargar vocalías admin:", e);
+          tbody.innerHTML = `<tr><td colspan="7" class="text-center py-4 text-danger">Error: ${e.message}</td></tr>`;
+        }
+      }
+
+      function filterAdminVocalias() {
+        const catFilter = document.getElementById("vocaliaCatSelect")?.value || "all";
+        const statusFilter = document.getElementById("vocaliaStatusSelect")?.value || "all";
+        const fechaFilter = document.getElementById("vocaliaFechaSelect")?.value || "all";
+        const searchVal = (document.getElementById("vocaliaSearchInput")?.value || "").trim().toLowerCase();
+
+        const filtered = adminAllMatches.filter(m => {
+          if (catFilter !== "all") {
+            const mCat = (m._cat || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (mCat !== catFilter.toLowerCase()) return false;
+          }
+
+          if (fechaFilter !== "all") {
+            const mFecha = m.fecha || m.jornada || m.tag || m.etiqueta || "";
+            if (mFecha !== fechaFilter) return false;
+          }
+
+          const isLive = m.liveStatus?.isLive === true;
+          const isFinalized = m.isFinalized === true || m.liveStatus?.period === "Finalizado" || (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.vocalName));
+          if (statusFilter === "finalized" && !isFinalized) return false;
+          if (statusFilter === "live" && !isLive) return false;
+          if (statusFilter === "pending" && (isFinalized || isLive)) return false;
+
+          if (searchVal) {
+            const loc = (m.local || "").toLowerCase();
+            const vis = (m.visitor || "").toLowerCase();
+            if (!loc.includes(searchVal) && !vis.includes(searchVal)) return false;
+          }
+
+          return true;
+        });
+
+        const total = adminAllMatches.length;
+        const finalized = adminAllMatches.filter(m => m.isFinalized === true || m.liveStatus?.period === "Finalizado").length;
+        const live = adminAllMatches.filter(m => m.liveStatus?.isLive === true).length;
+        const pending = total - finalized - live;
+
+        document.getElementById("badgeTotalPartidos").textContent = `Total: ${total} partidos`;
+        document.getElementById("badgeFinalizados").textContent = `Finalizados: ${finalized}`;
+        document.getElementById("badgeEnVivo").textContent = `En Vivo: ${live}`;
+        document.getElementById("badgePorJugar").textContent = `Por Jugar: ${pending}`;
+
+        renderAdminVocaliasTable(filtered);
+      }
+
+      function renderAdminVocaliasTable(matches) {
+        const tbody = document.getElementById("vocaliasTableBody");
+        if (matches.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5 text-white-50"><i class="fas fa-inbox fs-2 mb-2 d-block opacity-50"></i>No se encontraron partidos con los filtros aplicados.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = matches.map(m => {
+          const isLive = m.liveStatus?.isLive === true;
+          const isFin = m.isFinalized === true || m.liveStatus?.period === "Finalizado";
+          
+          let badgeEstado = '<span class="badge bg-secondary bg-opacity-50 text-white-50 px-2.5 py-1 rounded-pill"><i class="far fa-clock me-1"></i>Por Jugar</span>';
+          if (isLive) {
+            badgeEstado = '<span class="badge bg-danger px-2.5 py-1 rounded-pill"><i class="fas fa-circle me-1 animate__animated animate__flash animate__infinite"></i>EN VIVO</span>';
+          } else if (isFin) {
+            badgeEstado = '<span class="badge bg-success px-2.5 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Finalizado</span>';
+          }
+
+          const scoreL = m.liveStatus?.scoreLocal !== undefined ? m.liveStatus.scoreLocal : (isFin ? 0 : '-');
+          const scoreV = m.liveStatus?.scoreVisitor !== undefined ? m.liveStatus.scoreVisitor : (isFin ? 0 : '-');
+          const scoreDisplay = (isFin || isLive) ? `<span class="badge bg-dark border border-secondary px-3 py-1.5 fs-6 fw-bold text-warning">${scoreL} - ${scoreV}</span>` : '<span class="text-white-50 small fw-bold">vs</span>';
+
+          const catColor = (m._cat || '').toUpperCase().includes('MAX') ? 'warning' : ((m._cat || '').toUpperCase().includes('PRIM') ? 'info' : 'danger');
+          const fechaText = m.fecha || m.jornada || m.tag || m.etiqueta || "Etapa";
+
+          const vocalName = m.vocalReport?.vocalName || m.vocalAsignado || m.vocal || "No registrado";
+          const refereeName = m.refereeReport?.judgeName || m.refereeReport?.centralName || "No registrado";
+
+          return `
+            <tr>
+              <td class="text-center align-middle">
+                <span class="badge bg-${catColor} bg-opacity-20 text-${catColor} border border-${catColor} border-opacity-50 text-uppercase fw-bold" style="font-size:0.75rem;">
+                  ${m._cat}
+                </span>
+              </td>
+              <td class="text-center align-middle">
+                <span class="badge bg-dark border border-white border-opacity-10 text-white-50 px-2 py-1 small">
+                  ${fechaText}
+                </span>
+              </td>
+              <td class="align-middle">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="d-flex align-items-center gap-1.5" style="min-width: 140px; justify-content: flex-end;">
+                    <span class="fw-bold text-white small text-uppercase">${m.local}</span>
+                    <img src="${m._localLogo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" onerror="this.src='img/logo.png'">
+                  </div>
+                  <div class="text-white-50 small px-1">vs</div>
+                  <div class="d-flex align-items-center gap-1.5" style="min-width: 140px;">
+                    <img src="${m._visitorLogo}" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover;" onerror="this.src='img/logo.png'">
+                    <span class="fw-bold text-white small text-uppercase">${m.visitor}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="text-center align-middle">
+                ${scoreDisplay}
+              </td>
+              <td class="text-center align-middle">
+                ${badgeEstado}
+              </td>
+              <td class="align-middle small text-white-50">
+                <div><i class="fas fa-clipboard-user me-1 text-warning"></i> Vocal: <strong class="text-white">${vocalName}</strong></div>
+                <div><i class="fas fa-whistle me-1 text-info"></i> Árbitro: <span class="text-white-50">${refereeName}</span></div>
+              </td>
+              <td class="text-end pe-4 align-middle">
+                <div class="d-inline-flex gap-2">
+                  <a href="vocalias.html" class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1" title="Ir a Vocalías Oficiales">
+                    <i class="fas fa-external-link-alt"></i>
+                  </a>
+                  ${isFin || isLive ? `
+                    <button class="btn btn-sm btn-outline-danger rounded-pill px-2.5 py-1 fw-bold" onclick="resetSingleVocalia('${m._docId}', '${m.matchId || ''}', ${m._idx}, '${(m.local || '').replace(/'/g, "\\'")}', '${(m.visitor || '').replace(/'/g, "\\'")}')" title="Anular Vocalía / Resetear a Por Jugar">
+                      <i class="fas fa-undo-alt me-1"></i> Anular
+                    </button>
+                  ` : `
+                    <button class="btn btn-sm btn-outline-secondary rounded-pill px-2.5 py-1" disabled title="Partido pendiente">
+                      <i class="fas fa-minus"></i>
+                    </button>
+                  `}
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      async function resetSingleVocalia(docId, matchId, matchIdx, localName, visitorName) {
+        const confirmResult = await Swal.fire({
+          title: `¿Anular y Resetear Vocalía?`,
+          html: `
+            <div class="text-start">
+              <p>Estás a punto de anular el acta y resultado del partido:</p>
+              <div class="alert alert-warning text-dark fw-bold text-center">
+                ${localName} vs ${visitorName}
+              </div>
+              <ul class="small text-white-50 mb-0">
+                <li>El marcador volverá a <strong>0 - 0</strong>.</li>
+                <li>El estado del partido pasará a <strong>Por Jugar</strong>.</li>
+                <li>Se limpiarán las planillas de jugadores, goles y tarjetas de este partido.</li>
+                <li><strong>El fixture y programación del partido se mantienen 100% intactos.</strong></li>
+              </ul>
+            </div>
+          `,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#e74c3c",
+          cancelButtonColor: "#3085d6",
+          confirmButtonText: "Sí, anular vocalía",
+          cancelButtonText: "Cancelar"
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        Swal.fire({
+          title: "Restableciendo partido...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const docRef = db.collection("fixtures").doc(docId);
+          const docSnap = await docRef.get();
+          if (!docSnap.exists) throw new Error("Documento de fixture no encontrado");
+
+          const fData = docSnap.data();
+          let matchFound = false;
+          const updatedMatches = (fData.data || []).map((m, idx) => {
+            const isTarget = (matchId && m.matchId && m.matchId === matchId && m.matchId !== "undefined") ||
+              (idx === matchIdx) ||
+              (!matchFound && m.local === localName && m.visitor === visitorName);
+
+            if (isTarget && !matchFound) {
+              matchFound = true;
+              return {
+                ...m,
+                matchId: m.matchId || matchId || `${docId}_${idx}_${(m.local || "").replace(/\s+/g, "")}_${(m.visitor || "").replace(/\s+/g, "")}`,
+                isFinalized: false,
+                liveStatus: {
+                  isLive: false,
+                  period: "Por Jugar",
+                  seconds: 0,
+                  minute: "--:--",
+                  scoreLocal: 0,
+                  scoreVisitor: 0,
+                  events: [],
+                  lastUpdate: new Date().toISOString()
+                },
+                playersLocal: [],
+                playersVisitor: [],
+                changesLocal: [],
+                changesVisitor: [],
+                vocalReport: null,
+                refereeReport: null,
+                vedorReport: null,
+                lastUpdated: new Date()
+              };
+            }
+            return m;
+          });
+
+          await docRef.update({
+            data: updatedMatches,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          Swal.fire("¡Vocalía Anulada!", `El partido entre ${localName} y ${visitorName} ha sido restablecido a estado "Por Jugar" correctamente.`, "success");
+          loadAdminVocalias();
+        } catch (err) {
+          console.error("Error al resetear vocalía:", err);
+          Swal.fire("Error", "No se pudo anular la vocalía: " + (err.message || err), "error");
         }
       }
 
