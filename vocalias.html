@@ -1594,19 +1594,6 @@
           return rows;
         };
 
-        // Recolectar filas de veedor
-        const collectVedorRowsFromDom = (containerId) => {
-          const container = document.getElementById(containerId);
-          if (!container) return [];
-          const rows = [];
-          container.querySelectorAll(".vedor-row").forEach((row) => {
-            const dorsal = row.querySelector(".inp-dorsal")?.value || "";
-            const min = row.querySelector(".inp-min")?.value || "";
-            rows.push({ dorsal, min });
-          });
-          return rows;
-        };
-
         const playersLocal = collectPlayersFromDom("listaJugadoresLocal");
         const playersVisitor = collectPlayersFromDom("listaJugadoresVisitante");
         const changesLocal = collectChangesFromDom("listaCambiosLocal");
@@ -1700,10 +1687,6 @@
         const vedorReport = {
           nombre: document.getElementById("vedor_nombre")?.value || "",
           club: document.getElementById("vedor_club")?.value || "",
-          juvenilesLocal: collectVedorRowsFromDom("list_juv_local"),
-          arquerosLocal: collectVedorRowsFromDom("list_arq_local"),
-          juvenilesVisitor: collectVedorRowsFromDom("list_juv_visitor"),
-          arquerosVisitor: collectVedorRowsFromDom("list_arq_visitor"),
           observaciones: document.getElementById("vedor_obs")?.value || "",
         };
 
@@ -2899,63 +2882,7 @@
                         <h6 class="text-white text-uppercase mb-0 fw-bold" style="letter-spacing:1px">INFORME DE VEDOR</h6>
                     </div>
                     <div class="p-3">
-                        <div class="row g-4">
-                            <!-- Datos Local -->
-                            <div class="col-md-6 border-end border-secondary border-opacity-25 pe-4">
-                                <div class="text-primary-glow small fw-bold mb-3 text-uppercase" style="letter-spacing:1px">${m.local}</div>
-
-                                <!-- Juveniles Local -->
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="text-white-50 small text-uppercase fw-bold" style="font-size:0.6rem; letter-spacing:1px">JUVENILES:</label>
-                                        <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 rounded-pill" onclick="window.addVedorRow('list_juv_local')" style="font-size:0.6rem; border-width:1px" ${m.isFinalized ? "disabled" : ""}>+ AGREGAR</button>
-                                    </div>
-                                    <div id="list_juv_local" class="d-flex flex-column gap-1">
-                                        <!-- Rows here -->
-                                    </div>
-                                </div>
-
-                                <!-- Arqueros Local -->
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="text-white-50 small text-uppercase fw-bold" style="font-size:0.6rem; letter-spacing:1px">ARQUEROS:</label>
-                                        <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 rounded-pill" onclick="window.addVedorRow('list_arq_local')" style="font-size:0.6rem; border-width:1px" ${m.isFinalized ? "disabled" : ""}>+ AGREGAR</button>
-                                    </div>
-                                    <div id="list_arq_local" class="d-flex flex-column gap-1">
-                                        <!-- Rows here -->
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Datos Visitante -->
-                            <div class="col-md-6 ps-4">
-                                <div class="text-info small fw-bold mb-3 text-uppercase" style="letter-spacing:1px">${m.visitor}</div>
-
-                                <!-- Juveniles Visitante -->
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="text-white-50 small text-uppercase fw-bold" style="font-size:0.6rem; letter-spacing:1px">JUVENILES:</label>
-                                        <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 rounded-pill" onclick="window.addVedorRow('list_juv_visitor')" style="font-size:0.6rem; border-width:1px" ${m.isFinalized ? "disabled" : ""}>+ AGREGAR</button>
-                                    </div>
-                                    <div id="list_juv_visitor" class="d-flex flex-column gap-1">
-                                        <!-- Rows here -->
-                                    </div>
-                                </div>
-
-                                <!-- Arqueros Visitante -->
-                                <div class="mb-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <label class="text-white-50 small text-uppercase fw-bold" style="font-size:0.6rem; letter-spacing:1px">ARQUEROS:</label>
-                                        <button type="button" class="btn btn-sm btn-outline-warning py-0 px-2 rounded-pill" onclick="window.addVedorRow('list_arq_visitor')" style="font-size:0.6rem; border-width:1px" ${m.isFinalized ? "disabled" : ""}>+ AGREGAR</button>
-                                    </div>
-                                    <div id="list_arq_visitor" class="d-flex flex-column gap-1">
-                                        <!-- Rows here -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="mt-4">
+                        <div class="mb-3">
                             <span class="text-white-50 small d-block mb-1 text-uppercase fw-bold" style="letter-spacing:1px; font-size:0.65rem">OBSERVACIONES DEL VEDOR (Barras, comportamiento, etc.):</span>
                             <textarea id="vedor_obs" class="form-control form-control-sm bg-dark text-white border-secondary border-opacity-25 shadow-none mb-4" rows="4" placeholder="Detalle aquí las novedades de las barras y el comportamiento general del encuentro...">${m.vedorReport?.observaciones || ""}</textarea>
                         </div>
@@ -3122,41 +3049,10 @@
           if (container.querySelector("#vedor_club"))
             container.querySelector("#vedor_club").value = vr.club || "";
 
-          // Renderizar filas dinámicas
-          const renderRows = (dataArr, containerId) => {
-            const list = document.getElementById(containerId);
-            if (!list) return;
-            list.innerHTML = "";
-            if (dataArr && dataArr.length > 0) {
-              dataArr.forEach((item) =>
-                window.addVedorRow(
-                  containerId,
-                  item.dorsal,
-                  item.min,
-                  isFinalized,
-                ),
-              );
-            } else if (!isFinalized) {
-              // Si no hay datos y no está finalizado, agregar una vacía por defecto
-              window.addVedorRow(containerId);
-            }
-          };
-
-          renderRows(vr.juvenilesLocal, "list_juv_local");
-          renderRows(vr.arquerosLocal, "list_arq_local");
-          renderRows(vr.juvenilesVisitor, "list_juv_visitor");
-          renderRows(vr.arquerosVisitor, "list_arq_visitor");
-
           // Obs Vedor
           if (container.querySelector("#vedor_obs"))
             container.querySelector("#vedor_obs").value =
               vr.observaciones || "";
-        } else if (!isFinalized) {
-          // Si no hay reporte aún, inicializar con una fila vacía para cada lista
-          window.addVedorRow("list_juv_local");
-          window.addVedorRow("list_arq_local");
-          window.addVedorRow("list_juv_visitor");
-          window.addVedorRow("list_arq_visitor");
         }
 
         window.updateTotalGoles("local");
@@ -6614,7 +6510,12 @@
                   ? `${cleanTipo} (Lit. ${s.literal})`
                   : cleanTipo;
               }
-              if (s.cuota && s.totalCuotas && !desc.includes(`(${s.cuota} de ${s.totalCuotas})`) && !desc.includes(`Cuota ${s.cuota}`)) {
+              if (
+                s.cuota &&
+                s.totalCuotas &&
+                !desc.includes(`(${s.cuota} de ${s.totalCuotas})`) &&
+                !desc.includes(`Cuota ${s.cuota}`)
+              ) {
                 desc += ` (${s.cuota} de ${s.totalCuotas})`;
               }
 
@@ -7404,25 +7305,9 @@
             },
           };
 
-          const collectVedorRows = (containerId) => {
-            const rows = [];
-            const container = document.getElementById(containerId);
-            if (!container) return rows;
-            container.querySelectorAll(".vedor-row").forEach((row) => {
-              const dorsal = row.querySelector(".inp-dorsal").value.trim();
-              const min = row.querySelector(".inp-min").value.trim();
-              if (dorsal || min) rows.push({ dorsal, min });
-            });
-            return rows;
-          };
-
           const vedorReport = {
             nombre: document.getElementById("vedor_nombre")?.value || "",
             club: document.getElementById("vedor_club")?.value || "",
-            juvenilesLocal: collectVedorRows("list_juv_local"),
-            arquerosLocal: collectVedorRows("list_arq_local"),
-            juvenilesVisitor: collectVedorRows("list_juv_visitor"),
-            arquerosVisitor: collectVedorRows("list_arq_visitor"),
             observaciones: document.getElementById("vedor_obs")?.value || "",
           };
 
