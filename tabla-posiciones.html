@@ -242,10 +242,9 @@
         if (!m) return false;
         const ls = m.liveStatus || {};
         if (ls.isLive === true) return false;
-        if (ls.period === "Por Jugar" || ls.period === "1T" || ls.period === "2T" || ls.period === "Descanso") return false;
         if (m.isFinalized === true) return true;
         if (ls.period === "Finalizado" || ls.minute === "Final") return true;
-        if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor)) return true;
+        if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.vocalName || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor)) return true;
         if (m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName)) return true;
         return false;
       }

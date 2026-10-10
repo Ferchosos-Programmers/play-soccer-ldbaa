@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Inspect Fecha 1 Matches</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body style="background:#111; color:#fff; font-family:monospace; padding:20px;">
+  <h2>Inspection of Fecha 1 in All Categories</h2>
+  <div id="output">Cargando...</div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+      authDomain: "ldbaa-calificaciones.firebaseapp.com",
+      projectId: "ldbaa-calificaciones",
+      storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+      messagingSenderId: "277579489603",
+      appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function check() {
+      const snap = await db.collection("fixtures").where("championshipId", "==", "p7eMp1ciqd67iQCiA4JV").get();
+      let html = "";
+
+      snap.forEach(doc => {
+        const d = doc.data();
+        html += `<div style="border:1px solid #555; padding:10px; margin:10px 0;">`;
+        html += `<h3>Doc ID: ${doc.id} | Categoria: ${d.category}</h3>`;
+        const matches = d.data || [];
+        
+        matches.forEach((m, idx) => {
+          const fechaStr = (m.fecha || m.jornada || m.tag || m.etiqueta || "").toString().toLowerCase();
+          const isFecha1 = fechaStr.includes("1") && (fechaStr.includes("etapa") || fechaStr.includes("fecha") || fechaStr.includes("jornada") || fechaStr.includes("1ra"));
+          
+          const hasScores = (m.liveStatus && (typeof m.liveStatus.scoreLocal !== 'undefined' || typeof m.liveStatus.scoreVisitor !== 'undefined'));
+          const hasPlayers = (m.playersLocal && m.playersLocal.length > 0) || (m.playersVisitor && m.playersVisitor.length > 0);
+          const hasVocal = !!(m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.vocalName || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor));
+          const hasRef = !!(m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName));
+
+          if (isFecha1 || idx < 10) {
+            html += `<div style="background:${m.isFinalized ? '#1e3a1e' : (hasScores || hasPlayers || hasVocal ? '#3a3a1e' : '#222')}; padding:8px; margin:4px 0; border:1px solid #444;">
+              <strong>[Idx: ${idx}] [${m.fecha || m.jornada || m.tag}] [Tag: ${m.tag}]</strong><br>
+              <strong>${m.local} vs ${m.visitor}</strong><br>
+              isFinalized: <strong>${m.isFinalized}</strong> | 
+              liveStatus.period: <strong>${m.liveStatus?.period}</strong> | 
+              liveStatus.minute: <strong>${m.liveStatus?.minute}</strong> | 
+              Score: <strong>${m.liveStatus?.scoreLocal ?? '-'} - ${m.liveStatus?.scoreVisitor ?? '-'}</strong><br>
+              hasPlayersLocal: ${m.playersLocal?.length || 0} (${JSON.stringify(m.playersLocal?.map(p => p.name + ':' + p.goles))})<br>
+              hasPlayersVisitor: ${m.playersVisitor?.length || 0} (${JSON.stringify(m.playersVisitor?.map(p => p.name + ':' + p.goles))})<br>
+              vocalReport: ${JSON.stringify(m.vocalReport)}<br>
+              refereeReport: ${JSON.stringify(m.refereeReport)}<br>
+              matchId: ${m.matchId}
+            </div>`;
+          }
+        });
+        html += `</div>`;
+      });
+
+      document.getElementById("output").innerHTML = html;
+      window.__done = true;
+    }
+    check();
+  </script>
+</body>
+</html>
