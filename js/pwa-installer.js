@@ -67,7 +67,7 @@
       btn = document.createElement('div');
       btn.id = 'pwa-floating-install-btn';
       btn.innerHTML = `
-        <div class="pwa-install-pill animate__animated animate__fadeInUp">
+        <div class="pwa-install-pill animate__animated animate__fadeInDown">
           <div class="pwa-install-icon">
             <img src="img/logo.png" alt="LDBAA" onerror="this.src='../img/logo.png'" />
           </div>
@@ -90,10 +90,11 @@
       style.textContent = `
         #pwa-floating-install-btn {
           position: fixed;
-          bottom: 20px;
+          top: 16px;
+          bottom: auto;
           left: 50%;
           transform: translateX(-50%);
-          z-index: 99999;
+          z-index: 100000;
           width: 92%;
           max-width: 440px;
           pointer-events: auto;
@@ -103,13 +104,13 @@
           display: flex;
           align-items: center;
           gap: 12px;
-          background: rgba(15, 23, 42, 0.92);
+          background: rgba(15, 23, 42, 0.95);
           backdrop-filter: blur(16px);
           -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(46, 204, 113, 0.35);
+          border: 1px solid rgba(46, 204, 113, 0.45);
           padding: 10px 14px;
           border-radius: 50px;
-          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 20px rgba(46, 204, 113, 0.2);
+          box-shadow: 0 12px 35px rgba(0, 0, 0, 0.75), 0 0 25px rgba(46, 204, 113, 0.25);
         }
         .pwa-install-icon img {
           width: 38px;
@@ -136,7 +137,7 @@
           text-overflow: ellipsis;
         }
         .pwa-sub {
-          color: rgba(255, 255, 255, 0.6);
+          color: rgba(255, 255, 255, 0.65);
           font-size: 0.7rem;
           line-height: 1.2;
           white-space: nowrap;
@@ -180,7 +181,8 @@
         }
         @media (max-width: 480px) {
           #pwa-floating-install-btn {
-            bottom: 14px;
+            top: 10px;
+            bottom: auto;
             width: 94%;
           }
           .pwa-install-pill {
