@@ -305,20 +305,14 @@
 
           // Helper para verificar si un partido está concluido / vocalía terminada
           function isMatchFinished(m) {
+            if (!m) return false;
             const ls = m.liveStatus || {};
             if (ls.isLive === true) return false;
-            
+            if (ls.period === "Por Jugar" || ls.period === "1T" || ls.period === "2T" || ls.period === "Descanso") return false;
             if (m.isFinalized === true) return true;
-            if (ls.period === "Finalizado") return true;
-            if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor || m.vocalReport.vocalName)) return true;
+            if (ls.period === "Finalizado" || ls.minute === "Final") return true;
+            if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor)) return true;
             if (m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName)) return true;
-            
-            const hasLocalRoster = (m.playersLocal && m.playersLocal.length > 0) || (m.changesLocal && m.changesLocal.length > 0);
-            const hasVisitorRoster = (m.playersVisitor && m.playersVisitor.length > 0) || (m.changesVisitor && m.changesVisitor.length > 0);
-            if ((hasLocalRoster || hasVisitorRoster) && (!ls.isLive)) return true;
-
-            if (typeof ls.scoreLocal !== 'undefined' && (ls.scoreLocal > 0 || ls.scoreVisitor > 0) && !ls.isLive) return true;
-            
             return false;
           }
 
