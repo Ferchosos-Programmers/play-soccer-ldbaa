@@ -1,0 +1,63 @@
+{
+  "name": "Liga Barrial Argelia Alta - LDBAA",
+  "short_name": "LDBAA",
+  "description": "Sistema Digital y Plataforma Deportiva Oficial de la Liga Barrial Argelia Alta.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#0b0e14",
+  "orientation": "any",
+  "lang": "es-EC",
+  "icons": [
+    {
+      "src": "img/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "img/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Vocalía Digital",
+      "short_name": "Vocalía",
+      "description": "Planillas y arbitraje en tiempo real",
+      "url": "./vocalias.html",
+      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Pasión Argelia",
+      "short_name": "En Vivo",
+      "description": "Marcadores y resultados en vivo",
+      "url": "./pasion-argelia.html",
+      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Carnetización",
+      "short_name": "Carnets",
+      "description": "Credenciales y registros",
+      "url": "./carnetizacion.html",
+      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "LigaBet",
+      "short_name": "LigaBet",
+      "description": "Pronósticos y resultados",
+      "url": "./ligabet.html",
+      "icons": [{ "src": "img/logo.png", "sizes": "192x192" }]
+    }
+  ],
+  "categories": ["sports", "utilities"]
+}

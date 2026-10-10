@@ -28,6 +28,17 @@
     <link rel="icon" href="img/logo.png" />
     <link rel="stylesheet" href="css/index.css" />
 
+    <!-- PWA & Mobile Web App Meta Tags -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#050505" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="LDBAA" />
+    <link rel="apple-touch-icon" href="img/logo.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="img/logo.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="img/logo.png" />
+
     <!-- Meta tags for SEO -->
     <meta
       name="description"
@@ -53,6 +64,16 @@
         <p class="subtitle">
           Plataforma deportiva de alto rendimiento para el fútbol barrial.
         </p>
+        <div class="mt-2 mb-1 text-center">
+          <button
+            type="button"
+            class="btn btn-sm btn-outline-success rounded-pill px-3 py-1.5 fw-bold shadow-sm"
+            onclick="window.triggerPwaInstall()"
+            style="font-size: 0.82rem; border-color: rgba(46, 204, 113, 0.4); background: rgba(46, 204, 113, 0.08); color: #2ecc71;"
+          >
+            <i class="fas fa-mobile-screen-button me-1 text-warning"></i> Instalar App en Celular (PWA)
+          </button>
+        </div>
       </section>
 
       <!-- Card Grid - Visual Buttons -->
@@ -405,5 +426,9 @@
         });
       });
     </script>
+
+    <!-- SweetAlert2 y PWA Installer -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="js/pwa-installer.js"></script>
   </body>
 </html>
