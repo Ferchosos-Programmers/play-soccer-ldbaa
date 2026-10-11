@@ -693,6 +693,152 @@
         justify-content: center;
         border: 2px solid #0a0a0a;
       }
+
+      /* Sanciones, Suspensiones & Financiamiento Premium Styles */
+      .player-dorsal-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #f39c12, #d35400);
+        color: #fff;
+        font-weight: 900;
+        font-size: 0.95rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 12px rgba(243, 156, 18, 0.4);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        flex-shrink: 0;
+      }
+      .player-dorsal-badge.red {
+        background: radial-gradient(circle at 30% 30%, #e74c3c, #c0392b);
+        box-shadow: 0 0 12px rgba(231, 76, 60, 0.5);
+      }
+      .player-dorsal-badge.team {
+        background: radial-gradient(circle at 30% 30%, #3498db, #2980b9);
+        box-shadow: 0 0 12px rgba(52, 152, 219, 0.4);
+      }
+      .player-dorsal-badge.yellow {
+        background: radial-gradient(circle at 30% 30%, #f1c40f, #f39c12);
+        color: #111;
+        box-shadow: 0 0 12px rgba(241, 196, 15, 0.4);
+      }
+
+      .badge-sanc-type {
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 5px 12px;
+        border-radius: 30px;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .badge-sanc-roja {
+        background: rgba(231, 76, 60, 0.15);
+        color: #ff6b6b;
+        border: 1px solid rgba(231, 76, 60, 0.4);
+        box-shadow: 0 0 10px rgba(231, 76, 60, 0.2);
+      }
+      .badge-sanc-amarilla {
+        background: rgba(241, 196, 15, 0.15);
+        color: #feca57;
+        border: 1px solid rgba(241, 196, 15, 0.4);
+      }
+      .badge-sanc-financiada {
+        background: rgba(0, 210, 211, 0.15);
+        color: #48dbfb;
+        border: 1px solid rgba(0, 210, 211, 0.4);
+        box-shadow: 0 0 10px rgba(0, 210, 211, 0.2);
+      }
+      .badge-sanc-multa {
+        background: rgba(155, 89, 182, 0.15);
+        color: #c8d6e5;
+        border: 1px solid rgba(155, 89, 182, 0.4);
+      }
+      .badge-sanc-cumplida {
+        background: rgba(46, 204, 113, 0.15);
+        color: #2ecc71;
+        border: 1px solid rgba(46, 204, 113, 0.4);
+      }
+
+      .suspension-progress-bar-container {
+        width: 100%;
+        max-width: 220px;
+        background: rgba(255, 255, 255, 0.08);
+        height: 8px;
+        border-radius: 10px;
+        overflow: hidden;
+        margin-top: 6px;
+      }
+      .suspension-progress-bar-fill {
+        height: 100%;
+        border-radius: 10px;
+        transition: width 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+      }
+      .progress-fill-red {
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
+        box-shadow: 0 0 8px rgba(231, 76, 60, 0.5);
+      }
+      .progress-fill-green {
+        background: linear-gradient(90deg, #2ecc71, #1abc9c);
+        box-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
+      }
+      .progress-fill-cyan {
+        background: linear-gradient(90deg, #00d2d3, #54a0ff);
+        box-shadow: 0 0 8px rgba(0, 210, 211, 0.5);
+      }
+
+      .filter-pill {
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.7);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        transition: all 0.3s ease;
+      }
+      .filter-pill:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        border-color: rgba(255, 255, 255, 0.3);
+      }
+      .filter-pill.active {
+        background: linear-gradient(135deg, var(--primary) 0%, #27ae60 100%) !important;
+        color: #000 !important;
+        border-color: var(--primary) !important;
+        box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);
+      }
+
+      .suspension-hero-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(231, 76, 60, 0.3);
+        border-radius: 20px;
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+      }
+      .suspension-hero-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 30px rgba(231, 76, 60, 0.2);
+        border-color: rgba(231, 76, 60, 0.6);
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      .financed-hero-card {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(0, 210, 211, 0.3);
+        border-radius: 20px;
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.4s ease;
+      }
+      .financed-hero-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 15px 30px rgba(0, 210, 211, 0.2);
+        border-color: rgba(0, 210, 211, 0.6);
+        background: rgba(255, 255, 255, 0.05);
+      }
     </style>
   </head>
   <body>
@@ -1028,17 +1174,173 @@
 
           <!-- Sanciones Section -->
           <div id="section-sanciones" class="content-section d-none">
+            <!-- Header Banner -->
+            <div class="glass-card mb-4">
+              <div class="d-flex justify-content-between align-items-start flex-column flex-md-row gap-3">
+                <div>
+                  <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="stat-icon-mini text-danger" style="background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.3); width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem;">
+                      <i class="fas fa-gavel"></i>
+                    </div>
+                    <div>
+                      <h4 class="text-white fw-bold mb-0">Sanciones Disciplinarias y Control Financiero</h4>
+                      <span class="badge rounded-pill bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50 small px-3 py-1 mt-1">Tribunal de Penas & Tesorería</span>
+                    </div>
+                  </div>
+                  <p class="text-white-50 small mb-0 mt-2">
+                    Supervisa en tiempo real las suspensiones de tus jugadores (partidos dictaminados, fechas cumplidas y pendientes por cumplir) y el seguimiento detallado a convenios de deudas y multas financiadas.
+                  </p>
+                </div>
+                <div class="d-flex gap-2 align-self-end align-self-md-start">
+                  <button class="btn btn-outline-light rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm" onclick="loadData()" title="Refrescar Sanciones">
+                    <i class="fas fa-sync-alt me-1"></i> Actualizar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- KPI Summary Cards -->
+            <div class="row g-3 mb-4">
+              <!-- KPI 1: Suspensiones Deportivas -->
+              <div class="col-12 col-sm-6 col-xl-3">
+                <div class="glass-card p-3 h-100 d-flex align-items-center border-start border-4 border-danger">
+                  <div class="me-3 p-3 rounded-4" style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; font-size: 1.5rem;">
+                    <i class="fas fa-user-slash"></i>
+                  </div>
+                  <div>
+                    <span class="text-white-50 text-uppercase small fw-bold d-block" style="font-size: 0.7rem; letter-spacing: 1px;">SUSPENSIONES ACTIVAS</span>
+                    <h3 class="text-white fw-bold mb-0" id="kpi-suspended-count">0</h3>
+                    <small class="text-danger fw-bold" id="kpi-suspended-sub" style="font-size: 0.72rem;">0 inhabilitados</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- KPI 2: Deudas en Financiamiento -->
+              <div class="col-12 col-sm-6 col-xl-3">
+                <div class="glass-card p-3 h-100 d-flex align-items-center border-start border-4 border-info">
+                  <div class="me-3 p-3 rounded-4" style="background: rgba(0, 210, 211, 0.15); color: #00d2d3; font-size: 1.5rem;">
+                    <i class="fas fa-handshake-angle"></i>
+                  </div>
+                  <div>
+                    <span class="text-white-50 text-uppercase small fw-bold d-block" style="font-size: 0.7rem; letter-spacing: 1px;">DEUDAS FINANCIADAS</span>
+                    <h3 class="text-white fw-bold mb-0" id="kpi-financed-pending">$ 0.00</h3>
+                    <small class="text-info fw-bold" id="kpi-financed-sub" style="font-size: 0.72rem;">Pagado: $ 0.00</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- KPI 3: Multas Inmediatas Pendientes -->
+              <div class="col-12 col-sm-6 col-xl-3">
+                <div class="glass-card p-3 h-100 d-flex align-items-center border-start border-4 border-warning">
+                  <div class="me-3 p-3 rounded-4" style="background: rgba(241, 196, 15, 0.15); color: #f1c40f; font-size: 1.5rem;">
+                    <i class="fas fa-receipt"></i>
+                  </div>
+                  <div>
+                    <span class="text-white-50 text-uppercase small fw-bold d-block" style="font-size: 0.7rem; letter-spacing: 1px;">MULTAS DIRECTAS</span>
+                    <h3 class="text-white fw-bold mb-0" id="kpi-fines-pending">$ 0.00</h3>
+                    <small class="text-warning fw-bold" id="kpi-fines-sub" style="font-size: 0.72rem;">0 multas por cancelar</small>
+                  </div>
+                </div>
+              </div>
+
+              <!-- KPI 4: Tarjetas Amarillas y Riesgo -->
+              <div class="col-12 col-sm-6 col-xl-3">
+                <div class="glass-card p-3 h-100 d-flex align-items-center border-start border-4 border-secondary">
+                  <div class="me-3 p-3 rounded-4" style="background: rgba(243, 156, 18, 0.15); color: #f39c12; font-size: 1.5rem;">
+                    <i class="fas fa-clone"></i>
+                  </div>
+                  <div>
+                    <span class="text-white-50 text-uppercase small fw-bold d-block" style="font-size: 0.7rem; letter-spacing: 1px;">TARJETAS ACUMULADAS</span>
+                    <h3 class="text-white fw-bold mb-0" id="kpi-yellow-count">0</h3>
+                    <small class="text-warning fw-bold" id="kpi-yellow-risk" style="font-size: 0.72rem;">0 en riesgo (3 amarillas)</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Showcase Widget 1: Panel de Jugadores con Suspensión / Tarjeta Roja -->
+            <div id="suspendedPlayersShowcase" class="mb-4 d-none">
+              <div class="glass-card border-danger border-opacity-25" style="background: linear-gradient(135deg, rgba(231,76,60,0.06) 0%, rgba(15,15,15,0.7) 100%);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger p-2 rounded-circle"><i class="fas fa-ban text-white"></i></span>
+                    <h5 class="text-white fw-bold mb-0">Control de Suspensiones de Jugadores (Fechas y Partidos)</h5>
+                  </div>
+                  <span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-30 px-3 py-1 rounded-pill small fw-bold" id="suspendedCountBadge">0 Jugadores</span>
+                </div>
+                <p class="text-white-50 small mb-4">
+                  Detalle oficial de las fechas de sanción dictaminadas, partidos cumplidos en el fixture y partidos pendientes antes de quedar habilitados.
+                </p>
+                <div class="row g-3" id="suspendedPlayersCardsGrid">
+                  <!-- Inyectado dinámicamente -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Showcase Widget 2: Panel de Deudas y Financiamientos Activos -->
+            <div id="financedDebtsShowcase" class="mb-4 d-none">
+              <div class="glass-card border-info border-opacity-25" style="background: linear-gradient(135deg, rgba(0,210,211,0.06) 0%, rgba(15,15,15,0.7) 100%);">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-info p-2 rounded-circle"><i class="fas fa-handshake text-dark"></i></span>
+                    <h5 class="text-white fw-bold mb-0">Convenios y Multas Financiadas (Plan de Cuotas)</h5>
+                  </div>
+                  <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-30 px-3 py-1 rounded-pill small fw-bold" id="financedCountBadge">0 Planes</span>
+                </div>
+                <p class="text-white-50 small mb-4">
+                  Seguimiento al cronograma de cuotas pactadas: conoce cuánto has cancelado y el saldo exacto pendiente por pagar.
+                </p>
+                <div class="row g-3" id="financedDebtsCardsGrid">
+                  <!-- Inyectado dinámicamente -->
+                </div>
+              </div>
+            </div>
+
+            <!-- Main Table Section -->
             <div class="glass-card">
-              <h5 class="text-white fw-bold mb-4">Sanciones y Multas</h5>
+              <div class="d-flex justify-content-between align-items-start align-items-md-center flex-column flex-md-row gap-3 mb-4">
+                <div>
+                  <h5 class="text-white fw-bold mb-1">Historial Completo de Sanciones y Multas</h5>
+                  <p class="text-white-50 small mb-0">Registro cronológico de sanciones deportivas, amonestaciones y multas económicas del club.</p>
+                </div>
+                <!-- Search & Filters -->
+                <div class="d-flex flex-wrap gap-2 w-100 w-md-auto justify-content-start justify-content-md-end">
+                  <div class="input-group input-group-sm" style="max-width: 250px;">
+                    <span class="input-group-text bg-dark-glass text-white-50 border-0"><i class="fas fa-search"></i></span>
+                    <input type="text" id="sancSearchInput" class="form-control bg-dark-glass text-white border-0" placeholder="Buscar jugador o concepto..." oninput="filterSanctionsTable()" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Filter Pills -->
+              <div class="d-flex flex-wrap gap-2 mb-4 pb-2 border-bottom border-white border-opacity-10" id="sanctionFilterPills">
+                <button class="btn btn-sm rounded-pill px-3 py-1 fw-bold filter-pill active" data-filter="all" onclick="setSanctionFilter('all', this)">
+                  Todas <span class="badge rounded-pill bg-white bg-opacity-20 ms-1" id="filter-count-all">0</span>
+                </button>
+                <button class="btn btn-sm rounded-pill px-3 py-1 fw-bold filter-pill btn-outline-danger" data-filter="suspensions" onclick="setSanctionFilter('suspensions', this)">
+                  <i class="fas fa-user-slash me-1"></i> Suspensiones / Rojas <span class="badge rounded-pill bg-danger bg-opacity-30 ms-1" id="filter-count-susp">0</span>
+                </button>
+                <button class="btn btn-sm rounded-pill px-3 py-1 fw-bold filter-pill btn-outline-info" data-filter="financed" onclick="setSanctionFilter('financed', this)">
+                  <i class="fas fa-handshake me-1"></i> Deudas Financiadas <span class="badge rounded-pill bg-info bg-opacity-30 ms-1" id="filter-count-fin">0</span>
+                </button>
+                <button class="btn btn-sm rounded-pill px-3 py-1 fw-bold filter-pill btn-outline-warning" data-filter="yellows" onclick="setSanctionFilter('yellows', this)">
+                  <i class="fas fa-square me-1"></i> Amarillas <span class="badge rounded-pill bg-warning bg-opacity-30 ms-1" id="filter-count-yel">0</span>
+                </button>
+                <button class="btn btn-sm rounded-pill px-3 py-1 fw-bold filter-pill btn-outline-secondary" data-filter="fines" onclick="setSanctionFilter('fines', this)">
+                  <i class="fas fa-receipt me-1"></i> Multas Generales <span class="badge rounded-pill bg-secondary bg-opacity-30 ms-1" id="filter-count-fines">0</span>
+                </button>
+              </div>
+
               <div class="table-responsive">
-                <table class="table table-premium">
+                <table class="table table-premium align-middle">
                   <thead>
                     <tr>
-                      <th>Fecha</th>
-                      <th>Jugador / Concepto</th>
-                      <th>Tipo</th>
-                      <th>Monto</th>
-                      <th>Estado</th>
+                      <th style="min-width: 110px;">Fecha / Jornada</th>
+                      <th style="min-width: 220px;">Jugador / Concepto</th>
+                      <th style="min-width: 160px;">Tipo & Causal</th>
+                      <th style="min-width: 230px;">Suspensión (Partidos)</th>
+                      <th style="min-width: 180px;">Monto / Financiamiento</th>
+                      <th style="min-width: 120px;">Estado</th>
                     </tr>
                   </thead>
                   <tbody id="sanctionsList"></tbody>
@@ -1445,6 +1747,31 @@
             </button>
           </div>
         </div>
+    </div>
+
+    <!-- Modal de Detalle de Sanción / Financiamiento -->
+    <div class="modal fade" id="sanctionDetailModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content bg-dark border border-white border-opacity-10 text-white rounded-4 shadow-lg" style="backdrop-filter: blur(25px); background: rgba(17, 17, 17, 0.95) !important;">
+          <div class="modal-header border-bottom border-white border-opacity-10 p-4">
+            <div class="d-flex align-items-center gap-3">
+              <div id="modalSancIcon" class="p-3 rounded-circle" style="background: rgba(231,76,60,0.15); color: #e74c3c; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;">
+                <i class="fas fa-gavel fa-lg"></i>
+              </div>
+              <div>
+                <h5 class="modal-title fw-bold mb-0 text-white" id="modalSancTitle">Detalle de la Sanción</h5>
+                <small class="text-white-50" id="modalSancSubtitle">Expediente Oficial de Disciplina y Pagos</small>
+              </div>
+            </div>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body p-4" id="modalSancBody">
+            <!-- Dinámico -->
+          </div>
+          <div class="modal-footer border-top border-white border-opacity-10 p-3">
+            <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1798,22 +2125,128 @@
             );
           });
 
-          // 3. Sanciones
-          // Primero cargamos los jugadores para poder filtrar y mapear nombres de forma robusta
+          // 3. Sanciones, Suspensiones y Deudas Financiadas
+          // 3.1 Cargar jugadores del equipo para mapear dorsales, nombres y cédulas
           const playersSnap = await db
             .collection("players")
             .where("teamId", "==", currentTeam.id)
             .get();
           const playersMap = {};
+          const playersDetailsMap = {};
           playersSnap.forEach((d) => {
             const data = d.data();
             const pName =
               data.name ||
-              `${data.nombres || ""} ${data.apellidos || ""}`.trim();
-            playersMap[d.id] = pName || "Jugador";
+              `${data.nombres || ""} ${data.apellidos || ""}`.trim() ||
+              "Jugador";
+            const num = data.numeroJugador || data.num || data.dorsal || "";
+            playersMap[d.id] = pName;
+            playersDetailsMap[d.id] = {
+              id: d.id,
+              name: pName,
+              numero: num,
+              cedula: data.cedula || "",
+              photo: data.photo || data.foto || "img/logo.png"
+            };
           });
 
-          // Consultar sanciones por campeonato para obtener tanto individuales como de equipo
+          // 3.2 Cargar Fixtures del Campeonato para conocer las fechas jugadas y calcular cumplimiento de sanciones
+          let fixSnap = null;
+          try {
+            if (currentTeam.championshipId) {
+              fixSnap = await db
+                .collection("fixtures")
+                .where("championshipId", "==", currentTeam.championshipId)
+                .get();
+            }
+            if (!fixSnap || fixSnap.empty) {
+              fixSnap = await db.collection("fixtures").get();
+            }
+          } catch (eFix) {
+            console.warn("Error cargando fixtures para cálculo de sanciones:", eFix);
+          }
+
+          // Helper para saber si un partido del fixture ya fue concluido
+          function isMatchDone(m) {
+            if (!m) return false;
+            if (m.isFinalized === true) return true;
+            const ls = m.liveStatus || {};
+            if (ls.isLive === true) return false;
+            if (ls.period === "Finalizado" || ls.minute === "Final") return true;
+            if (
+              m.vocalReport &&
+              (m.vocalReport.vocalSignature ||
+                m.vocalReport.vocalName ||
+                m.vocalReport.capSignatureLocal ||
+                m.vocalReport.capSignatureVisitor)
+            )
+              return true;
+            if (
+              m.refereeReport &&
+              (m.refereeReport.judgeSignature || m.refereeReport.judgeName)
+            )
+              return true;
+            if (
+              m.scoreLocal !== undefined &&
+              m.scoreVisitor !== undefined &&
+              m.scoreLocal !== "" &&
+              m.scoreVisitor !== "" &&
+              m.scoreLocal !== null
+            )
+              return true;
+            if (
+              ls.scoreLocal !== undefined &&
+              ls.scoreVisitor !== undefined &&
+              ls.scoreLocal !== "" &&
+              ls.scoreVisitor !== ""
+            )
+              return true;
+            return false;
+          }
+
+          const normTeam = (currentTeam.name || "").trim().toUpperCase();
+          const teamPlayedJornadas = new Set();
+          const teamScheduledJornadas = new Set();
+          const teamMatchesByJornada = new Map();
+          let maxTournamentFinishedJornada = 0;
+
+          if (fixSnap && !fixSnap.empty) {
+            fixSnap.forEach((fDoc) => {
+              const fData = fDoc.data();
+              if (fData && Array.isArray(fData.data)) {
+                fData.data.forEach((m) => {
+                  if (!m || m.isRest) return;
+                  const loc = (m.local || "").trim().toUpperCase();
+                  const vis = (m.visitor || "").trim().toUpperCase();
+                  if (
+                    loc === "DESCANSA" ||
+                    vis === "DESCANSA" ||
+                    loc === "LIBRE" ||
+                    vis === "LIBRE"
+                  )
+                    return;
+
+                  const j = parseInt(m.jornada, 10);
+                  const finished = isMatchDone(m);
+
+                  if (!isNaN(j) && j > 0) {
+                    if (finished && j > maxTournamentFinishedJornada) {
+                      maxTournamentFinishedJornada = j;
+                    }
+                    if (loc === normTeam || vis === normTeam) {
+                      teamScheduledJornadas.add(j);
+                      teamMatchesByJornada.set(j, m);
+                      if (finished) {
+                        teamPlayedJornadas.add(j);
+                      }
+                    }
+                  }
+                });
+              }
+            });
+          }
+
+          // 3.3 Consultar sanciones por campeonato para obtener individuales y de equipo
           let sancSnap;
           if (currentTeam.championshipId) {
             sancSnap = await db
@@ -1824,20 +2257,27 @@
             sancSnap = await db.collection("sanciones").get();
           }
 
-          // Filtrar y ordenar en memoria
+          // Filtrar sanciones vinculadas a este equipo o a jugadores de este equipo
           const filteredSancDocs = [];
           sancSnap.forEach((doc) => {
             const s = doc.data();
-            // Incluir si es multa al equipo OR si es jugador de este equipo
-            if (
-              s.teamId === currentTeam.id ||
-              (s.jugadorId && playersMap[s.jugadorId])
-            ) {
+            const sTeamId = s.teamId || "";
+            const sTeamName = (s.teamName || s.equipo || "").trim().toUpperCase();
+            const isMatch =
+              sTeamId === currentTeam.id ||
+              (sTeamName && sTeamName === normTeam) ||
+              (s.jugadorId && playersMap[s.jugadorId]) ||
+              (s.cedula &&
+                Object.values(playersDetailsMap).some(
+                  (p) => p.cedula && p.cedula === s.cedula,
+                ));
+
+            if (isMatch) {
               filteredSancDocs.push({ id: doc.id, ...s });
             }
           });
 
-          // Ordenar por fecha de forma segura (fecha o createdAt)
+          // Ordenar por fecha desc
           filteredSancDocs.sort((a, b) => {
             const dateA = a.fecha
               ? a.fecha.toDate
@@ -1860,63 +2300,450 @@
             return dateB - dateA;
           });
 
-          const activeSanc = filteredSancDocs.filter(
-            (d) => d.estado === "activa",
-          ).length;
-          document.getElementById("stat-sanctions").textContent = activeSanc;
-
-          const sancList = document.getElementById("sanctionsList");
-          sancList.innerHTML = "";
-
+          // 3.4 Procesar financiamientos de deudas y convenios
+          const financingPlans = new Map();
           filteredSancDocs.forEach((s) => {
-            const dateObj = s.fecha
-              ? s.fecha.toDate
-                ? s.fecha.toDate()
-                : new Date(s.fecha)
-              : s.createdAt
-                ? s.createdAt.toDate
-                  ? s.createdAt.toDate()
-                  : new Date(s.createdAt)
-                : null;
-            const date = dateObj ? dateObj.toLocaleDateString() : "N/A";
-            const playerName = playersMap[s.jugadorId] || "MULTA EQUIPO";
-            const statusClass = s.estado === "activa" ? "bg-active" : "bg-paid";
-            sancList.insertAdjacentHTML(
-              "beforeend",
-              `
-              <tr>
-                <td>${date}</td>
-                <td>${playerName}</td>
-                <td><span class="text-uppercase small">${s.tipo.replace(/_/g, " ")}</span></td>
-                <td class="fw-bold">$ ${parseFloat(s.valor).toFixed(2)}</td>
-                <td><span class="badge-premium ${statusClass}">${s.estado}</span></td>
-              </tr>
-            `,
-            );
+            const isFinanced =
+              s.tipo === "multa_financiada" ||
+              s.financiada === true ||
+              s.isFinanced === true ||
+              (s.totalCuotas && parseInt(s.totalCuotas) > 1);
+
+            if (isFinanced) {
+              const rootId =
+                s.originalSanctionId ||
+                s.parentSanctionId ||
+                (s.totalCuotas > 1 ? s.id : s.id);
+              const key = rootId || (s.motivo || s.descripcion || "Financiamiento");
+
+              if (!financingPlans.has(key)) {
+                const totalCuotas = parseInt(s.totalCuotas) || 1;
+                const origVal =
+                  parseFloat(s.originalVal) ||
+                  parseFloat(s.valorOriginal) ||
+                  (parseFloat(s.valor) || 0) * totalCuotas;
+
+                financingPlans.set(key, {
+                  id: key,
+                  concept: (s.motivo || s.descripcion || s.baseDesc || "Convenio de Multa")
+                    .replace(/\s*\(\d+\s*de\s*\d+\)/i, "")
+                    .trim(),
+                  originalVal: origVal,
+                  totalCuotas: totalCuotas,
+                  cuotas: [],
+                  montoPagado: 0,
+                  montoPendiente: 0,
+                  cuotasPagadasCount: 0,
+                  cuotasPendientesCount: 0,
+                });
+              }
+
+              const plan = financingPlans.get(key);
+              const cNum = parseInt(s.cuota) || (s.cuotaPagada ? 1 : plan.cuotas.length + 1);
+              const cVal = parseFloat(s.valor) || (plan.originalVal / plan.totalCuotas);
+              const isPaid = s.estado === "cobrada" || s.estado === "pagada" || s.cuotaPagada === 1;
+
+              plan.cuotas.push({
+                sanctionId: s.id,
+                cuota: cNum,
+                valor: cVal,
+                estado: isPaid ? "cobrada" : "activa",
+                jornada: s.jornada || null,
+                invoiceId: s.invoiceId || null,
+                fecha: s.fecha || s.createdAt || null,
+              });
+            }
           });
 
-          // Calcular advertencia de acumulación de tarjetas
+          // Cruzar con facturas existentes para registrar cuotas pagadas
+          if (Array.isArray(invDocs)) {
+            invDocs.forEach((invDoc) => {
+              const inv = invDoc.data ? invDoc.data() : invDoc;
+              if (Array.isArray(inv.extras)) {
+                inv.extras.forEach((e) => {
+                  if (e.isFinanced && e.totalCuotas > 1) {
+                    const key = e.sanctionId || e.baseDesc || "Financiamiento Factura";
+                    if (!financingPlans.has(key)) {
+                      financingPlans.set(key, {
+                        id: key,
+                        concept: (e.baseDesc || e.desc || "Convenio de Pago")
+                          .replace(/\s*\(\d+\s*de\s*\d+\)/i, "")
+                          .trim(),
+                        originalVal: parseFloat(e.originalVal) || (parseFloat(e.val) * e.totalCuotas),
+                        totalCuotas: parseInt(e.totalCuotas) || 1,
+                        cuotas: [],
+                        montoPagado: 0,
+                        montoPendiente: 0,
+                        cuotasPagadasCount: 0,
+                        cuotasPendientesCount: 0,
+                      });
+                    }
+                    const plan = financingPlans.get(key);
+                    const cNum = parseInt(e.cuotaActual) || 1;
+                    const alreadyIn = plan.cuotas.some(
+                      (c) => c.cuota === cNum && c.invoiceId === inv.invoiceId,
+                    );
+                    if (!alreadyIn) {
+                      plan.cuotas.push({
+                        sanctionId: e.sanctionId || "",
+                        cuota: cNum,
+                        valor: parseFloat(e.val) || (plan.originalVal / plan.totalCuotas),
+                        estado: "cobrada",
+                        jornada: inv.jornada || null,
+                        invoiceId: inv.invoiceId || null,
+                        fecha: inv.timestamp || null,
+                      });
+                    }
+                  }
+                });
+              }
+            });
+          }
+
+          // Completar y balancear cuotas de los financiamientos
+          financingPlans.forEach((plan) => {
+            const existingNums = new Set(plan.cuotas.map((c) => c.cuota));
+            const valPerCuota = plan.originalVal / Math.max(1, plan.totalCuotas);
+            for (let c = 1; c <= plan.totalCuotas; c++) {
+              if (!existingNums.has(c)) {
+                plan.cuotas.push({
+                  sanctionId: "",
+                  cuota: c,
+                  valor: valPerCuota,
+                  estado: "activa",
+                  jornada: null,
+                  invoiceId: null,
+                  fecha: null,
+                });
+              }
+            }
+            plan.cuotas.sort((a, b) => a.cuota - b.cuota);
+
+            let pagado = 0;
+            let pendiente = 0;
+            let countPagadas = 0;
+            let countPendientes = 0;
+
+            plan.cuotas.forEach((c) => {
+              if (c.estado === "cobrada" || c.estado === "pagada") {
+                pagado += c.valor;
+                countPagadas++;
+              } else {
+                pendiente += c.valor;
+                countPendientes++;
+              }
+            });
+
+            plan.montoPagado = pagado;
+            plan.montoPendiente = pendiente;
+            plan.cuotasPagadasCount = countPagadas;
+            plan.cuotasPendientesCount = countPendientes;
+            plan.percentPaid = plan.originalVal > 0 ? Math.min(100, Math.round((pagado / plan.originalVal) * 100)) : 0;
+            plan.isFullyPaid = countPendientes === 0;
+          });
+
+          // 3.5 Helper de cálculo de suspensión por jugador
+          function calculatePlayerSuspension(s) {
+            const isRed = s.tipo === "roja";
+            const isExplicitSusp =
+              isRed ||
+              s.tipo === "suspension" ||
+              (s.partidosSuspension && parseInt(s.partidosSuspension) > 0) ||
+              (s.partidos && parseInt(s.partidos) > 0) ||
+              String(s.articulo) === "128" ||
+              String(s.articulo) === "129";
+
+            if (!isExplicitSusp) return null;
+
+            let totalPartidos =
+              parseInt(s.partidosSuspension, 10) ||
+              parseInt(s.partidos, 10) ||
+              0;
+
+            if (String(s.articulo) === "128" || String(s.articulo) === "129") {
+              totalPartidos = 40; // 1 año / expulsión
+            } else if (totalPartidos <= 0 && isRed) {
+              totalPartidos = 2; // Por defecto 2 partidos si no se estipuló
+            }
+
+            let startJornada = parseInt(s.jornada, 10);
+            if (isNaN(startJornada) || startJornada <= 0) {
+              startJornada = 1;
+            }
+
+            // Calcular fechas que el club ha disputado con posterioridad a la jornada de la sanción
+            let matchesServed = 0;
+            if (teamPlayedJornadas.size > 0) {
+              teamPlayedJornadas.forEach((j) => {
+                if (j > startJornada) {
+                  matchesServed++;
+                }
+              });
+            } else if (maxTournamentFinishedJornada > startJornada) {
+              matchesServed = maxTournamentFinishedJornada - startJornada;
+            }
+
+            if (s.partidosCumplidos !== undefined && !isNaN(parseInt(s.partidosCumplidos, 10))) {
+              matchesServed = Math.max(matchesServed, parseInt(s.partidosCumplidos, 10));
+            }
+
+            matchesServed = Math.min(matchesServed, totalPartidos);
+            const pendingPartidos = Math.max(0, totalPartidos - matchesServed);
+            const isFulfilled = pendingPartidos === 0;
+
+            const pInfo = s.jugadorId ? playersDetailsMap[s.jugadorId] : null;
+            const dorsal = s.numeroJugador || (pInfo ? pInfo.numero : "") || "-";
+            const playerName = (pInfo ? pInfo.name : s.nombreJugador) || playersMap[s.jugadorId] || "Jugador";
+
+            const dorsalTag = dorsal && dorsal !== "-" ? `El número ${dorsal}` : `El jugador`;
+
+            let explanation = "";
+            if (totalPartidos >= 40) {
+              explanation = `${dorsalTag} (${playerName}) tiene 1 año de suspensión reglamentaria.`;
+            } else if (isFulfilled) {
+              explanation = `${dorsalTag} (${playerName}) cumplió sus ${totalPartidos} partido(s) de sanción. ¡Habilitado oficialmente para jugar!`;
+            } else {
+              explanation = `${dorsalTag} fue sancionado ${totalPartidos} partido${totalPartidos > 1 ? "s" : ""}, lleva ${matchesServed} fecha${matchesServed === 1 ? "" : "s"} jugada${matchesServed === 1 ? "" : "s"} y le falta ${pendingPartidos} para cumplir.`;
+            }
+
+            return {
+              isSuspension: true,
+              totalPartidos,
+              matchesServed,
+              pendingPartidos,
+              startJornada,
+              isFulfilled,
+              isYearBan: totalPartidos >= 40,
+              dorsal,
+              playerName,
+              explanation,
+              progressPercent: totalPartidos > 0 ? Math.round((matchesServed / totalPartidos) * 100) : 0,
+            };
+          }
+
+          // 3.6 Procesar cada sanción con su metadata completa
+          const processedSanctions = filteredSancDocs.map((s) => {
+            const pInfo = s.jugadorId ? playersDetailsMap[s.jugadorId] : null;
+            const dorsal = s.numeroJugador || (pInfo ? pInfo.numero : "") || "-";
+            const playerName = (pInfo ? pInfo.name : s.nombreJugador) || (s.teamId === currentTeam.id ? "MULTA EQUIPO" : "MULTA GENERAL");
+            const suspInfo = calculatePlayerSuspension(s);
+
+            // Determinar si pertenece a un plan de financiamiento
+            const finKey = s.originalSanctionId || s.parentSanctionId || (s.totalCuotas > 1 ? s.id : s.id);
+            const finPlan = financingPlans.get(finKey) || null;
+
+            return {
+              raw: s,
+              id: s.id,
+              dorsal: dorsal,
+              playerName: playerName,
+              pInfo: pInfo,
+              suspInfo: suspInfo,
+              finPlan: finPlan,
+            };
+          });
+
+          // Almacenar en el ámbito global para búsquedas, filtros y modal
+          window.currentProcessedSanctions = processedSanctions;
+          window.currentFinancingPlans = financingPlans;
+
+          // 3.7 Contadores y Actualización de KPI Cards
+          const activeSuspendedPlayers = processedSanctions.filter(
+            (p) => p.suspInfo && !p.suspInfo.isFulfilled && !p.suspInfo.isYearBan,
+          );
+          const totalSuspendedCount = activeSuspendedPlayers.length;
+
+          let totalFinancedPending = 0;
+          let totalFinancedPaid = 0;
+          financingPlans.forEach((plan) => {
+            totalFinancedPending += plan.montoPendiente;
+            totalFinancedPaid += plan.montoPagado;
+          });
+
+          let directFinesPending = 0;
+          let directFinesCount = 0;
+          filteredSancDocs.forEach((s) => {
+            const isFin = s.tipo === "multa_financiada" || s.financiada === true || (s.totalCuotas && s.totalCuotas > 1);
+            if (!isFin && s.estado === "activa") {
+              directFinesPending += parseFloat(s.valor || 0);
+              directFinesCount++;
+            }
+          });
+
+          let yellowCardsCount = 0;
+          filteredSancDocs.forEach((s) => {
+            if (s.tipo === "amarilla" && s.estado === "activa") {
+              yellowCardsCount++;
+            }
+          });
+
+          // Actualizar elementos KPI
+          document.getElementById("kpi-suspended-count").textContent = totalSuspendedCount;
+          document.getElementById("kpi-suspended-sub").textContent =
+            totalSuspendedCount === 1 ? "1 inhabilitado" : `${totalSuspendedCount} inhabilitados`;
+
+          document.getElementById("kpi-financed-pending").textContent = `$ ${totalFinancedPending.toFixed(2)}`;
+          document.getElementById("kpi-financed-sub").textContent = `Pagado: $ ${totalFinancedPaid.toFixed(2)}`;
+
+          document.getElementById("kpi-fines-pending").textContent = `$ ${directFinesPending.toFixed(2)}`;
+          document.getElementById("kpi-fines-sub").textContent = `${directFinesCount} multa${directFinesCount === 1 ? "" : "s"} directa${directFinesCount === 1 ? "" : "s"}`;
+
+          document.getElementById("kpi-yellow-count").textContent = yellowCardsCount;
+
+          const activeSancCount = filteredSancDocs.filter((d) => d.estado === "activa").length;
+          document.getElementById("stat-sanctions").textContent = activeSancCount;
+
+          // 3.8 Renders de los Widgets Destacados (Showcases)
+          // Showcase de Suspensiones
+          const suspShowcase = document.getElementById("suspendedPlayersShowcase");
+          const suspCardsGrid = document.getElementById("suspendedPlayersCardsGrid");
+          const suspBadge = document.getElementById("suspendedCountBadge");
+
+          if (totalSuspendedCount > 0) {
+            suspShowcase.classList.remove("d-none");
+            suspBadge.textContent = `${totalSuspendedCount} Inhabilitado${totalSuspendedCount === 1 ? "" : "s"}`;
+            suspCardsGrid.innerHTML = "";
+
+            activeSuspendedPlayers.forEach((item) => {
+              const susp = item.suspInfo;
+              const s = item.raw;
+              const cardHtml = `
+                <div class="col-md-6 col-xl-4">
+                  <div class="suspension-hero-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="player-dorsal-badge red">${susp.dorsal !== "-" ? susp.dorsal : '<i class="fas fa-user"></i>'}</span>
+                          <div>
+                            <h6 class="text-white fw-bold mb-0 text-truncate" style="max-width: 170px;">${susp.playerName}</h6>
+                            <span class="badge bg-danger bg-opacity-20 text-white border border-danger border-opacity-30 small" style="font-size: 0.65rem;">
+                              ${s.articulo ? "Art. " + s.articulo + (s.literal ? " Lit. " + s.literal : "") : "Tarjeta Roja"}
+                            </span>
+                          </div>
+                        </div>
+                        <span class="badge rounded-pill bg-danger text-white px-2 py-1 small fw-bold" style="font-size: 0.65rem;">INHABILITADO</span>
+                      </div>
+                      
+                      <!-- Frase explicativa clave -->
+                      <div class="p-2 rounded-3 bg-dark bg-opacity-60 border border-white border-opacity-10 mb-3">
+                        <p class="small text-white-75 mb-0 fw-semibold" style="line-height: 1.4; font-size: 0.8rem;">
+                          <i class="fas fa-bullhorn text-warning me-1"></i>
+                          ${susp.explanation}
+                        </p>
+                      </div>
+
+                      <!-- Mini Timeline de Partidos -->
+                      <div class="mb-2">
+                        <div class="d-flex justify-content-between small text-white-50" style="font-size: 0.72rem;">
+                          <span>Progreso de Sanción:</span>
+                          <span class="fw-bold text-white">${susp.matchesServed} / ${susp.totalPartidos} Fechas</span>
+                        </div>
+                        <div class="suspension-progress-bar-container w-100">
+                          <div class="suspension-progress-bar-fill progress-fill-red" style="width: ${susp.progressPercent}%;"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-3 pt-2 border-top border-white border-opacity-10 small">
+                      <span class="text-white-50" style="font-size: 0.72rem;"><i class="fas fa-calendar-alt me-1"></i>Fecha origen: J${susp.startJornada}</span>
+                    </div>
+                  </div>
+                </div>
+              `;
+              suspCardsGrid.insertAdjacentHTML("beforeend", cardHtml);
+            });
+          } else {
+            suspShowcase.classList.add("d-none");
+          }
+
+          // Showcase de Convenios / Deudas Financiadas
+          const finShowcase = document.getElementById("financedDebtsShowcase");
+          const finCardsGrid = document.getElementById("financedDebtsCardsGrid");
+          const finBadge = document.getElementById("financedCountBadge");
+
+          if (financingPlans.size > 0) {
+            finShowcase.classList.remove("d-none");
+            finBadge.textContent = `${financingPlans.size} Convenio${financingPlans.size === 1 ? "" : "s"}`;
+            finCardsGrid.innerHTML = "";
+
+            financingPlans.forEach((plan) => {
+              const cardHtml = `
+                <div class="col-md-6 col-xl-4">
+                  <div class="financed-hero-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                      <div class="d-flex align-items-center justify-content-between mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                          <span class="player-dorsal-badge team"><i class="fas fa-file-invoice-dollar"></i></span>
+                          <div>
+                            <h6 class="text-white fw-bold mb-0 text-truncate" style="max-width: 170px;">${plan.concept}</h6>
+                            <span class="badge bg-info bg-opacity-20 text-info border border-info border-opacity-30 small" style="font-size: 0.65rem;">
+                              ${plan.totalCuotas} Cuotas Pactadas
+                            </span>
+                          </div>
+                        </div>
+                        <span class="badge rounded-pill ${plan.isFullyPaid ? "bg-success" : "bg-info"} text-dark px-2 py-1 small fw-bold" style="font-size: 0.65rem;">
+                          ${plan.isFullyPaid ? "LIQUIDADO" : "EN FINANCIAMIENTO"}
+                        </span>
+                      </div>
+
+                      <div class="p-2 rounded-3 bg-dark bg-opacity-60 border border-white border-opacity-10 mb-3">
+                        <div class="d-flex justify-content-between small text-white-50 mb-1">
+                          <span>Total Financiado:</span>
+                          <span class="fw-bold text-white">$ ${plan.originalVal.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-white-50 mb-1">
+                          <span class="text-success"><i class="fas fa-check-circle me-1"></i>Pagado (${plan.cuotasPagadasCount}/${plan.totalCuotas}):</span>
+                          <span class="fw-bold text-success">$ ${plan.montoPagado.toFixed(2)}</span>
+                        </div>
+                        <div class="d-flex justify-content-between small text-white-50">
+                          <span class="text-warning"><i class="fas fa-hourglass-half me-1"></i>Falta por pagar:</span>
+                          <span class="fw-bold text-warning">$ ${plan.montoPendiente.toFixed(2)} (${plan.cuotasPendientesCount} cuotas)</span>
+                        </div>
+                      </div>
+
+                      <div class="mb-2">
+                        <div class="d-flex justify-content-between small text-white-50" style="font-size: 0.72rem;">
+                          <span>Progreso de Pagos:</span>
+                          <span class="fw-bold text-white">${plan.percentPaid}%</span>
+                        </div>
+                        <div class="suspension-progress-bar-container w-100">
+                          <div class="suspension-progress-bar-fill progress-fill-cyan" style="width: ${plan.percentPaid}%;"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="d-flex align-items-center mt-3 pt-2 border-top border-white border-opacity-10 small">
+                      <span class="text-white-50" style="font-size: 0.72rem;">
+                        ${plan.cuotasPendientesCount > 0 ? "Próxima cuota pendiente" : "Convenio al día"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              `;
+              finCardsGrid.insertAdjacentHTML("beforeend", cardHtml);
+            });
+          } else {
+            finShowcase.classList.add("d-none");
+          }
+
+          // 3.9 Render de la Tabla Principal de Sanciones
+          renderSanctionsTable();
+
+          // 3.10 Advertencia de acumulación de tarjetas amarillas (3 amarillas)
           const playerSanctionsMap = {};
           filteredSancDocs.forEach((s) => {
             if (s.jugadorId) {
-              if (!playerSanctionsMap[s.jugadorId]) {
-                playerSanctionsMap[s.jugadorId] = [];
-              }
+              if (!playerSanctionsMap[s.jugadorId]) playerSanctionsMap[s.jugadorId] = [];
               playerSanctionsMap[s.jugadorId].push(s);
             }
           });
 
           let playersOnVerge = [];
-
           playersSnap.docs.forEach((doc) => {
             const p = doc.data();
             const pId = doc.id;
-            const pName =
-              p.name ||
-              `${p.nombres || ""} ${p.apellidos || ""}`.trim() ||
-              "Jugador";
+            const pName = p.name || `${p.nombres || ""} ${p.apellidos || ""}`.trim() || "Jugador";
             const dorsal = p.numeroJugador || "-";
-
             const pSanciones = playerSanctionsMap[pId] || [];
 
             let yellowCount = 0;
@@ -1931,7 +2758,10 @@
             }
           });
 
-          // Control de Advertencia de Acumulación (Banner y Pop-up)
+          document.getElementById("kpi-yellow-risk").textContent =
+            playersOnVerge.length === 1 ? "1 en riesgo (3 amarillas)" : `${playersOnVerge.length} en riesgo (3 amarillas)`;
+
+          // Control de Banner y Pop-up de advertencia de acumulación
           const banner = document.getElementById("cardWarningBanner");
           const warningText = document.getElementById("cardWarningText");
           if (banner && warningText) {
@@ -1939,7 +2769,6 @@
               banner.style.display = "block";
               warningText.innerHTML = `Tienes jugadores a una tarjeta amarilla de ser suspendidos: <span class="text-warning fw-bold">${playersOnVerge.join(", ")}</span>.`;
 
-              // Mostrar alerta SweetAlert2 una sola vez al cargar la sesión
               if (!window.hasShownYellowWarning) {
                 window.hasShownYellowWarning = true;
                 setTimeout(() => {
@@ -1958,8 +2787,7 @@
                     confirmButtonText: "ENTENDIDO",
                     confirmButtonColor: "#f1c40f",
                     customClass: {
-                      popup:
-                        "rounded-4 border border-warning border-opacity-10",
+                      popup: "rounded-4 border border-warning border-opacity-10",
                     },
                   });
                 }, 800);
@@ -3093,6 +3921,488 @@
             }
           };
           reader.readAsDataURL(fileData);
+        }
+      };
+
+      // ==========================================
+      // FUNCIONES DE CONTROL DE SANCIONES Y DEUDAS
+      // ==========================================
+      window.currentSanctionFilter = "all";
+
+      window.setSanctionFilter = function (filterType, btnEl) {
+        window.currentSanctionFilter = filterType;
+        document.querySelectorAll("#sanctionFilterPills .filter-pill").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        if (btnEl) btnEl.classList.add("active");
+        const searchInput = document.getElementById("sancSearchInput");
+        const query = searchInput ? searchInput.value.trim() : "";
+        window.renderSanctionsTable(filterType, query);
+      };
+
+      window.filterSanctionsTable = function () {
+        const searchInput = document.getElementById("sancSearchInput");
+        const query = searchInput ? searchInput.value.trim() : "";
+        window.renderSanctionsTable(window.currentSanctionFilter, query);
+      };
+
+      window.renderSanctionsTable = function (filterType = "all", searchQuery = "") {
+        const list = document.getElementById("sanctionsList");
+        if (!list) return;
+
+        const allItems = window.currentProcessedSanctions || [];
+        const normSearch = searchQuery.toLowerCase();
+
+        // 1. Conteo para las píldoras de filtrado
+        const countAll = allItems.length;
+        const countSusp = allItems.filter((i) => i.suspInfo && i.suspInfo.totalPartidos > 0).length;
+        const countFin = allItems.filter((i) => i.finPlan !== null || i.raw.tipo === "multa_financiada" || i.raw.financiada).length;
+        const countYel = allItems.filter((i) => i.raw.tipo === "amarilla").length;
+        const countFines = allItems.filter((i) => !i.suspInfo && !i.finPlan && i.raw.tipo !== "amarilla").length;
+
+        const elAll = document.getElementById("filter-count-all");
+        if (elAll) elAll.textContent = countAll;
+        const elSusp = document.getElementById("filter-count-susp");
+        if (elSusp) elSusp.textContent = countSusp;
+        const elFin = document.getElementById("filter-count-fin");
+        if (elFin) elFin.textContent = countFin;
+        const elYel = document.getElementById("filter-count-yel");
+        if (elYel) elYel.textContent = countYel;
+        const elFines = document.getElementById("filter-count-fines");
+        if (elFines) elFines.textContent = countFines;
+
+        // 2. Aplicar filtro seleccionado
+        let filtered = allItems;
+        if (filterType === "suspensions") {
+          filtered = allItems.filter((i) => i.suspInfo && i.suspInfo.totalPartidos > 0);
+        } else if (filterType === "financed") {
+          filtered = allItems.filter((i) => i.finPlan !== null || i.raw.tipo === "multa_financiada" || i.raw.financiada);
+        } else if (filterType === "yellows") {
+          filtered = allItems.filter((i) => i.raw.tipo === "amarilla");
+        } else if (filterType === "fines") {
+          filtered = allItems.filter((i) => !i.suspInfo && !i.finPlan && i.raw.tipo !== "amarilla");
+        }
+
+        // 3. Aplicar filtro de búsqueda
+        if (normSearch) {
+          filtered = filtered.filter((i) => {
+            const pName = (i.playerName || "").toLowerCase();
+            const dorsal = (i.dorsal || "").toLowerCase();
+            const tipo = (i.raw.tipo || "").toLowerCase();
+            const desc = (i.raw.motivo || i.raw.descripcion || "").toLowerCase();
+            const art = String(i.raw.articulo || "").toLowerCase();
+            return (
+              pName.includes(normSearch) ||
+              dorsal.includes(normSearch) ||
+              tipo.includes(normSearch) ||
+              desc.includes(normSearch) ||
+              art.includes(normSearch)
+            );
+          });
+        }
+
+        list.innerHTML = "";
+
+        if (filtered.length === 0) {
+          list.innerHTML = `
+            <tr>
+              <td colspan="6" class="py-5 text-center text-white-50">
+                <i class="fas fa-check-circle fa-2x mb-2 d-block opacity-25 text-success"></i>
+                <div class="fw-semibold">No se encontraron sanciones registradas en esta categoría</div>
+                <small class="opacity-75">Tu equipo no tiene registros pendientes con este filtro.</small>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        filtered.forEach((item) => {
+          const s = item.raw;
+          const susp = item.suspInfo;
+          const plan = item.finPlan;
+
+          // Fecha
+          const dateObj = s.fecha
+            ? s.fecha.toDate
+              ? s.fecha.toDate()
+              : new Date(s.fecha)
+            : s.createdAt
+              ? s.createdAt.toDate
+                ? s.createdAt.toDate()
+                : new Date(s.createdAt)
+              : null;
+          const dateStr = dateObj ? dateObj.toLocaleDateString() : "N/A";
+          const startJornada = parseInt(s.jornada, 10) || 1;
+
+          // Dorsal e Identificación
+          let dorsalBadgeClass = "player-dorsal-badge";
+          if (s.tipo === "roja" || (susp && susp.totalPartidos > 0)) {
+            dorsalBadgeClass += " red";
+          } else if (s.tipo === "amarilla") {
+            dorsalBadgeClass += " yellow";
+          } else {
+            dorsalBadgeClass += " team";
+          }
+
+          const isPlayer = Boolean(s.jugadorId || (s.nombreJugador && s.nombreJugador !== "MULTA EQUIPO"));
+          const dorsalIcon = item.dorsal && item.dorsal !== "-" ? item.dorsal : (isPlayer ? '<i class="fas fa-user"></i>' : '<i class="fas fa-shield-alt"></i>');
+
+          // Tipo & Causal
+          let tipoBadgeHtml = "";
+          let causalText = s.motivo || s.descripcion || "";
+
+          if (s.tipo === "roja") {
+            tipoBadgeHtml = `<span class="badge-sanc-type badge-sanc-roja"><i class="fas fa-square me-1"></i>ROJA DIRECTA</span>`;
+            if (s.articulo) {
+              causalText = `Art. ${s.articulo} ${s.literal ? "Lit. " + s.literal : ""}`;
+            }
+          } else if (s.tipo === "amarilla") {
+            tipoBadgeHtml = `<span class="badge-sanc-type badge-sanc-amarilla"><i class="fas fa-square me-1"></i>AMARILLA</span>`;
+            if (!causalText) causalText = "Amonestación de partido";
+          } else if (s.tipo === "multa_financiada" || plan) {
+            const cNum = parseInt(s.cuota) || 1;
+            const tNum = plan ? plan.totalCuotas : (parseInt(s.totalCuotas) || 1);
+            tipoBadgeHtml = `<span class="badge-sanc-type badge-sanc-financiada"><i class="fas fa-handshake me-1"></i>FINANCIADA (${cNum}/${tNum})</span>`;
+          } else {
+            tipoBadgeHtml = `<span class="badge-sanc-type badge-sanc-multa"><i class="fas fa-gavel me-1"></i>${(s.tipo || "MULTA").replace(/_/g, " ")}</span>`;
+          }
+
+          // Columna de Suspensión (Partidos)
+          let suspColHtml = "";
+          if (susp && susp.totalPartidos > 0) {
+            const barFillClass = susp.isFulfilled ? "progress-fill-green" : "progress-fill-red";
+            const statusPill = susp.isFulfilled
+              ? `<span class="badge bg-success bg-opacity-20 text-success border border-success border-opacity-30 rounded-pill small fw-bold px-2 py-0.5" style="font-size: 0.65rem;"><i class="fas fa-check-circle me-1"></i>HABILITADO</span>`
+              : `<span class="badge bg-danger bg-opacity-20 text-white border border-danger border-opacity-30 rounded-pill small fw-bold px-2 py-0.5" style="font-size: 0.65rem;"><i class="fas fa-ban me-1"></i>INHABILITADO (Falta ${susp.pendingPartidos})</span>`;
+
+            suspColHtml = `
+              <div class="d-flex flex-column gap-1">
+                <div class="d-flex align-items-center justify-content-between">
+                  <span class="fw-bold text-white small">${susp.totalPartidos} partido${susp.totalPartidos > 1 ? "s" : ""} sanción</span>
+                  ${statusPill}
+                </div>
+                <small class="text-white-50" style="font-size: 0.72rem;">
+                  ${susp.matchesServed} cumplida${susp.matchesServed === 1 ? "" : "s"} • <span class="${susp.pendingPartidos > 0 ? "text-warning fw-bold" : "text-success"}">${susp.pendingPartidos} pendiente${susp.pendingPartidos === 1 ? "" : "s"}</span>
+                </small>
+                <div class="suspension-progress-bar-container">
+                  <div class="suspension-progress-bar-fill ${barFillClass}" style="width: ${susp.progressPercent}%;"></div>
+                </div>
+              </div>
+            `;
+          } else if (s.tipo === "amarilla") {
+            suspColHtml = `<span class="badge bg-secondary bg-opacity-25 text-white-50 border border-white border-opacity-10 small" style="font-size: 0.7rem;">Sin Suspensión Directa</span>`;
+          } else {
+            suspColHtml = `<span class="text-white-50 small">-</span>`;
+          }
+
+          // Columna de Monto / Financiamiento
+          let montoColHtml = "";
+          if (plan) {
+            montoColHtml = `
+              <div class="d-flex flex-column gap-1">
+                <div class="fw-bold text-white small">$ ${plan.originalVal.toFixed(2)} Total</div>
+                <small class="text-success" style="font-size: 0.72rem;"><i class="fas fa-check me-1"></i>Pagado: $ ${plan.montoPagado.toFixed(2)} (${plan.cuotasPagadasCount}/${plan.totalCuotas})</small>
+                <small class="text-warning" style="font-size: 0.72rem;"><i class="fas fa-clock me-1"></i>Falta: $ ${plan.montoPendiente.toFixed(2)} (${plan.cuotasPendientesCount} cuotas)</small>
+                <div class="suspension-progress-bar-container">
+                  <div class="suspension-progress-bar-fill progress-fill-cyan" style="width: ${plan.percentPaid}%;"></div>
+                </div>
+              </div>
+            `;
+          } else {
+            montoColHtml = `<span class="fw-bold text-white fs-6">$ ${parseFloat(s.valor || 0).toFixed(2)}</span>`;
+          }
+
+          // Columna de Estado
+          let statusBadge = "";
+          if (plan) {
+            statusBadge = plan.isFullyPaid
+              ? `<span class="badge-premium bg-paid">LIQUIDADO</span>`
+              : `<span class="badge-premium bg-active" style="background: rgba(0, 210, 211, 0.1); color: #00d2d3; border-color: rgba(0, 210, 211, 0.3);">EN FINANCIAMIENTO</span>`;
+          } else if (s.estado === "cobrada" || s.estado === "pagada") {
+            statusBadge = `<span class="badge-premium bg-paid">COBRADA</span>`;
+          } else if (s.estado === "cumplida") {
+            statusBadge = `<span class="badge-premium bg-paid">CUMPLIDA</span>`;
+          } else {
+            statusBadge = `<span class="badge-premium bg-active">ACTIVA</span>`;
+          }
+
+          const rowHtml = `
+            <tr>
+              <td>
+                <div class="fw-bold text-white small">${dateStr}</div>
+                <span class="badge bg-secondary bg-opacity-25 text-white-50 px-2 py-0.5 rounded-pill" style="font-size: 0.65rem;">Jornada ${startJornada}</span>
+              </td>
+              <td>
+                <div class="d-flex align-items-center gap-2">
+                  <span class="${dorsalBadgeClass}">${dorsalIcon}</span>
+                  <div>
+                    <div class="fw-bold text-white text-uppercase" style="font-size: 0.85rem;">${item.playerName}</div>
+                    <small class="text-white-50" style="font-size: 0.72rem;">${item.pInfo && item.pInfo.cedula ? "CI: " + item.pInfo.cedula : (isPlayer ? "Jugador del Club" : "Sanción Institucional")}</small>
+                  </div>
+                </div>
+              </td>
+              <td>
+                <div class="d-flex flex-column gap-1">
+                  <div>${tipoBadgeHtml}</div>
+                  <small class="text-white-50 text-truncate d-block" style="max-width: 170px; font-size: 0.72rem;" title="${causalText}">${causalText || "---"}</small>
+                </div>
+              </td>
+              <td>${suspColHtml}</td>
+              <td>${montoColHtml}</td>
+              <td>${statusBadge}</td>
+            </tr>
+          `;
+          list.insertAdjacentHTML("beforeend", rowHtml);
+        });
+      };
+
+      // Modal interactivo de Detalle de Sanción / Financiamiento
+      window.openSanctionDetailModal = function (id) {
+        const allItems = window.currentProcessedSanctions || [];
+        const item = allItems.find((i) => i.id === id);
+
+        // Si no se encuentra como sanción individual, buscar si coincide con un plan de financiamiento
+        const plan = (item && item.finPlan) || (window.currentFinancingPlans ? window.currentFinancingPlans.get(id) : null);
+
+        const modalTitle = document.getElementById("modalSancTitle");
+        const modalSubtitle = document.getElementById("modalSancSubtitle");
+        const modalIcon = document.getElementById("modalSancIcon");
+        const modalBody = document.getElementById("modalSancBody");
+
+        if (!item && !plan) {
+          Swal.fire("Aviso", "No se encontró el registro seleccionado.", "info");
+          return;
+        }
+
+        if (item && item.suspInfo && item.suspInfo.totalPartidos > 0) {
+          // Vista detallada de SUSPENSIÓN DEPORTIVA (Tarjeta Roja / Partidos)
+          const susp = item.suspInfo;
+          const s = item.raw;
+
+          modalIcon.style.background = "rgba(231,76,60,0.15)";
+          modalIcon.style.color = "#e74c3c";
+          modalIcon.innerHTML = `<i class="fas fa-ban fa-lg"></i>`;
+          modalTitle.textContent = "Expediente de Suspensión Deportiva";
+          modalSubtitle.textContent = `Reglamento Disciplinario LDBAA • ${susp.playerName}`;
+
+          modalBody.innerHTML = `
+            <div class="glass-card p-3 mb-3 border-danger border-opacity-25" style="background: rgba(231,76,60,0.06);">
+              <div class="d-flex align-items-center gap-3">
+                <span class="player-dorsal-badge red" style="width: 50px; height: 50px; font-size: 1.2rem;">${susp.dorsal !== "-" ? susp.dorsal : '<i class="fas fa-user"></i>'}</span>
+                <div>
+                  <h5 class="text-white fw-bold mb-0 text-uppercase">${susp.playerName}</h5>
+                  <div class="text-white-50 small">${item.pInfo && item.pInfo.cedula ? "Cédula: " + item.pInfo.cedula : "Jugador Registrado"} • Categoría ${currentTeam.category}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resumen Dictaminado -->
+            <div class="p-3 rounded-4 bg-dark bg-opacity-75 border border-warning border-opacity-30 mb-3 text-start">
+              <div class="d-flex align-items-center gap-2 mb-2">
+                <i class="fas fa-bullhorn text-warning fs-5"></i>
+                <h6 class="text-warning fw-bold mb-0 text-uppercase" style="letter-spacing: 1px;">Resolución del Tribunal</h6>
+              </div>
+              <p class="text-white fw-semibold mb-0 fs-6">
+                "${susp.explanation}"
+              </p>
+            </div>
+
+            <!-- Tabla de Datos Oficiales -->
+            <div class="table-responsive mb-3">
+              <table class="table table-bordered border-white border-opacity-10 text-white small align-middle mb-0">
+                <tbody>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50" style="width: 40%;"><i class="fas fa-gavel me-2 text-danger"></i>Tipo de Infracción</td>
+                    <td class="fw-bold">${s.tipo === "roja" ? "Tarjeta Roja Directa" : (s.tipo || "Sanción Disciplinaria").toUpperCase()}</td>
+                  </tr>
+                  ${s.articulo ? `
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50"><i class="fas fa-book me-2 text-info"></i>Artículo Aplicado</td>
+                    <td class="fw-bold text-info">Artículo ${s.articulo} ${s.literal ? "Literal " + s.literal : ""}</td>
+                  </tr>` : ""}
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50"><i class="fas fa-calendar-check me-2 text-warning"></i>Jornada de Infracción</td>
+                    <td class="fw-bold">Jornada ${susp.startJornada}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50"><i class="fas fa-hourglass-start me-2 text-primary"></i>Partidos de Suspensión Asignados</td>
+                    <td class="fw-bold fs-6 text-white">${susp.totalPartidos} partido${susp.totalPartidos > 1 ? "s" : ""} oficial${susp.totalPartidos > 1 ? "es" : ""}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50"><i class="fas fa-check-double me-2 text-success"></i>Fechas Disputadas / Cumplidas</td>
+                    <td class="fw-bold text-success">${susp.matchesServed} fecha${susp.matchesServed === 1 ? "" : "s"}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50"><i class="fas fa-hourglass-half me-2 text-danger"></i>Fechas Restantes por Cumplir</td>
+                    <td class="fw-bold text-danger fs-6">${susp.pendingPartidos} fecha${susp.pendingPartidos === 1 ? "" : "s"}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50"><i class="fas fa-shield-alt me-2 text-secondary"></i>Condición para la Próxima Fecha</td>
+                    <td>
+                      ${susp.isFulfilled 
+                        ? `<span class="badge bg-success px-3 py-1.5 rounded-pill fw-bold"><i class="fas fa-check-circle me-1"></i>HABILITADO PARA JUGAR</span>`
+                        : `<span class="badge bg-danger px-3 py-1.5 rounded-pill fw-bold"><i class="fas fa-ban me-1"></i>INHABILITADO (No puede actuar)</span>`
+                      }
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50"><i class="fas fa-dollar-sign me-2 text-warning"></i>Multa Económica Asociada</td>
+                    <td class="fw-bold">$ ${parseFloat(s.valor || 0).toFixed(2)} (${s.estado === "cobrada" ? '<span class="text-success">Pagada</span>' : '<span class="text-danger">Pendiente</span>'})</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Barra Visual de Progreso -->
+            <div class="p-3 rounded-4 bg-dark bg-opacity-50 border border-white border-opacity-10">
+              <div class="d-flex justify-content-between small text-white-50 mb-1">
+                <span>Avance de Cumplimiento de Suspensión:</span>
+                <span class="fw-bold text-white">${susp.progressPercent}%</span>
+              </div>
+              <div class="suspension-progress-bar-container w-100" style="height: 10px;">
+                <div class="suspension-progress-bar-fill ${susp.isFulfilled ? "progress-fill-green" : "progress-fill-red"}" style="width: ${susp.progressPercent}%;"></div>
+              </div>
+            </div>
+          `;
+        } else if (plan) {
+          // Vista detallada de CONVENIO DE FINANCIAMIENTO DE DEUDA
+          modalIcon.style.background = "rgba(0,210,211,0.15)";
+          modalIcon.style.color = "#00d2d3";
+          modalIcon.innerHTML = `<i class="fas fa-handshake fa-lg"></i>`;
+          modalTitle.textContent = "Plan de Financiamiento de Deuda";
+          modalSubtitle.textContent = `Convenio Oficial de Pagos • ${plan.concept}`;
+
+          modalBody.innerHTML = `
+            <div class="glass-card p-3 mb-3 border-info border-opacity-25" style="background: rgba(0,210,211,0.06);">
+              <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                  <h5 class="text-white fw-bold mb-1">${plan.concept}</h5>
+                  <div class="text-white-50 small">Convenio acordado a ${plan.totalCuotas} cuotas de pago</div>
+                </div>
+                <span class="badge rounded-pill ${plan.isFullyPaid ? "bg-success" : "bg-info"} text-dark px-3 py-1.5 fw-bold">
+                  ${plan.isFullyPaid ? "CONVENIO LIQUIDADO" : "CONVENIO ACTIVO"}
+                </span>
+              </div>
+            </div>
+
+            <!-- Balances -->
+            <div class="row g-2 mb-3">
+              <div class="col-4">
+                <div class="p-2.5 rounded-3 bg-dark bg-opacity-60 border border-white border-opacity-10 text-center">
+                  <small class="text-white-50 d-block" style="font-size: 0.7rem;">TOTAL DEUDA</small>
+                  <span class="fw-bold text-white fs-6">$ ${plan.originalVal.toFixed(2)}</span>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2.5 rounded-3 bg-dark bg-opacity-60 border border-success border-opacity-20 text-center">
+                  <small class="text-success d-block" style="font-size: 0.7rem;">TOTAL PAGADO</small>
+                  <span class="fw-bold text-success fs-6">$ ${plan.montoPagado.toFixed(2)}</span>
+                </div>
+              </div>
+              <div class="col-4">
+                <div class="p-2.5 rounded-3 bg-dark bg-opacity-60 border border-warning border-opacity-20 text-center">
+                  <small class="text-warning d-block" style="font-size: 0.7rem;">FALTA POR PAGAR</small>
+                  <span class="fw-bold text-warning fs-6">$ ${plan.montoPendiente.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Cronograma de Cuotas -->
+            <h6 class="text-white fw-bold mb-2 small text-uppercase" style="letter-spacing: 1px;"><i class="fas fa-list-ol text-info me-2"></i>Cronograma de Cuotas</h6>
+            <div class="table-responsive mb-3">
+              <table class="table table-bordered border-white border-opacity-10 text-white small align-middle mb-0">
+                <thead class="bg-dark bg-opacity-75 text-white-50">
+                  <tr>
+                    <th># Cuota</th>
+                    <th>Valor</th>
+                    <th>Jornada / Fecha</th>
+                    <th>Factura</th>
+                    <th>Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${plan.cuotas.map((c) => {
+                    const isPaid = c.estado === "cobrada" || c.estado === "pagada";
+                    const fStr = c.fecha ? (c.fecha.toDate ? c.fecha.toDate().toLocaleDateString() : new Date(c.fecha).toLocaleDateString()) : "Programada";
+                    return `
+                      <tr>
+                        <td class="fw-bold">Cuota ${c.cuota} de ${plan.totalCuotas}</td>
+                        <td class="fw-bold text-white">$ ${parseFloat(c.valor).toFixed(2)}</td>
+                        <td class="text-white-50">${c.jornada ? "Jornada " + c.jornada : fStr}</td>
+                        <td class="font-monospace text-warning">${c.invoiceId || "---"}</td>
+                        <td>
+                          ${isPaid 
+                            ? '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-40 rounded-pill"><i class="fas fa-check-circle me-1"></i>PAGADA</span>'
+                            : '<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-40 rounded-pill"><i class="fas fa-clock me-1"></i>PENDIENTE</span>'
+                          }
+                        </td>
+                      </tr>
+                    `;
+                  }).join("")}
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Barra de Avance -->
+            <div class="p-3 rounded-4 bg-dark bg-opacity-50 border border-white border-opacity-10">
+              <div class="d-flex justify-content-between small text-white-50 mb-1">
+                <span>Porcentaje del Convenio Cancelado:</span>
+                <span class="fw-bold text-white">${plan.percentPaid}%</span>
+              </div>
+              <div class="suspension-progress-bar-container w-100" style="height: 10px;">
+                <div class="suspension-progress-bar-fill progress-fill-cyan" style="width: ${plan.percentPaid}%;"></div>
+              </div>
+            </div>
+          `;
+        } else {
+          // Vista detallada de MULTA GENERAL / AMONESTACIÓN
+          const s = item.raw;
+          modalIcon.style.background = "rgba(241,196,15,0.15)";
+          modalIcon.style.color = "#f1c40f";
+          modalIcon.innerHTML = `<i class="fas fa-receipt fa-lg"></i>`;
+          modalTitle.textContent = "Expediente de Multa Disciplinaria";
+          modalSubtitle.textContent = `Reglamento Oficial de Sanciones LDBAA`;
+
+          modalBody.innerHTML = `
+            <div class="glass-card p-3 mb-3 border-warning border-opacity-25" style="background: rgba(241,196,15,0.06);">
+              <h5 class="text-white fw-bold mb-1">${item.playerName}</h5>
+              <div class="text-white-50 small">${s.tipo === "amarilla" ? "Tarjeta Amarilla" : (s.tipo || "Multa Institucional").toUpperCase()} • Valor: $ ${parseFloat(s.valor || 0).toFixed(2)}</div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered border-white border-opacity-10 text-white small align-middle mb-0">
+                <tbody>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50" style="width: 40%;">Tipo</td>
+                    <td class="fw-bold">${(s.tipo || "Multa").toUpperCase()}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50">Motivo / Causal</td>
+                    <td>${s.motivo || s.descripcion || "Infracción reglamentaria"}</td>
+                  </tr>
+                  ${s.articulo ? `
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50">Artículo</td>
+                    <td class="fw-bold">Art. ${s.articulo} ${s.literal ? "Lit. " + s.literal : ""}</td>
+                  </tr>` : ""}
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50">Monto Oficial</td>
+                    <td class="fw-bold fs-6 text-warning">$ ${parseFloat(s.valor || 0).toFixed(2)}</td>
+                  </tr>
+                  <tr>
+                    <td class="text-white-50 bg-dark bg-opacity-50">Estado</td>
+                    <td><span class="badge ${s.estado === "cobrada" ? "bg-success" : "bg-danger"} rounded-pill">${(s.estado || "activa").toUpperCase()}</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+
+        const modalEl = document.getElementById("sanctionDetailModal");
+        if (modalEl) {
+          const bsModal = bootstrap.Modal.getOrCreateInstance(modalEl);
+          bsModal.show();
         }
       };
     </script>
