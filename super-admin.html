@@ -72,6 +72,91 @@
         color: #2ecc71 !important;
         transform: scale(1.1);
       }
+
+      /* Match Card Premium & Score Input */
+      .match-card-admin {
+        background: rgba(18, 22, 28, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 18px;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        backdrop-filter: blur(14px);
+        position: relative;
+        overflow: hidden;
+      }
+      .match-card-admin::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, transparent, rgba(46, 204, 113, 0.5), transparent);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+      .match-card-admin:hover {
+        border-color: rgba(46, 204, 113, 0.35);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+        transform: translateY(-2px);
+      }
+      .match-card-admin:hover::before {
+        opacity: 1;
+      }
+      .match-card-admin.is-modified {
+        border-color: rgba(243, 156, 18, 0.7) !important;
+        background: rgba(28, 22, 14, 0.9) !important;
+        box-shadow: 0 0 25px rgba(243, 156, 18, 0.25) !important;
+      }
+      .match-card-admin.is-modified::before {
+        background: linear-gradient(90deg, #f39c12, #e67e22) !important;
+        opacity: 1 !important;
+      }
+
+      .score-input-admin {
+        width: 68px;
+        height: 52px;
+        background: rgba(0, 0, 0, 0.6) !important;
+        border: 2px solid rgba(46, 204, 113, 0.35) !important;
+        color: #2ecc71 !important;
+        font-size: 1.65rem !important;
+        font-weight: 800 !important;
+        border-radius: 14px !important;
+        text-align: center;
+        transition: all 0.2s ease;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+      }
+      .score-input-admin:focus {
+        border-color: #2ecc71 !important;
+        box-shadow: 0 0 16px rgba(46, 204, 113, 0.5), inset 0 2px 4px rgba(0,0,0,0.2) !important;
+        background: rgba(0, 0, 0, 0.8) !important;
+        outline: none;
+      }
+      .is-modified .score-input-admin {
+        border-color: #f39c12 !important;
+        color: #f1c40f !important;
+      }
+
+      .btn-quick-score {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        color: #ecf0f1;
+        font-size: 0.73rem;
+        font-weight: 700;
+        padding: 4px 9px;
+        border-radius: 8px;
+        transition: all 0.2s ease;
+      }
+      .btn-quick-score:hover {
+        background: rgba(46, 204, 113, 0.2);
+        border-color: #2ecc71;
+        color: #2ecc71;
+        transform: translateY(-1px);
+      }
+      .btn-quick-score.btn-wo-amber:hover {
+        background: rgba(243, 156, 18, 0.2);
+        border-color: #f39c12;
+        color: #f1c40f;
+      }
     </style>
   </head>
   <body>
@@ -108,26 +193,33 @@
     </nav>
     <div class="container py-5">
       <!-- Selector de Módulos (Cards de Navegación) -->
-      <div class="row justify-content-center g-4 mb-5">
-        <div class="col-md-4">
-          <div class="dashboard-card p-4 text-center cursor-pointer border border-primary border-opacity-25" id="nav-btn-usuarios" onclick="switchSection('usuarios')" style="background: rgba(46, 204, 113, 0.1); border-color: var(--primary);">
+      <div class="row justify-content-center g-3 g-lg-4 mb-5">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="dashboard-card p-4 text-center cursor-pointer border border-primary border-opacity-25 h-100" id="nav-btn-usuarios" onclick="switchSection('usuarios')" style="background: rgba(46, 204, 113, 0.1); border-color: var(--primary);">
             <i class="fas fa-users-cog fs-1 text-primary mb-3"></i>
-            <h3 class="h4 text-white fw-bold uppercase">Gestión de Usuarios</h3>
-            <p class="text-white-50 small mb-0">Crea, edita, elimina y gestiona roles de acceso de la liga.</p>
+            <h3 class="h5 text-white fw-bold uppercase">Gestión de Usuarios</h3>
+            <p class="text-white-50 small mb-0">Crea, edita y gestiona roles y accesos.</p>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="dashboard-card p-4 text-center cursor-pointer border border-white border-opacity-10" id="nav-btn-vocalias" onclick="switchSection('vocalias')">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="dashboard-card p-4 text-center cursor-pointer border border-white border-opacity-10 h-100" id="nav-btn-marcadores" onclick="switchSection('marcadores')">
+            <i class="fas fa-futbol fs-1 text-success mb-3"></i>
+            <h3 class="h5 text-white fw-bold uppercase">Asignar Marcadores</h3>
+            <p class="text-white-50 small mb-0">Asigna resultados por fecha (ej. 5-0 W.O.) y actualiza posiciones.</p>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="dashboard-card p-4 text-center cursor-pointer border border-white border-opacity-10 h-100" id="nav-btn-vocalias" onclick="switchSection('vocalias')">
             <i class="fas fa-clipboard-list fs-1 text-warning mb-3"></i>
-            <h3 class="h4 text-white fw-bold uppercase">Gestor de Vocalías</h3>
-            <p class="text-white-50 small mb-0">Supervisa, edita o resetea actas de partido y marcadores individuales.</p>
+            <h3 class="h5 text-white fw-bold uppercase">Gestor de Vocalías</h3>
+            <p class="text-white-50 small mb-0">Supervisa, edita o resetea actas de partido.</p>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="dashboard-card p-4 text-center cursor-pointer border border-white border-opacity-10" id="nav-btn-database" onclick="switchSection('database')">
+        <div class="col-12 col-sm-6 col-xl-3">
+          <div class="dashboard-card p-4 text-center cursor-pointer border border-white border-opacity-10 h-100" id="nav-btn-database" onclick="switchSection('database')">
             <i class="fas fa-database fs-1 text-danger mb-3"></i>
-            <h3 class="h4 text-white fw-bold uppercase">Base de Datos General</h3>
-            <p class="text-white-50 small mb-0">Manipulación completa de documentos, vaciado de colecciones y depuración.</p>
+            <h3 class="h5 text-white fw-bold uppercase">Base de Datos</h3>
+            <p class="text-white-50 small mb-0">Vaciado de tablas, reseteos y depuración.</p>
           </div>
         </div>
       </div>
@@ -190,7 +282,100 @@
         </div>
       </div>
 
-      <!-- SECCIÓN 2: GESTOR DE VOCALÍAS Y ACTAS -->
+      <!-- SECCIÓN 2: ASIGNADOR DE MARCADORES Y FECHAS JUGADAS -->
+      <div id="section-marcadores" class="d-none">
+        <div class="text-center mb-4 mt-2">
+          <p class="text-uppercase tracking-widest text-success mb-2 fw-bold" style="letter-spacing: 3px; font-size: 0.8rem">
+            Control de Fechas, Marcadores y Resultados
+          </p>
+          <h1 class="section-title">
+            Gestor de <span class="brand-accent">Marcadores y Fechas</span>
+          </h1>
+          <p class="text-white-50 mx-auto" style="max-width: 720px; font-size: 1.05rem">
+            Consulta todas las fechas con sus respectivos partidos. Asigna marcadores rápidamente (ej. <strong>5 - 0 por No Presentación / Walkover</strong>), edita marcadores existentes o ingrésalos desde cero. Al dar clic en <strong>Guardar</strong>, se registra en Firestore y se actualiza de inmediato la <strong>Tabla de Posiciones</strong>.
+          </p>
+        </div>
+
+        <!-- Panel de Filtros y Acciones -->
+        <div class="row justify-content-center mb-4">
+          <div class="col-lg-11">
+            <div class="glass-panel p-4 rounded-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(46, 204, 113, 0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="fas fa-trophy me-1 text-warning"></i>Campeonato</label>
+                  <select id="marcadoresCampSelect" class="form-select glass-input py-2" onchange="loadAdminMarcadores()">
+                    <option value="">Cargando campeonatos...</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="fas fa-layer-group me-1 text-info"></i>Categoría</label>
+                  <select id="marcadoresCatSelect" class="form-select glass-input py-2" onchange="filterAdminMarcadores()">
+                    <option value="all">Todas las Categorías</option>
+                    <option value="maxima">Máxima</option>
+                    <option value="primera">Primera</option>
+                    <option value="femenino">Femenino</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="far fa-calendar-alt me-1 text-primary"></i>Jornada / Fecha</label>
+                  <select id="marcadoresFechaSelect" class="form-select glass-input py-2" onchange="filterAdminMarcadores()">
+                    <option value="all">Todas las Fechas</option>
+                  </select>
+                </div>
+                <div class="col-md-2">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="fas fa-filter me-1 text-success"></i>Estado</label>
+                  <select id="marcadoresStatusSelect" class="form-select glass-input py-2" onchange="filterAdminMarcadores()">
+                    <option value="all">Todos los Partidos</option>
+                    <option value="pending">Sin Marcador (Por Jugar)</option>
+                    <option value="has_score">Con Marcador Asignado</option>
+                    <option value="manual">Walkovers / Manual</option>
+                  </select>
+                </div>
+                <div class="col-md-3">
+                  <label class="form-label text-white-50 small fw-bold mb-1"><i class="fas fa-search me-1 text-white-50"></i>Buscar Equipo</label>
+                  <input type="text" id="marcadoresSearchInput" class="form-control glass-input py-2" placeholder="Ej: AC Latinos, Chelsea..." onkeyup="filterAdminMarcadores()" />
+                </div>
+              </div>
+
+              <!-- Barra de Métricas y Acciones Principales -->
+              <div class="d-flex flex-wrap gap-3 mt-4 pt-3 border-top border-white border-opacity-10 justify-content-between align-items-center">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                  <span class="badge bg-secondary rounded-pill px-3 py-2 fw-bold" id="badgeMarcadoresTotal">Total: 0</span>
+                  <span class="badge bg-success bg-opacity-75 rounded-pill px-3 py-2 fw-bold" id="badgeMarcadoresConMarcador">Con Marcador: 0</span>
+                  <span class="badge bg-warning text-dark rounded-pill px-3 py-2 fw-bold" id="badgeMarcadoresPendientes">Por Jugar: 0</span>
+                  <span class="badge bg-info bg-opacity-75 rounded-pill px-3 py-2 fw-bold" id="badgeMarcadoresManual">W.O. / Asignados: 0</span>
+                  <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold d-none" id="badgeMarcadoresModificados"><i class="fas fa-exclamation-circle me-1"></i>Cambios sin guardar: 0</span>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-outline-info btn-sm rounded-pill px-3 py-2 fw-bold" onclick="openStandingsPreviewModal()">
+                    <i class="fas fa-trophy me-1.5 text-warning"></i> Ver Tabla de Posiciones
+                  </button>
+                  <button class="btn btn-success btn-sm rounded-pill px-3 py-2 fw-bold shadow-sm d-none" id="btnGuardarTodosMarcadores" onclick="saveAllModifiedMarcadores()">
+                    <i class="fas fa-save me-1.5"></i> Guardar Todos los Modificados
+                  </button>
+                  <button class="btn btn-outline-light btn-sm rounded-pill px-3 py-2 fw-bold" onclick="loadAdminMarcadores()">
+                    <i class="fas fa-sync-alt me-1"></i> Refrescar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenedor de Partidos y Marcadores -->
+        <div class="row justify-content-center">
+          <div class="col-lg-11">
+            <div id="marcadoresListContainer" class="d-flex flex-column gap-3 mb-5">
+              <div class="text-center py-5">
+                <div class="spinner-border text-success" role="status"></div>
+                <div class="mt-2 text-white-50">Cargando partidos y marcadores del campeonato...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: GESTOR DE VOCALÍAS Y ACTAS -->
       <div id="section-vocalias" class="d-none">
         <div class="text-center mb-4 mt-2">
           <p class="text-uppercase tracking-widest text-warning mb-2 fw-bold" style="letter-spacing: 3px; font-size: 0.8rem">
@@ -643,6 +828,61 @@
       </div>
     </div>
 
+    <!-- Modal Vista Previa de Tabla de Posiciones -->
+    <div class="modal fade" id="standingsPreviewModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content modal-premium">
+          <div class="modal-header border-bottom border-white border-opacity-10">
+            <h5 class="modal-title text-white fw-bold d-flex align-items-center">
+              <i class="fas fa-trophy text-warning me-2 fs-4"></i>
+              Tabla de Posiciones Oficial en Tiempo Real
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+              <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-success active" id="modal-tab-maxima" onclick="switchModalStandingsTab('maxima')">MÁXIMA</button>
+                <button type="button" class="btn btn-outline-success" id="modal-tab-primera" onclick="switchModalStandingsTab('primera')">PRIMERA</button>
+                <button type="button" class="btn btn-outline-success" id="modal-tab-femenino" onclick="switchModalStandingsTab('femenino')">FEMENINO</button>
+              </div>
+              <div>
+                <a href="tabla-posiciones.html" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                  <i class="fas fa-external-link-alt me-1"></i> Abrir Página Completa
+                </a>
+              </div>
+            </div>
+
+            <div class="table-responsive rounded-3 border border-white border-opacity-10 overflow-hidden">
+              <table class="table-premium w-100 text-center align-middle mb-0">
+                <thead>
+                  <tr>
+                    <th style="width: 50px;">Pos</th>
+                    <th class="text-start ps-3">Equipo</th>
+                    <th>PJ</th>
+                    <th>PG</th>
+                    <th>PE</th>
+                    <th>PP</th>
+                    <th>GF</th>
+                    <th>GC</th>
+                    <th>DG</th>
+                    <th style="color: #2ecc71;">Pts</th>
+                  </tr>
+                </thead>
+                <tbody id="modalStandingsBody">
+                  <tr>
+                    <td colspan="10" class="py-4 text-center">
+                      <div class="spinner-border text-success" role="status"></div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -684,6 +924,13 @@
           return;
         }
         loadUsers();
+        if (window.location.hash === "#marcadores") {
+          switchSection("marcadores");
+        } else if (window.location.hash === "#vocalias") {
+          switchSection("vocalias");
+        } else if (window.location.hash === "#database") {
+          switchSection("database");
+        }
       });
 
       // Predefined accounts that we want to ensure exist in Firestore so they can be managed
@@ -1036,17 +1283,22 @@
 
       function switchSection(target) {
         const secUsuarios = document.getElementById('section-usuarios');
+        const secMarcadores = document.getElementById('section-marcadores');
         const secVocalias = document.getElementById('section-vocalias');
         const secDatabase = document.getElementById('section-database');
         const btnUsuarios = document.getElementById('nav-btn-usuarios');
+        const btnMarcadores = document.getElementById('nav-btn-marcadores');
         const btnVocalias = document.getElementById('nav-btn-vocalias');
         const btnDatabase = document.getElementById('nav-btn-database');
 
         secUsuarios.classList.add('d-none');
+        secMarcadores.classList.add('d-none');
         secVocalias.classList.add('d-none');
         secDatabase.classList.add('d-none');
         btnUsuarios.style.background = '';
         btnUsuarios.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        btnMarcadores.style.background = '';
+        btnMarcadores.style.borderColor = 'rgba(255, 255, 255, 0.1)';
         btnVocalias.style.background = '';
         btnVocalias.style.borderColor = 'rgba(255, 255, 255, 0.1)';
         btnDatabase.style.background = '';
@@ -1056,6 +1308,13 @@
           secUsuarios.classList.remove('d-none');
           btnUsuarios.style.background = 'rgba(46, 204, 113, 0.1)';
           btnUsuarios.style.borderColor = 'var(--primary)';
+        } else if (target === 'marcadores') {
+          secMarcadores.classList.remove('d-none');
+          btnMarcadores.style.background = 'rgba(46, 204, 113, 0.15)';
+          btnMarcadores.style.borderColor = '#2ecc71';
+          if (!window._adminMarcadoresLoaded) {
+            loadAdminMarcadores();
+          }
         } else if (target === 'vocalias') {
           secVocalias.classList.remove('d-none');
           btnVocalias.style.background = 'rgba(241, 196, 15, 0.1)';
@@ -1067,6 +1326,967 @@
           secDatabase.classList.remove('d-none');
           btnDatabase.style.background = 'rgba(231, 76, 60, 0.1)';
           btnDatabase.style.borderColor = '#e74c3c';
+        }
+      }
+
+      // ==============================================================
+      // GESTOR DE MARCADORES Y FECHAS (ASIGNACIÓN DIRECTA & WALKOVERS)
+      // ==============================================================
+      let adminScoreMatches = [];
+      let modifiedScoresMap = new Map();
+      window._adminMarcadoresLoaded = false;
+
+      async function loadAdminMarcadores() {
+        const campSelect = document.getElementById("marcadoresCampSelect");
+        const vocaliaCampSelect = document.getElementById("vocaliaCampSelect");
+        const container = document.getElementById("marcadoresListContainer");
+        container.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-success"></div><div class="mt-2 text-white-50">Cargando partidos y marcadores...</div></div>';
+
+        try {
+          if (campSelect.options.length <= 1) {
+            const champsSnap = await db.collection("championships").orderBy("createdAt", "desc").get();
+            campSelect.innerHTML = '';
+            champsSnap.forEach(d => {
+              const opt = document.createElement("option");
+              opt.value = d.id;
+              opt.textContent = d.data().name || d.id;
+              campSelect.appendChild(opt);
+            });
+            if (vocaliaCampSelect && vocaliaCampSelect.options.length <= 1) {
+              vocaliaCampSelect.innerHTML = campSelect.innerHTML;
+            }
+          }
+
+          const currentCampId = campSelect.value;
+          if (!currentCampId) {
+            container.innerHTML = '<div class="text-center py-4 text-white-50">Seleccione un campeonato para ver sus partidos.</div>';
+            return;
+          }
+
+          const fixSnap = await db.collection("fixtures").where("championshipId", "==", currentCampId).get();
+          const teamsSnap = await db.collection("teams").where("championshipId", "==", currentCampId).get();
+          const logosMap = {};
+          teamsSnap.forEach(t => {
+            logosMap[t.data().name] = t.data().logo || "img/logo.png";
+          });
+
+          const latestFixtures = {};
+          fixSnap.forEach(doc => {
+            const fData = doc.data();
+            const cat = (fData.category || "General").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const docTime = fData.updatedAt?.toMillis ? fData.updatedAt.toMillis() : (fData.createdAt?.toMillis ? fData.createdAt.toMillis() : 0);
+            if (!latestFixtures[cat] || docTime >= latestFixtures[cat]._time) {
+              latestFixtures[cat] = { id: doc.id, _time: docTime, ...fData };
+            }
+          });
+
+          adminScoreMatches = [];
+          const fechasSet = new Set();
+
+          Object.values(latestFixtures).forEach(fixture => {
+            const cat = fixture.category || "General";
+            (fixture.data || []).forEach((m, idx) => {
+              const fechaStr = m.fecha || m.jornada || m.tag || m.etiqueta || `Fecha ${idx + 1}`;
+              fechasSet.add(fechaStr);
+
+              const isManual = m.manualScore === true || m.isManualScore === true;
+              const isFin = m.isFinalized === true || m.liveStatus?.period === "Finalizado" || isManual;
+
+              let scoreL = 0;
+              let scoreV = 0;
+              let hasScore = false;
+
+              if (isManual) {
+                scoreL = (m.scoreLocal !== undefined && m.scoreLocal !== null) ? m.scoreLocal : (m.liveStatus?.scoreLocal || 0);
+                scoreV = (m.scoreVisitor !== undefined && m.scoreVisitor !== null) ? m.scoreVisitor : (m.liveStatus?.scoreVisitor || 0);
+                hasScore = true;
+              } else {
+                const plL = m.playersLocal || [];
+                const chL = m.changesLocal || [];
+                const plV = m.playersVisitor || [];
+                const chV = m.changesVisitor || [];
+                const sumL = plL.reduce((a, p) => a + (parseInt(p.goles) || 0), 0) + chL.reduce((a, c) => a + (parseInt(c.goles) || 0), 0);
+                const sumV = plV.reduce((a, p) => a + (parseInt(p.goles) || 0), 0) + chV.reduce((a, c) => a + (parseInt(c.goles) || 0), 0);
+
+                if (plL.length > 0 || chL.length > 0 || plV.length > 0 || chV.length > 0) {
+                  scoreL = sumL;
+                  scoreV = sumV;
+                  hasScore = isFin;
+                } else if (m.liveStatus?.scoreLocal !== undefined && m.liveStatus?.scoreLocal !== null) {
+                  scoreL = parseInt(m.liveStatus.scoreLocal) || 0;
+                  scoreV = parseInt(m.liveStatus.scoreVisitor) || 0;
+                  hasScore = isFin;
+                } else if (m.scoreLocal !== undefined && m.scoreLocal !== null) {
+                  scoreL = parseInt(m.scoreLocal) || 0;
+                  scoreV = parseInt(m.scoreVisitor) || 0;
+                  hasScore = isFin;
+                }
+              }
+
+              const uniqueKey = `${fixture.id}_${idx}`;
+
+              adminScoreMatches.push({
+                ...m,
+                _docId: fixture.id,
+                _idx: idx,
+                _uniqueKey: uniqueKey,
+                _cat: cat,
+                _fechaText: fechaStr,
+                _scoreL: scoreL,
+                _scoreV: scoreV,
+                _hasScore: hasScore,
+                _isManual: isManual,
+                _isFin: isFin,
+                _localLogo: logosMap[m.local] || "img/logo.png",
+                _visitorLogo: logosMap[m.visitor] || "img/logo.png"
+              });
+            });
+          });
+
+          // Llenar selector de jornadas / fechas
+          const fechaSelect = document.getElementById("marcadoresFechaSelect");
+          const prevFecha = fechaSelect.value;
+          fechaSelect.innerHTML = '<option value="all">Todas las Fechas</option>';
+
+          const sortedFechas = Array.from(fechasSet).sort((a, b) => {
+            const numA = parseInt((a.match(/\d+/) || [0])[0]);
+            const numB = parseInt((b.match(/\d+/) || [0])[0]);
+            if (numA && numB && numA !== numB) return numA - numB;
+            return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+          });
+
+          sortedFechas.forEach(f => {
+            const opt = document.createElement("option");
+            opt.value = f;
+            opt.textContent = f;
+            fechaSelect.appendChild(opt);
+          });
+          if (prevFecha && sortedFechas.includes(prevFecha)) {
+            fechaSelect.value = prevFecha;
+          }
+
+          modifiedScoresMap.clear();
+          updateModifiedBadges();
+
+          window._adminMarcadoresLoaded = true;
+          filterAdminMarcadores();
+
+        } catch (e) {
+          console.error("Error al cargar partidos y marcadores:", e);
+          container.innerHTML = `<div class="text-center py-4 text-danger">Error: ${e.message}</div>`;
+        }
+      }
+
+      function filterAdminMarcadores() {
+        const catFilter = document.getElementById("marcadoresCatSelect")?.value || "all";
+        const fechaFilter = document.getElementById("marcadoresFechaSelect")?.value || "all";
+        const statusFilter = document.getElementById("marcadoresStatusSelect")?.value || "all";
+        const searchVal = (document.getElementById("marcadoresSearchInput")?.value || "").trim().toLowerCase();
+
+        const filtered = adminScoreMatches.filter(m => {
+          if (catFilter !== "all") {
+            const mCat = (m._cat || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (mCat !== catFilter.toLowerCase()) return false;
+          }
+
+          if (fechaFilter !== "all") {
+            if (m._fechaText !== fechaFilter) return false;
+          }
+
+          if (statusFilter === "pending" && (m._isFin || m._hasScore)) return false;
+          if (statusFilter === "has_score" && !(m._isFin || m._hasScore)) return false;
+          if (statusFilter === "manual" && !m._isManual) return false;
+
+          if (searchVal) {
+            const loc = (m.local || "").toLowerCase();
+            const vis = (m.visitor || "").toLowerCase();
+            if (!loc.includes(searchVal) && !vis.includes(searchVal)) return false;
+          }
+
+          return true;
+        });
+
+        const total = adminScoreMatches.length;
+        const conMarcador = adminScoreMatches.filter(m => m._isFin || m._hasScore).length;
+        const pendientes = total - conMarcador;
+        const manuales = adminScoreMatches.filter(m => m._isManual).length;
+
+        document.getElementById("badgeMarcadoresTotal").textContent = `Total: ${total}`;
+        document.getElementById("badgeMarcadoresConMarcador").textContent = `Con Marcador: ${conMarcador}`;
+        document.getElementById("badgeMarcadoresPendientes").textContent = `Por Jugar: ${pendientes}`;
+        document.getElementById("badgeMarcadoresManual").textContent = `W.O. / Asignados: ${manuales}`;
+
+        renderAdminMarcadoresCards(filtered);
+      }
+
+      function renderAdminMarcadoresCards(matches) {
+        const container = document.getElementById("marcadoresListContainer");
+        if (matches.length === 0) {
+          container.innerHTML = `
+            <div class="glass-panel p-5 text-center rounded-4" style="background: rgba(255, 255, 255, 0.02); border: 1px dashed rgba(255, 255, 255, 0.15);">
+              <i class="fas fa-search fs-1 text-white-50 mb-3 opacity-50"></i>
+              <h5 class="text-white fw-bold">No se encontraron partidos</h5>
+              <p class="text-white-50 small mb-0">No hay partidos que coincidan con los filtros seleccionados (categoría, fecha o estado).</p>
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = matches.map(m => {
+          const uniqueKey = m._uniqueKey;
+          const isModified = modifiedScoresMap.has(uniqueKey);
+          const currentL = isModified ? modifiedScoresMap.get(uniqueKey).scoreL : m._scoreL;
+          const currentV = isModified ? modifiedScoresMap.get(uniqueKey).scoreV : m._scoreV;
+
+          let statusBadge = '<span class="badge bg-secondary bg-opacity-50 text-white-50 px-2.5 py-1 rounded-pill"><i class="far fa-clock me-1"></i>Por Jugar (Sin Marcador)</span>';
+          if (m._isManual) {
+            statusBadge = '<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50 px-2.5 py-1 rounded-pill"><i class="fas fa-hand-paper me-1"></i>Marcador Asignado Directo</span>';
+          } else if (m._isFin) {
+            statusBadge = '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2.5 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Finalizado (Vocalía Oficial)</span>';
+          }
+
+          const catColor = (m._cat || '').toUpperCase().includes('MAX') ? 'warning' : ((m._cat || '').toUpperCase().includes('PRIM') ? 'info' : 'danger');
+          const fechaText = m._fechaText || "Jornada";
+          const matchHora = m.horaRealAsignada || m.hora || "--:--";
+          const matchFecha = m.fechaRealAsignadaText || m.fechaReal || m.dia || "";
+
+          return `
+            <div class="match-card-admin p-3.5 p-md-4 ${isModified ? 'is-modified' : ''}" id="card_${uniqueKey}">
+              <!-- Barra Superior del Partido -->
+              <div class="d-flex flex-wrap justify-content-between align-items-center pb-2 mb-3 border-bottom border-white border-opacity-10 gap-2">
+                <div class="d-flex align-items-center gap-2">
+                  <span class="badge bg-${catColor} bg-opacity-20 text-${catColor} border border-${catColor} border-opacity-50 text-uppercase fw-bold" style="font-size:0.75rem;">
+                    ${m._cat}
+                  </span>
+                  <span class="badge bg-dark border border-white border-opacity-15 text-white-50 px-2.5 py-1 small fw-bold">
+                    <i class="far fa-calendar-alt me-1 text-primary"></i> ${fechaText}
+                  </span>
+                  ${matchFecha ? `<span class="text-white-50 small d-none d-sm-inline"><i class="far fa-clock me-1 text-white-50"></i>${matchFecha} ${matchHora !== '--:--' ? '(' + matchHora + ')' : ''}</span>` : ''}
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                  ${isModified ? '<span class="badge bg-warning text-dark fw-bold animate__animated animate__pulse animate__infinite"><i class="fas fa-pencil-alt me-1"></i>Modificado</span>' : ''}
+                  ${statusBadge}
+                </div>
+              </div>
+
+              <!-- Fila Principal: Equipos, Marcador y Botones W.O. -->
+              <div class="row align-items-center g-3 text-center text-md-start">
+                <!-- Equipo Local -->
+                <div class="col-12 col-md-4 d-flex align-items-center justify-content-center justify-content-md-end gap-3 order-1">
+                  <div class="text-end">
+                    <div class="fw-bold text-white fs-6 text-uppercase" style="letter-spacing: 0.5px;">${m.local}</div>
+                    <div class="small text-white-50">Local</div>
+                  </div>
+                  <img src="${m._localLogo}" alt="${m.local}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(46, 204, 113, 0.4);" onerror="this.src='img/logo.png'">
+                </div>
+
+                <!-- Centro: Inputs de Goles y Botones de Asignación Rápida -->
+                <div class="col-12 col-md-4 text-center order-2">
+                  <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                    <input type="number" min="0" max="99" id="in_loc_${uniqueKey}" value="${currentL}" class="score-input-admin" oninput="markMatchCardModified('${uniqueKey}')" aria-label="Goles Local">
+                    <span class="fs-4 fw-bold text-white-50 px-1">-</span>
+                    <input type="number" min="0" max="99" id="in_vis_${uniqueKey}" value="${currentV}" class="score-input-admin" oninput="markMatchCardModified('${uniqueKey}')" aria-label="Goles Visitante">
+                  </div>
+                  
+                  <!-- Botones Rápidos de Walkover / Resultado Directo -->
+                  <div class="d-flex flex-wrap justify-content-center gap-1.5 mt-2">
+                    <button type="button" class="btn-quick-score" onclick="applyQuickScore('${uniqueKey}', 5, 0, 'No se presentó visitante (W.O. Local)')" title="Asignar 5-0 (No presentación del visitante / Walkover)">
+                      <i class="fas fa-bolt text-warning me-1"></i>5 - 0 (W.O.)
+                    </button>
+                    <button type="button" class="btn-quick-score" onclick="applyQuickScore('${uniqueKey}', 0, 5, 'No se presentó local (W.O. Visitante)')" title="Asignar 0-5 (No presentación del local / Walkover)">
+                      <i class="fas fa-bolt text-warning me-1"></i>0 - 5 (W.O.)
+                    </button>
+                    <button type="button" class="btn-quick-score" onclick="applyQuickScore('${uniqueKey}', 3, 0, 'W.O. 3-0 Local')" title="Asignar 3-0 W.O.">
+                      3 - 0
+                    </button>
+                    <button type="button" class="btn-quick-score" onclick="applyQuickScore('${uniqueKey}', 0, 3, 'W.O. 0-3 Visitante')" title="Asignar 0-3 W.O.">
+                      0 - 3
+                    </button>
+                    <button type="button" class="btn-quick-score" onclick="applyQuickScore('${uniqueKey}', 0, 0, '0 - 0')" title="Asignar 0-0">
+                      0 - 0
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Equipo Visitante -->
+                <div class="col-12 col-md-4 d-flex align-items-center justify-content-center justify-content-md-start gap-3 order-3">
+                  <img src="${m._visitorLogo}" alt="${m.visitor}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(52, 152, 219, 0.4);" onerror="this.src='img/logo.png'">
+                  <div class="text-start">
+                    <div class="fw-bold text-white fs-6 text-uppercase" style="letter-spacing: 0.5px;">${m.visitor}</div>
+                    <div class="small text-white-50">Visitante</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Barra Inferior de Acciones -->
+              <div class="d-flex flex-wrap justify-content-between align-items-center pt-3 mt-3 border-top border-white border-opacity-10 gap-2">
+                <div class="small text-white-50">
+                  ${m._isManual ? '<i class="fas fa-info-circle text-info me-1"></i>Marcador manual guardado.' : (m._isFin ? '<i class="fas fa-check-circle text-success me-1"></i>Partido concluido con acta oficial.' : '<i class="far fa-circle text-white-50 me-1"></i>Partido por jugar. Ingrese marcador y haga clic en Guardar.')}
+                </div>
+                <div class="d-flex gap-2">
+                  ${(m._isFin || m._isManual) ? `
+                    <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" onclick="resetMatchDirectScore('${uniqueKey}')" title="Restablecer partido a Por Jugar">
+                      <i class="fas fa-undo me-1"></i> Restablecer a Por Jugar
+                    </button>
+                  ` : ''}
+                  <button type="button" class="btn btn-success btn-sm rounded-pill px-4 fw-bold shadow-sm" onclick="saveDirectMatchScore('${uniqueKey}')">
+                    <i class="fas fa-save me-1.5"></i> Guardar Marcador
+                  </button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function applyQuickScore(uniqueKey, lScore, vScore, reason) {
+        const inLoc = document.getElementById('in_loc_' + uniqueKey);
+        const inVis = document.getElementById('in_vis_' + uniqueKey);
+        if (inLoc) inLoc.value = lScore;
+        if (inVis) inVis.value = vScore;
+        markMatchCardModified(uniqueKey, reason);
+      }
+
+      function markMatchCardModified(uniqueKey, reason) {
+        const inLoc = document.getElementById('in_loc_' + uniqueKey);
+        const inVis = document.getElementById('in_vis_' + uniqueKey);
+        const card = document.getElementById('card_' + uniqueKey);
+        if (!inLoc || !inVis) return;
+
+        const scoreL = parseInt(inLoc.value, 10) || 0;
+        const scoreV = parseInt(inVis.value, 10) || 0;
+
+        modifiedScoresMap.set(uniqueKey, {
+          uniqueKey,
+          scoreL,
+          scoreV,
+          reason: reason || 'Manual'
+        });
+
+        if (card) {
+          card.classList.add('is-modified');
+        }
+
+        updateModifiedBadges();
+      }
+
+      function updateModifiedBadges() {
+        const badgeMod = document.getElementById("badgeMarcadoresModificados");
+        const btnGuardarTodos = document.getElementById("btnGuardarTodosMarcadores");
+        const count = modifiedScoresMap.size;
+
+        if (count > 0) {
+          if (badgeMod) {
+            badgeMod.textContent = `Cambios sin guardar: ${count}`;
+            badgeMod.classList.remove("d-none");
+          }
+          if (btnGuardarTodos) {
+            btnGuardarTodos.classList.remove("d-none");
+          }
+        } else {
+          if (badgeMod) badgeMod.classList.add("d-none");
+          if (btnGuardarTodos) btnGuardarTodos.classList.add("d-none");
+        }
+      }
+
+      async function saveDirectMatchScore(uniqueKey) {
+        const inLoc = document.getElementById('in_loc_' + uniqueKey);
+        const inVis = document.getElementById('in_vis_' + uniqueKey);
+        if (!inLoc || !inVis) return;
+
+        const scoreL = Math.max(0, parseInt(inLoc.value, 10) || 0);
+        const scoreV = Math.max(0, parseInt(inVis.value, 10) || 0);
+
+        const matchObj = adminScoreMatches.find(m => m._uniqueKey === uniqueKey);
+        if (!matchObj) return;
+
+        const modInfo = modifiedScoresMap.get(uniqueKey);
+        const reason = modInfo?.reason || (scoreL === 5 && scoreV === 0 ? 'W.O. Local (5-0)' : (scoreL === 0 && scoreV === 5 ? 'W.O. Visitante (0-5)' : 'Asignación manual'));
+
+        Swal.fire({
+          title: "Guardando marcador...",
+          html: `Registrando <strong>${matchObj.local} (${scoreL}) - (${scoreV}) ${matchObj.visitor}</strong> y actualizando tabla de posiciones...`,
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const docRef = db.collection("fixtures").doc(matchObj._docId);
+          const docSnap = await docRef.get();
+          if (!docSnap.exists) throw new Error("Documento de fixture no encontrado");
+
+          const fData = docSnap.data();
+          let matchFound = false;
+
+          const updatedMatches = (fData.data || []).map((m, idx) => {
+            const isTarget = (matchObj.matchId && m.matchId && m.matchId === matchObj.matchId && m.matchId !== "undefined") ||
+                             (idx === matchObj._idx) ||
+                             (!matchFound && m.local === matchObj.local && m.visitor === matchObj.visitor);
+
+            if (isTarget && !matchFound) {
+              matchFound = true;
+              return {
+                ...m,
+                matchId: m.matchId || matchObj.matchId || `${matchObj._docId}_${idx}`,
+                isFinalized: true,
+                manualScore: true,
+                scoreLocal: scoreL,
+                scoreVisitor: scoreV,
+                walkoverReason: reason,
+                liveStatus: {
+                  ...(m.liveStatus || {}),
+                  isLive: false,
+                  period: "Finalizado",
+                  minute: "Final",
+                  scoreLocal: scoreL,
+                  scoreVisitor: scoreV,
+                  lastUpdate: new Date().toISOString()
+                },
+                lastUpdated: new Date()
+              };
+            }
+            return m;
+          });
+
+          await docRef.update({
+            data: updatedMatches,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          modifiedScoresMap.delete(uniqueKey);
+          updateModifiedBadges();
+
+          Swal.fire({
+            icon: "success",
+            title: "¡Marcador Guardado!",
+            html: `
+              <div class="text-start">
+                <p>El partido ha quedado registrado exitosamente:</p>
+                <div class="alert alert-success fw-bold text-center fs-5 py-2 my-2">
+                  ${matchObj.local} <span class="badge bg-dark text-warning fs-5 px-3 mx-1">${scoreL} - ${scoreV}</span> ${matchObj.visitor}
+                </div>
+                <div class="small text-white-50 mt-3">
+                  <div><i class="fas fa-check-circle text-success me-1"></i> Estado: <strong>Finalizado / Marcador Asignado</strong></div>
+                  <div><i class="fas fa-chart-line text-success me-1"></i> La <strong>Tabla de Posiciones</strong> se ha actualizado con los puntos y goles correspondientes.</div>
+                </div>
+              </div>
+            `,
+            confirmButtonText: '<i class="fas fa-check me-1"></i> Entendido',
+            confirmButtonColor: "#2ecc71"
+          });
+
+          await loadAdminMarcadores();
+
+        } catch (err) {
+          console.error("Error al guardar marcador directo:", err);
+          Swal.fire("Error", "No se pudo guardar el marcador: " + (err.message || err), "error");
+        }
+      }
+
+      async function saveAllModifiedMarcadores() {
+        if (modifiedScoresMap.size === 0) {
+          Swal.fire("Sin Cambios", "No hay ningún marcador modificado pendiente de guardar.", "info");
+          return;
+        }
+
+        const confirmResult = await Swal.fire({
+          title: "¿Guardar todos los marcadores modificados?",
+          text: `Se actualizarán ${modifiedScoresMap.size} partido(s) simultáneamente en la base de datos y en la tabla de posiciones.`,
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#2ecc71",
+          cancelButtonColor: "#6c757d",
+          confirmButtonText: '<i class="fas fa-save me-1"></i> Sí, Guardar Todos',
+          cancelButtonText: "Cancelar"
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        Swal.fire({
+          title: "Guardando marcadores en lote...",
+          text: "Actualizando registros y tablas de posiciones...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const docsToUpdate = new Map();
+
+          for (const [uniqueKey, mod] of modifiedScoresMap.entries()) {
+            const matchObj = adminScoreMatches.find(m => m._uniqueKey === uniqueKey);
+            if (!matchObj) continue;
+
+            if (!docsToUpdate.has(matchObj._docId)) {
+              docsToUpdate.set(matchObj._docId, []);
+            }
+            docsToUpdate.get(matchObj._docId).push({
+              matchIdx: matchObj._idx,
+              matchId: matchObj.matchId,
+              local: matchObj.local,
+              visitor: matchObj.visitor,
+              scoreL: mod.scoreL,
+              scoreV: mod.scoreV,
+              reason: mod.reason
+            });
+          }
+
+          let totalSaved = 0;
+
+          for (const [docId, modsList] of docsToUpdate.entries()) {
+            const docRef = db.collection("fixtures").doc(docId);
+            const docSnap = await docRef.get();
+            if (!docSnap.exists) continue;
+
+            const fData = docSnap.data();
+            const updatedMatches = (fData.data || []).map((m, idx) => {
+              const modMatch = modsList.find(target => 
+                (target.matchId && m.matchId && m.matchId === target.matchId && m.matchId !== "undefined") ||
+                (idx === target.matchIdx) ||
+                (m.local === target.local && m.visitor === target.visitor)
+              );
+
+              if (modMatch) {
+                totalSaved++;
+                return {
+                  ...m,
+                  matchId: m.matchId || modMatch.matchId || `${docId}_${idx}`,
+                  isFinalized: true,
+                  manualScore: true,
+                  scoreLocal: modMatch.scoreL,
+                  scoreVisitor: modMatch.scoreV,
+                  walkoverReason: modMatch.reason,
+                  liveStatus: {
+                    ...(m.liveStatus || {}),
+                    isLive: false,
+                    period: "Finalizado",
+                    minute: "Final",
+                    scoreLocal: modMatch.scoreL,
+                    scoreVisitor: modMatch.scoreV,
+                    lastUpdate: new Date().toISOString()
+                  },
+                  lastUpdated: new Date()
+                };
+              }
+              return m;
+            });
+
+            await docRef.update({
+              data: updatedMatches,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+          }
+
+          modifiedScoresMap.clear();
+          updateModifiedBadges();
+
+          Swal.fire({
+            icon: "success",
+            title: "¡Marcadores Guardados!",
+            text: `Se han actualizado ${totalSaved} partido(s) con éxito en la base de datos y en la tabla de posiciones.`,
+            confirmButtonColor: "#2ecc71"
+          });
+
+          await loadAdminMarcadores();
+
+        } catch (err) {
+          console.error("Error al guardar lote de marcadores:", err);
+          Swal.fire("Error", "Ocurrió un error al guardar los marcadores: " + (err.message || err), "error");
+        }
+      }
+
+      async function resetMatchDirectScore(uniqueKey) {
+        const matchObj = adminScoreMatches.find(m => m._uniqueKey === uniqueKey);
+        if (!matchObj) return;
+
+        const confirmResult = await Swal.fire({
+          title: `¿Restablecer a "Por Jugar"?`,
+          html: `
+            <p>Estás a punto de anular el marcador de este partido:</p>
+            <div class="alert alert-warning text-dark fw-bold text-center">
+              ${matchObj.local} vs ${matchObj.visitor}
+            </div>
+            <p class="small text-white-50 mb-0">El partido volverá a estado pendiente sin goles y se removerá de los puntos en la tabla de posiciones.</p>
+          `,
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#e74c3c",
+          cancelButtonColor: "#6c757d",
+          confirmButtonText: "Sí, restablecer",
+          cancelButtonText: "Cancelar"
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        Swal.fire({
+          title: "Restableciendo...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const docRef = db.collection("fixtures").doc(matchObj._docId);
+          const docSnap = await docRef.get();
+          if (!docSnap.exists) throw new Error("Documento de fixture no encontrado");
+
+          const fData = docSnap.data();
+          let matchFound = false;
+
+          const updatedMatches = (fData.data || []).map((m, idx) => {
+            const isTarget = (matchObj.matchId && m.matchId && m.matchId === matchObj.matchId && m.matchId !== "undefined") ||
+                             (idx === matchObj._idx) ||
+                             (!matchFound && m.local === matchObj.local && m.visitor === matchObj.visitor);
+
+            if (isTarget && !matchFound) {
+              matchFound = true;
+              return {
+                ...m,
+                matchId: m.matchId || matchObj.matchId || `${matchObj._docId}_${idx}`,
+                isFinalized: false,
+                manualScore: false,
+                scoreLocal: 0,
+                scoreVisitor: 0,
+                liveStatus: {
+                  isLive: false,
+                  period: "Por Jugar",
+                  seconds: 0,
+                  minute: "--:--",
+                  scoreLocal: 0,
+                  scoreVisitor: 0,
+                  events: [],
+                  lastUpdate: new Date().toISOString()
+                },
+                playersLocal: [],
+                playersVisitor: [],
+                changesLocal: [],
+                changesVisitor: [],
+                vocalReport: null,
+                refereeReport: null,
+                vedorReport: null,
+                lastUpdated: new Date()
+              };
+            }
+            return m;
+          });
+
+          await docRef.update({
+            data: updatedMatches,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          modifiedScoresMap.delete(uniqueKey);
+          updateModifiedBadges();
+
+          Swal.fire("Restablecido", `El partido entre ${matchObj.local} y ${matchObj.visitor} quedó en "Por Jugar".`, "success");
+          await loadAdminMarcadores();
+
+        } catch (err) {
+          console.error("Error al restablecer partido:", err);
+          Swal.fire("Error", "No se pudo restablecer: " + (err.message || err), "error");
+        }
+      }
+
+      async function openDirectScoreModal(docId, matchId, matchIdx, localName, visitorName, curScoreL, curScoreV) {
+        const { value: formValues } = await Swal.fire({
+          title: `Asignar / Editar Marcador`,
+          html: `
+            <div class="text-start">
+              <p class="text-white-50 small mb-2">Asigna el resultado final para este encuentro (ej. W.O. 5-0 si no se presentó):</p>
+              <div class="alert alert-dark border border-secondary text-center mb-3">
+                <strong class="text-white">${localName}</strong> <span class="text-warning">vs</span> <strong class="text-white">${visitorName}</strong>
+              </div>
+
+              <div class="row g-2 align-items-center justify-content-center mb-3">
+                <div class="col-5 text-center">
+                  <label class="form-label text-white small fw-bold mb-1">${localName}</label>
+                  <input type="number" id="swal_score_l" min="0" max="99" value="${curScoreL}" class="form-control text-center fw-bold fs-4 bg-dark text-success border-secondary">
+                </div>
+                <div class="col-2 text-center fs-4 fw-bold text-white-50 mt-4">-</div>
+                <div class="col-5 text-center">
+                  <label class="form-label text-white small fw-bold mb-1">${visitorName}</label>
+                  <input type="number" id="swal_score_v" min="0" max="99" value="${curScoreV}" class="form-control text-center fw-bold fs-4 bg-dark text-success border-secondary">
+                </div>
+              </div>
+
+              <div class="d-flex flex-wrap gap-1 justify-content-center mb-3">
+                <button type="button" class="btn btn-xs btn-outline-warning" onclick="document.getElementById('swal_score_l').value=5; document.getElementById('swal_score_v').value=0;">5 - 0 (W.O. Local)</button>
+                <button type="button" class="btn btn-xs btn-outline-warning" onclick="document.getElementById('swal_score_l').value=0; document.getElementById('swal_score_v').value=5;">0 - 5 (W.O. Vis.)</button>
+                <button type="button" class="btn btn-xs btn-outline-info" onclick="document.getElementById('swal_score_l').value=3; document.getElementById('swal_score_v').value=0;">3 - 0</button>
+                <button type="button" class="btn btn-xs btn-outline-info" onclick="document.getElementById('swal_score_l').value=0; document.getElementById('swal_score_v').value=3;">0 - 3</button>
+                <button type="button" class="btn btn-xs btn-outline-secondary" onclick="document.getElementById('swal_score_l').value=0; document.getElementById('swal_score_v').value=0;">0 - 0</button>
+              </div>
+            </div>
+          `,
+          showCancelButton: true,
+          confirmButtonText: '<i class="fas fa-save me-1"></i> Guardar Marcador',
+          confirmButtonColor: "#2ecc71",
+          cancelButtonText: "Cancelar",
+          preConfirm: () => {
+            const l = parseInt(document.getElementById('swal_score_l').value, 10);
+            const v = parseInt(document.getElementById('swal_score_v').value, 10);
+            if (isNaN(l) || isNaN(v) || l < 0 || v < 0) {
+              Swal.showValidationMessage('Ingrese marcadores numéricos válidos (0 o mayores)');
+              return false;
+            }
+            return { scoreL: l, scoreV: v };
+          }
+        });
+
+        if (!formValues) return;
+
+        Swal.fire({
+          title: "Guardando marcador...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const docRef = db.collection("fixtures").doc(docId);
+          const docSnap = await docRef.get();
+          if (!docSnap.exists) throw new Error("Documento de fixture no encontrado");
+
+          const fData = docSnap.data();
+          let matchFound = false;
+
+          const updatedMatches = (fData.data || []).map((m, idx) => {
+            const isTarget = (matchId && m.matchId && m.matchId === matchId && m.matchId !== "undefined") ||
+                             (idx === matchIdx) ||
+                             (!matchFound && m.local === localName && m.visitor === visitorName);
+
+            if (isTarget && !matchFound) {
+              matchFound = true;
+              return {
+                ...m,
+                matchId: m.matchId || matchId || `${docId}_${idx}`,
+                isFinalized: true,
+                manualScore: true,
+                scoreLocal: formValues.scoreL,
+                scoreVisitor: formValues.scoreV,
+                liveStatus: {
+                  ...(m.liveStatus || {}),
+                  isLive: false,
+                  period: "Finalizado",
+                  minute: "Final",
+                  scoreLocal: formValues.scoreL,
+                  scoreVisitor: formValues.scoreV,
+                  lastUpdate: new Date().toISOString()
+                },
+                lastUpdated: new Date()
+              };
+            }
+            return m;
+          });
+
+          await docRef.update({
+            data: updatedMatches,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          Swal.fire({
+            icon: "success",
+            title: "¡Marcador Actualizado!",
+            text: `${localName} (${formValues.scoreL}) - (${formValues.scoreV}) ${visitorName}. Se ha reflejado en la tabla de posiciones.`,
+            confirmButtonColor: "#2ecc71"
+          });
+
+          loadAdminVocalias();
+          if (window._adminMarcadoresLoaded) {
+            loadAdminMarcadores();
+          }
+
+        } catch (err) {
+          console.error("Error al guardar marcador desde vocalías:", err);
+          Swal.fire("Error", "No se pudo actualizar el marcador: " + (err.message || err), "error");
+        }
+      }
+
+      // ==========================================
+      // VISTA PREVIA DE TABLA DE POSICIONES MODAL
+      // ==========================================
+      let currentModalStandingsCat = 'maxima';
+
+      async function openStandingsPreviewModal() {
+        const campSelect = document.getElementById("marcadoresCampSelect") || document.getElementById("vocaliaCampSelect");
+        const campId = campSelect?.value;
+        if (!campId) {
+          Swal.fire("Atención", "Seleccione un campeonato primero.", "warning");
+          return;
+        }
+
+        const modalEl = document.getElementById("standingsPreviewModal");
+        const modal = new bootstrap.Modal(modalEl);
+        modal.show();
+
+        await loadStandingsForModal(currentModalStandingsCat);
+      }
+
+      function switchModalStandingsTab(cat) {
+        currentModalStandingsCat = cat;
+        document.querySelectorAll("#standingsPreviewModal .btn-group .btn").forEach(b => b.classList.remove("active"));
+        const btn = document.getElementById(`modal-tab-${cat}`);
+        if (btn) btn.classList.add("active");
+        loadStandingsForModal(cat);
+      }
+
+      async function loadStandingsForModal(category) {
+        const tbody = document.getElementById("modalStandingsBody");
+        tbody.innerHTML = '<tr><td colspan="10" class="py-4 text-center"><div class="spinner-border text-success"></div><br><span class="text-white-50 small">Calculando tabla de posiciones...</span></td></tr>';
+
+        const campSelect = document.getElementById("marcadoresCampSelect") || document.getElementById("vocaliaCampSelect");
+        const championshipId = campSelect?.value;
+        if (!championshipId) return;
+
+        try {
+          const teamsSnap = await db.collection('teams').where('championshipId', '==', championshipId).get();
+          let teamsData = {};
+          const normalizedSelectedCat = category.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+          teamsSnap.forEach(doc => {
+            const team = doc.data();
+            const teamCat = (team.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (teamCat === normalizedSelectedCat) {
+              teamsData[team.name] = {
+                name: team.name,
+                logo: team.logo || 'img/logo.png',
+                pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0
+              };
+            }
+          });
+
+          const findTeamKey = (name) => {
+            if (!name) return null;
+            const clean = name.trim().toLowerCase();
+            return Object.keys(teamsData).find(k => k.trim().toLowerCase() === clean) || null;
+          };
+
+          const fixturesSnap = await db.collection('fixtures').where('championshipId', '==', championshipId).get();
+          const latestFixtures = {};
+          fixturesSnap.forEach(doc => {
+            const fixture = doc.data();
+            const fixCat = (fixture.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            const docTime = fixture.updatedAt?.toMillis ? fixture.updatedAt.toMillis() : (fixture.createdAt?.toMillis ? fixture.createdAt.toMillis() : 0);
+            if (!latestFixtures[fixCat] || docTime >= latestFixtures[fixCat]._time) {
+              latestFixtures[fixCat] = { id: doc.id, _time: docTime, ...fixture };
+            }
+          });
+
+          const getGoals = (m, teamType) => {
+            if (!m) return 0;
+            const isLoc = teamType === 'local';
+            const ls = m.liveStatus || {};
+            if (m.manualScore === true || m.isManualScore === true) {
+              const direct = isLoc ? (m.scoreLocal ?? ls.scoreLocal) : (m.scoreVisitor ?? ls.scoreVisitor);
+              if (direct !== undefined && direct !== null) return parseInt(direct) || 0;
+            }
+            const players = isLoc ? (m.playersLocal || []) : (m.playersVisitor || []);
+            const changes = isLoc ? (m.changesLocal || []) : (m.changesVisitor || []);
+            const sum = players.reduce((a, p) => a + (parseInt(p.goles) || 0), 0) + changes.reduce((a, c) => a + (parseInt(c.goles) || 0), 0);
+            if (players.length > 0 || changes.length > 0) return sum;
+            const lsScore = isLoc ? ls.scoreLocal : ls.scoreVisitor;
+            if (lsScore !== undefined && lsScore !== null) return parseInt(lsScore) || 0;
+            const mScore = isLoc ? m.scoreLocal : m.scoreVisitor;
+            if (mScore !== undefined && mScore !== null) return parseInt(mScore) || 0;
+            return 0;
+          };
+
+          const isFin = (m) => {
+            if (!m) return false;
+            const ls = m.liveStatus || {};
+            if (ls.isLive === true) return false;
+            if (m.isFinalized === true || m.manualScore === true || m.isManualScore === true) return true;
+            if (ls.period === "Finalizado" || ls.minute === "Final") return true;
+            if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.vocalName)) return true;
+            if (m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName)) return true;
+            return false;
+          };
+
+          Object.values(latestFixtures).forEach(fixture => {
+            const fixCat = (fixture.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            if (fixCat === normalizedSelectedCat && Array.isArray(fixture.data)) {
+              fixture.data.forEach(m => {
+                if (isFin(m)) {
+                  let localKey = findTeamKey(m.local);
+                  let visitorKey = findTeamKey(m.visitor);
+
+                  if (!localKey && m.local && m.local !== "DESCANSA") {
+                    teamsData[m.local] = { name: m.local, logo: 'img/logo.png', pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+                    localKey = m.local;
+                  }
+                  if (!visitorKey && m.visitor && m.visitor !== "DESCANSA") {
+                    teamsData[m.visitor] = { name: m.visitor, logo: 'img/logo.png', pj: 0, pg: 0, pe: 0, pp: 0, gf: 0, gc: 0, dg: 0, pts: 0 };
+                    visitorKey = m.visitor;
+                  }
+
+                  if (localKey && visitorKey) {
+                    const goalsL = getGoals(m, 'local');
+                    const goalsV = getGoals(m, 'visitor');
+
+                    teamsData[localKey].pj++;
+                    teamsData[localKey].gf += goalsL;
+                    teamsData[localKey].gc += goalsV;
+
+                    teamsData[visitorKey].pj++;
+                    teamsData[visitorKey].gf += goalsV;
+                    teamsData[visitorKey].gc += goalsL;
+
+                    if (goalsL > goalsV) {
+                      teamsData[localKey].pg++;
+                      teamsData[localKey].pts += 3;
+                      teamsData[visitorKey].pp++;
+                    } else if (goalsL < goalsV) {
+                      teamsData[visitorKey].pg++;
+                      teamsData[visitorKey].pts += 3;
+                      teamsData[localKey].pp++;
+                    } else {
+                      teamsData[localKey].pe++;
+                      teamsData[localKey].pts += 1;
+                      teamsData[visitorKey].pe++;
+                      teamsData[visitorKey].pts += 1;
+                    }
+                  }
+                }
+              });
+            }
+          });
+
+          let sortedTeams = Object.values(teamsData).map(t => {
+            t.dg = t.gf - t.gc;
+            return t;
+          });
+
+          sortedTeams.sort((a, b) => {
+            if (b.pts !== a.pts) return b.pts - a.pts;
+            if (b.dg !== a.dg) return b.dg - a.dg;
+            return b.gf - a.gf;
+          });
+
+          if (sortedTeams.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" class="py-4 text-white-50">No hay equipos registrados o partidos finalizados en esta categoría.</td></tr>';
+            return;
+          }
+
+          tbody.innerHTML = sortedTeams.map((t, idx) => `
+            <tr>
+              <td class="fw-bold" style="color: #2ecc71;">${idx + 1}</td>
+              <td class="text-start ps-3">
+                <div class="d-flex align-items-center">
+                  <img src="${t.logo}" style="width: 26px; height: 26px; border-radius: 50%; object-fit: cover; margin-right: 8px;" onerror="this.src='img/logo.png'">
+                  <span class="text-white fw-bold">${t.name}</span>
+                </div>
+              </td>
+              <td>${t.pj}</td>
+              <td>${t.pg}</td>
+              <td>${t.pe}</td>
+              <td>${t.pp}</td>
+              <td>${t.gf}</td>
+              <td>${t.gc}</td>
+              <td class="fw-bold ${t.dg >= 0 ? 'text-success' : 'text-danger'}">${t.dg}</td>
+              <td class="fw-bold fs-6 text-warning">${t.pts}</td>
+            </tr>
+          `).join('');
+
+        } catch (e) {
+          console.error("Error al calcular posiciones:", e);
+          tbody.innerHTML = '<tr><td colspan="10" class="py-4 text-danger">Error al calcular tabla de posiciones.</td></tr>';
         }
       }
 
@@ -1265,6 +2485,9 @@
               </td>
               <td class="text-end pe-4 align-middle">
                 <div class="d-inline-flex gap-2">
+                  <button class="btn btn-sm btn-outline-success rounded-pill px-2.5 py-1 fw-bold" onclick="openDirectScoreModal('${m._docId}', '${m.matchId || ''}', ${m._idx}, '${(m.local || '').replace(/'/g, "\\'")}', '${(m.visitor || '').replace(/'/g, "\\'")}', ${scoreL === '-' ? 0 : scoreL}, ${scoreV === '-' ? 0 : scoreV})" title="Asignar o Modificar Marcador Rápido (ej. 5-0 W.O.)">
+                    <i class="fas fa-futbol me-1"></i> Marcador
+                  </button>
                   <a href="vocalias.html" class="btn btn-sm btn-outline-info rounded-pill px-2.5 py-1" title="Ir a Vocalías Oficiales">
                     <i class="fas fa-external-link-alt"></i>
                   </a>

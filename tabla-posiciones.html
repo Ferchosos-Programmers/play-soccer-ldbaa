@@ -212,9 +212,20 @@
         loadTeamsForChampionship(championshipId, currentCategory);
       }
 
-      // Helper para obtener goles oficiales de la vocalía (Titulares + Cambios)
+      // Helper para obtener goles oficiales de la vocalía (Titulares + Cambios) o Asignación Manual
       function getVocalGoals(m, teamType) {
+        if (!m) return 0;
         const isLocal = teamType === 'local';
+        const ls = m.liveStatus || {};
+
+        // 1. Si el marcador fue asignado manualmente por el administrador (ej. walkover / 5-0 / edición directa)
+        if (m.manualScore === true || m.isManualScore === true) {
+          const directScore = isLocal ? (m.scoreLocal ?? ls.scoreLocal) : (m.scoreVisitor ?? ls.scoreVisitor);
+          if (typeof directScore !== 'undefined' && directScore !== null) {
+            return parseInt(directScore) || 0;
+          }
+        }
+
         const players = isLocal ? (m.playersLocal || []) : (m.playersVisitor || []);
         const changes = isLocal ? (m.changesLocal || []) : (m.changesVisitor || []);
         
@@ -227,12 +238,11 @@
           return sumVocal;
         }
 
-        const ls = m.liveStatus || {};
         const lsScore = isLocal ? ls.scoreLocal : ls.scoreVisitor;
-        if (typeof lsScore !== 'undefined') return parseInt(lsScore) || 0;
+        if (typeof lsScore !== 'undefined' && lsScore !== null) return parseInt(lsScore) || 0;
 
         const mScore = isLocal ? m.scoreLocal : m.scoreVisitor;
-        if (typeof mScore !== 'undefined') return parseInt(mScore) || 0;
+        if (typeof mScore !== 'undefined' && mScore !== null) return parseInt(mScore) || 0;
 
         return 0;
       }
@@ -242,7 +252,7 @@
         if (!m) return false;
         const ls = m.liveStatus || {};
         if (ls.isLive === true) return false;
-        if (m.isFinalized === true) return true;
+        if (m.isFinalized === true || m.manualScore === true || m.isManualScore === true) return true;
         if (ls.period === "Finalizado" || ls.minute === "Final") return true;
         if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.vocalName || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor)) return true;
         if (m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName)) return true;
