@@ -369,6 +369,15 @@
               >
                 <i class="fas fa-cloud-check me-1"></i> Borrador Auto-Guardado
               </span>
+              <button
+                type="button"
+                class="btn btn-outline-warning btn-sm rounded-pill px-2.5 py-1 small fw-bold d-inline-flex align-items-center gap-1 ms-1 shadow-sm"
+                onclick="window.generarYDescargarRespaldoImagenActaDesdeModal()"
+                title="Descargar Foto / Imagen de Respaldo de esta Vocalía"
+              >
+                <i class="fas fa-camera text-warning"></i>
+                <span class="d-none d-sm-inline">Foto Respaldo</span>
+              </button>
             </div>
             <button
               type="button"
@@ -2919,12 +2928,27 @@
                     </div>
                 </div>
 
-                <!-- Botón de Guardado -->
-                <div class="row mt-4 mb-3 ${m.isFinalized ? "d-none" : ""}">
-                    <div class="col-12 text-center">
-                        <button class="btn-premium px-5 py-3 fs-5" onclick="window.finalizarGuardarActa('${m.matchId}', '${m._fixId}')">
-                            <i class="fas fa-check-circle me-2"></i> Finalizar y Guardar Acta
-                        </button>
+                <!-- Botones de Acción y Respaldo Visual -->
+                <div class="row mt-4 mb-3">
+                    <div class="col-12 d-flex flex-wrap justify-content-center align-items-center gap-3">
+                        ${!m.isFinalized ? `
+                            <button class="btn-premium px-5 py-3 fs-5" onclick="window.finalizarGuardarActa('${m.matchId}', '${m._fixId}')">
+                                <i class="fas fa-check-circle me-2"></i> Finalizar y Guardar Acta
+                            </button>
+                            <button type="button" class="btn btn-outline-warning px-4 py-3 rounded-pill fw-bold shadow-sm" onclick="window.generarYDescargarRespaldoImagenActaDesdeModal()">
+                                <i class="fas fa-camera me-2"></i> Capturar Respaldo en Imagen (PNG)
+                            </button>
+                        ` : `
+                            <div class="alert alert-success bg-success bg-opacity-10 border border-success border-opacity-25 text-white w-100 text-center py-2 mb-2 rounded-3">
+                                <i class="fas fa-shield-alt text-success me-2"></i> <strong>Esta Acta está Finalizada y Oficializada.</strong>
+                            </div>
+                            <button type="button" class="btn btn-warning px-4 py-2.5 rounded-pill fw-bold text-dark shadow" onclick="window.generarYDescargarRespaldoImagenActaDesdeModal()">
+                                <i class="fas fa-camera me-2"></i> Descargar Respaldo en Imagen (PNG)
+                            </button>
+                            <button type="button" class="btn btn-outline-light px-4 py-2.5 rounded-pill fw-bold" onclick="window.printReceipt()">
+                                <i class="fas fa-print me-2"></i> Imprimir Recibo
+                            </button>
+                        `}
                     </div>
                 </div>
 
@@ -7360,18 +7384,32 @@
               )
             ) {
               matchFinalizedUpdated = true;
-              const finalScoreL = playersLocal.reduce(
+              const titularScoreL = playersLocal.reduce(
                 (acc, p) => acc + (parseInt(p.goles) || 0),
                 0,
               );
-              const finalScoreV = playersVisitor.reduce(
+              const cambioScoreL = changesLocal.reduce(
+                (acc, c) => acc + (parseInt(c.goles) || 0),
+                0,
+              );
+              const finalScoreL = titularScoreL + cambioScoreL;
+
+              const titularScoreV = playersVisitor.reduce(
                 (acc, p) => acc + (parseInt(p.goles) || 0),
                 0,
               );
+              const cambioScoreV = changesVisitor.reduce(
+                (acc, c) => acc + (parseInt(c.goles) || 0),
+                0,
+              );
+              const finalScoreV = titularScoreV + cambioScoreV;
+
               return {
                 ...m,
                 matchId: m.matchId || matchId || `${fixId}_${idx}_${(m.local || "").replace(/\s+/g, "")}_${(m.visitor || "").replace(/\s+/g, "")}`,
                 isFinalized: true,
+                golesLocal: finalScoreL,
+                golesVisitor: finalScoreV,
                 playersLocal,
                 playersVisitor,
                 changesLocal,
@@ -7395,7 +7433,50 @@
             return m;
           });
 
-          await docRef.update({ data: updatedMatches });
+          await docRef.update({
+            data: updatedMatches,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+
+          // Construir objeto de datos completos para el respaldo visual
+          const campSelect = document.getElementById("campSelect");
+          const campId = campSelect?.value || (window.currentMatchOpened && window.currentMatchOpened._campId) || fixtureData.championshipId || "";
+          const targetMatchId = matchId || (window.currentMatchOpened && window.currentMatchOpened.matchId) || "";
+
+          const finalMatchData = {
+            matchId: targetMatchId,
+            fixtureId: fixId,
+            championshipId: campId,
+            category: (window.currentMatchOpened && window.currentMatchOpened._cat) || fixtureData.category || "MÁXIMA",
+            jornada: (window.currentMatchOpened && window.currentMatchOpened.jornada) || 1,
+            fecha: (window.currentMatchOpened && (window.currentMatchOpened.fechaRealAsignadaText || window.currentMatchOpened.fecha)) || "Por Definir",
+            hora: (window.currentMatchOpened && (window.currentMatchOpened.horaRealAsignada || window.currentMatchOpened.hora)) || "--:--",
+            cancha: (window.currentMatchOpened && window.currentMatchOpened.cancha) || "Liga Barrial Argelia Alta",
+            local: (window.currentMatchOpened && window.currentMatchOpened.local) || "Local",
+            visitor: (window.currentMatchOpened && window.currentMatchOpened.visitor) || "Visitante",
+            scoreLocal: (playersLocal.reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0) + changesLocal.reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0)),
+            scoreVisitor: (playersVisitor.reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0) + changesVisitor.reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0)),
+            playersLocal,
+            playersVisitor,
+            changesLocal,
+            changesVisitor,
+            vocalReport,
+            refereeReport,
+            vedorReport,
+            isFinalized: true,
+            savedAt: new Date().toISOString()
+          };
+
+          // Guardar copia local permanente como salvaguarda
+          try {
+            const backupKey = `acta_backup_${finalMatchData.category}_J${finalMatchData.jornada}_${finalMatchData.local}_vs_${finalMatchData.visitor}`.replace(/\s+/g, "_");
+            localStorage.setItem(backupKey, JSON.stringify(finalMatchData));
+            if (finalMatchData.matchId) {
+              localStorage.setItem(`acta_backup_${finalMatchData.matchId}`, JSON.stringify(finalMatchData));
+            }
+          } catch(e) {
+            console.warn("No se pudo guardar respaldo en localStorage:", e);
+          }
 
           // Limpiar borrador local guardado para este partido
           if (typeof window.clearActaDraft === "function") {
@@ -7404,15 +7485,14 @@
           const badge = document.getElementById("actaDraftStatusBadge");
           if (badge) badge.classList.add("d-none");
 
-          Swal.fire(
-            "Éxito",
-            "El acta ha sido finalizada y guardada correctamente.",
-            "success",
-          );
           const modal = bootstrap.Modal.getInstance(
             document.getElementById("vocaliaModal"),
           );
           if (modal) modal.hide();
+
+          // GENERAR Y DESCARGAR AUTOMÁTICAMENTE EL RESPALDO VISUAL EN IMAGEN (PNG)
+          await window.generarYDescargarRespaldoImagenActa(finalMatchData);
+
         } catch (error) {
           console.error(error);
           Swal.fire(
@@ -7421,6 +7501,546 @@
             "error",
           );
         }
+      };
+
+      // ==========================================
+      // MOTOR DE RESPALDO VISUAL EN IMAGEN (PNG)
+      // ==========================================
+
+      window.extraerDatosActaParaRespaldo = function () {
+        if (!window.currentMatchOpened) return null;
+        const m = window.currentMatchOpened;
+
+        const collectPlayers = (tbodyId) => {
+          const players = [];
+          const tbody = document.getElementById(tbodyId);
+          if (!tbody) {
+            return (tbodyId === "listaJugadoresLocal" ? m.playersLocal : m.playersVisitor) || [];
+          }
+
+          tbody.querySelectorAll("tr").forEach((tr) => {
+            const inputs = tr.querySelectorAll("input");
+            if (inputs.length < 2) return;
+            const num = (inputs[0]?.value || "").trim();
+            const name = (inputs[1]?.value || "").trim();
+            const yellowSlot = tr.querySelector(".yellow-slot");
+            const redSlot = tr.querySelector(".red-slot");
+            const ta = yellowSlot ? yellowSlot.querySelectorAll(".yellow-rect").length : 0;
+            const trCount = redSlot ? redSlot.querySelectorAll(".red-rect").length : 0;
+            const goles = parseInt(inputs[2]?.value) || 0;
+            if (num && name && name !== "Seleccionar..." && name !== "Seleccionar Jugador...") {
+              players.push({ num, name, ta, tr: trCount, goles });
+            }
+          });
+          return players;
+        };
+
+        const collectChanges = (tbodyId) => {
+          const changes = [];
+          const tbody = document.getElementById(tbodyId);
+          if (!tbody) {
+            return (tbodyId === "listaCambiosLocal" ? m.changesLocal : m.changesVisitor) || [];
+          }
+
+          tbody.querySelectorAll("tr").forEach((tr) => {
+            const inputs = tr.querySelectorAll("input");
+            if (inputs.length < 3) return;
+            const entraNum = (inputs[0]?.value || "").trim();
+            const name = (inputs[1]?.value || "").trim();
+            const saleNum = (inputs[2]?.value || "").trim();
+            const yellowSlot = tr.querySelector(".yellow-slot");
+            const redSlot = tr.querySelector(".red-slot");
+            const ta = yellowSlot ? yellowSlot.querySelectorAll(".yellow-rect").length : 0;
+            const trCount = redSlot ? redSlot.querySelectorAll(".red-rect").length : 0;
+            const goles = parseInt(inputs[3]?.value) || 0;
+            if (entraNum && name && name !== "Seleccionar Entra...") {
+              changes.push({ entraNum, name, saleNum, ta, tr: trCount, goles });
+            }
+          });
+          return changes;
+        };
+
+        const pLocal = collectPlayers("listaJugadoresLocal");
+        const pVisitor = collectPlayers("listaJugadoresVisitante");
+        const cLocal = collectChanges("listaCambiosLocal");
+        const cVisitor = collectChanges("listaCambiosVisitante");
+
+        const scoreL = pLocal.reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0) +
+                       cLocal.reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0);
+        const scoreV = pVisitor.reduce((acc, p) => acc + (parseInt(p.goles) || 0), 0) +
+                       cVisitor.reduce((acc, c) => acc + (parseInt(c.goles) || 0), 0);
+
+        const vocalReport = {
+          startTime: document.getElementById("vocal_start_time")?.value || m.vocalReport?.startTime || "",
+          observations: document.getElementById("vocal_observations")?.value || m.vocalReport?.observations || "",
+          vocalName: document.getElementById("vocal_adm_name")?.value || m.vocalReport?.vocalName || m.vocalAsignado || "",
+          vocalClub: document.getElementById("vocal_adm_club")?.value || m.vocalReport?.vocalClub || "",
+          vocalSignature: document.getElementById("vocal_adm_signature")?.value || m.vocalReport?.vocalSignature || "",
+          capSignatureLocal: document.getElementById("cap_signature_local")?.value || m.vocalReport?.capSignatureLocal || "",
+          capNoLocal: document.getElementById("cap_no_local")?.value || m.vocalReport?.capNoLocal || "",
+          capSignatureVisitor: document.getElementById("cap_signature_visitor")?.value || m.vocalReport?.capSignatureVisitor || "",
+          capNoVisitor: document.getElementById("cap_no_visitor")?.value || m.vocalReport?.capNoVisitor || "",
+        };
+
+        const refereeReport = {
+          observations: document.getElementById("referee_observations")?.value || m.refereeReport?.observations || "",
+          judgeName: document.getElementById("referee_name")?.value || m.refereeReport?.judgeName || "",
+          judgeSignature: document.getElementById("referee_signature")?.value || m.refereeReport?.judgeSignature || "",
+          judgeRating: document.getElementById("referee_rating")?.value || m.refereeReport?.judgeRating || "",
+        };
+
+        const vedorReport = {
+          nombre: document.getElementById("vedor_nombre")?.value || m.vedorReport?.nombre || m.veedorAsignado || "",
+          club: document.getElementById("vedor_club")?.value || m.vedorReport?.club || "",
+          observaciones: document.getElementById("vedor_obs")?.value || m.vedorReport?.observaciones || "",
+        };
+
+        return {
+          matchId: m.matchId || "",
+          local: m.local || "Local",
+          visitor: m.visitor || "Visitante",
+          category: m._cat || m.category || "MÁXIMA",
+          jornada: m.jornada || 1,
+          fecha: m.fechaRealAsignadaText || m.fecha || "Por Definir",
+          hora: m.horaRealAsignada || m.hora || "--:--",
+          cancha: m.cancha || "Liga Barrial Argelia Alta",
+          vocal: vocalReport.vocalName || m.vocalAsignado || "Oficial",
+          veedor: vedorReport.nombre || m.veedorAsignado || "Oficial",
+          scoreLocal: scoreL,
+          scoreVisitor: scoreV,
+          playersLocal: pLocal.length ? pLocal : (m.playersLocal || []),
+          playersVisitor: pVisitor.length ? pVisitor : (m.playersVisitor || []),
+          changesLocal: cLocal.length ? cLocal : (m.changesLocal || []),
+          changesVisitor: cVisitor.length ? cVisitor : (m.changesVisitor || []),
+          vocalReport,
+          refereeReport,
+          vedorReport,
+          isFinalized: m.isFinalized || false,
+          savedAt: new Date().toISOString()
+        };
+      };
+
+      window.construirHtmlRespaldoActa = function (data) {
+        const campSelect = document.getElementById("campSelect");
+        const campId = campSelect?.value || "";
+        const teamsLogos = (campId && championshipTeamsCache && championshipTeamsCache.get(campId)) || {};
+        const localLogo = teamsLogos[data.local] || "img/logo.png";
+        const visitorLogo = teamsLogos[data.visitor] || "img/logo.png";
+
+        const renderPlayerRows = (players) => {
+          if (!players || players.length === 0) {
+            return `<tr><td colspan="5" style="padding:10px; text-align:center; color:#888; font-style:italic;">Sin titulares registrados</td></tr>`;
+          }
+          return players.map((p, idx) => `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); ${idx % 2 === 0 ? 'background: rgba(255,255,255,0.02);' : ''}">
+              <td style="padding: 7px 10px; text-align:center; font-weight:bold; color:#f1c40f;">${p.num || (idx + 1)}</td>
+              <td style="padding: 7px 10px; font-weight:600; text-transform:uppercase; font-size:13px;">${p.name || ''}</td>
+              <td style="padding: 7px 10px; text-align:center;">
+                ${(p.ta > 0) ? Array(p.ta).fill('<span style="background:#ffeb3b; width:10px; height:14px; display:inline-block; border-radius:2px; margin:0 1px; box-shadow:0 0 5px rgba(255,235,59,0.5);"></span>').join('') : '<span style="color:#444;">-</span>'}
+              </td>
+              <td style="padding: 7px 10px; text-align:center;">
+                ${(p.tr > 0) ? Array(p.tr).fill('<span style="background:#f44336; width:10px; height:14px; display:inline-block; border-radius:2px; margin:0 1px; box-shadow:0 0 5px rgba(244,67,54,0.5);"></span>').join('') : '<span style="color:#444;">-</span>'}
+              </td>
+              <td style="padding: 7px 10px; text-align:center; font-weight:bold; font-size:14px; color:#2ecc71;">
+                ${(parseInt(p.goles) > 0) ? `⚽ ${p.goles}` : '<span style="color:#444;">0</span>'}
+              </td>
+            </tr>
+          `).join("");
+        };
+
+        const renderChangesRows = (changes) => {
+          if (!changes || changes.length === 0) {
+            return `<tr><td colspan="6" style="padding:8px; text-align:center; color:#777; font-size:12px;">Sin cambios registrados</td></tr>`;
+          }
+          return changes.map((c, idx) => `
+            <tr style="border-bottom: 1px solid rgba(255,255,255,0.06); ${idx % 2 === 0 ? 'background: rgba(255,255,255,0.02);' : ''}">
+              <td style="padding: 6px 8px; text-align:center; color:#2ecc71; font-weight:bold;">${c.entraNum || '-'}</td>
+              <td style="padding: 6px 8px; text-align:center; color:#e74c3c; font-weight:bold;">${c.saleNum || '-'}</td>
+              <td style="padding: 6px 8px; font-weight:600; text-transform:uppercase; font-size:12px; color:#f1c40f;">${c.name || ''}</td>
+              <td style="padding: 6px 8px; text-align:center;">
+                ${(c.ta > 0) ? Array(c.ta).fill('<span style="background:#ffeb3b; width:9px; height:13px; display:inline-block; border-radius:2px; margin:0 1px;"></span>').join('') : '<span style="color:#444;">-</span>'}
+              </td>
+              <td style="padding: 6px 8px; text-align:center;">
+                ${(c.tr > 0) ? Array(c.tr).fill('<span style="background:#f44336; width:9px; height:13px; display:inline-block; border-radius:2px; margin:0 1px;"></span>').join('') : '<span style="color:#444;">-</span>'}
+              </td>
+              <td style="padding: 6px 8px; text-align:center; font-weight:bold; color:#2ecc71;">
+                ${(parseInt(c.goles) > 0) ? `⚽ ${c.goles}` : '<span style="color:#444;">0</span>'}
+              </td>
+            </tr>
+          `).join("");
+        };
+
+        return `
+          <div style="width: 1080px; box-sizing: border-box; background: #0c1017; color: #ffffff; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; padding: 32px; border: 2px solid #2ecc71; border-radius: 18px; box-shadow: 0 25px 60px rgba(0,0,0,0.9); line-height: 1.4;">
+            
+            <!-- CABECERA INSTITUCIONAL -->
+            <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid rgba(255,255,255,0.12); padding-bottom: 18px; margin-bottom: 20px;">
+              <div style="display: flex; align-items: center; gap: 18px;">
+                <img src="img/logo.png" alt="LDBAA Logo" style="width: 72px; height: 72px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(46,204,113,0.4));">
+                <div>
+                  <div style="font-size: 22px; font-weight: 900; letter-spacing: 1.5px; text-transform: uppercase; color: #ffffff;">LIGA DEPORTIVA BARRIAL ARGELIA ALTA</div>
+                  <div style="font-size: 13px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #2ecc71; margin-top: 2px;">ACTA OFICIAL DE VOCALÍA DIGITAL - RESPALDO VISUAL</div>
+                </div>
+              </div>
+              <div style="text-align: right;">
+                <div style="background: rgba(46,204,113,0.15); border: 1px solid #2ecc71; color: #2ecc71; padding: 6px 14px; border-radius: 30px; font-weight: 800; font-size: 13px; letter-spacing: 1px; display: inline-block;">
+                  ✓ OFICIALIZADO
+                </div>
+                <div style="font-size: 11px; color: #888; margin-top: 5px;">Generado: ${new Date().toLocaleDateString('es-EC')} ${new Date().toLocaleTimeString('es-EC')}</div>
+              </div>
+            </div>
+
+            <!-- METADATOS DEL ENCUENTRO -->
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 18px; margin-bottom: 22px;">
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; color: #8899a6; font-weight: 600;">Categoría</div>
+                <div style="font-size: 14px; font-weight: 800; color: #f1c40f; text-transform: uppercase;">${data.category || 'MÁXIMA'}</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; color: #8899a6; font-weight: 600;">Jornada / Fecha</div>
+                <div style="font-size: 14px; font-weight: 800; color: #ffffff;">Jornada ${data.jornada || 1} | ${data.fecha || 'Por Definir'}</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; color: #8899a6; font-weight: 600;">Hora / Cancha</div>
+                <div style="font-size: 14px; font-weight: 800; color: #ffffff;">${data.hora || '--:--'} | ${data.cancha || 'Liga Argelia Alta'}</div>
+              </div>
+              <div>
+                <div style="font-size: 11px; text-transform: uppercase; color: #8899a6; font-weight: 600;">Mesa de Control</div>
+                <div style="font-size: 13px; font-weight: 700; color: #3498db; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                  Vocal: ${data.vocalReport?.vocalName || data.vocal || 'Oficial'}
+                </div>
+              </div>
+            </div>
+
+            <!-- MARCADOR CENTRAL GIGANTE -->
+            <div style="background: linear-gradient(135deg, rgba(20,28,40,0.95), rgba(12,18,28,0.95)); border: 2px solid rgba(46,204,113,0.5); border-radius: 16px; padding: 22px 28px; margin-bottom: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.6);">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <!-- Local -->
+                <div style="flex: 1; display: flex; align-items: center; gap: 16px;">
+                  <img src="${localLogo}" alt="Logo Local" style="width: 58px; height: 58px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); background:#111;">
+                  <div>
+                    <span style="font-size: 11px; font-weight: 800; color: #2ecc71; letter-spacing: 1px; text-transform: uppercase;">LOCAL</span>
+                    <div style="font-size: 22px; font-weight: 900; text-transform: uppercase; color: #ffffff; letter-spacing: 0.5px;">${data.local}</div>
+                  </div>
+                </div>
+
+                <!-- Score -->
+                <div style="text-align: center; padding: 0 30px;">
+                  <div style="display: flex; align-items: center; justify-content: center; gap: 18px; font-family: 'Courier New', monospace; font-size: 60px; font-weight: 900; line-height: 1;">
+                    <span style="color: #2ecc71; text-shadow: 0 0 20px rgba(46,204,113,0.6);">${data.scoreLocal ?? 0}</span>
+                    <span style="color: #f1c40f; font-size: 40px;">:</span>
+                    <span style="color: #3498db; text-shadow: 0 0 20px rgba(52,152,219,0.6);">${data.scoreVisitor ?? 0}</span>
+                  </div>
+                  <div style="margin-top: 6px;">
+                    <span style="background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.15); padding: 3px 12px; border-radius: 12px; font-size: 11px; font-weight: 800; color: #fff; letter-spacing: 1px;">FINAL</span>
+                  </div>
+                </div>
+
+                <!-- Visitante -->
+                <div style="flex: 1; display: flex; align-items: center; justify-content: flex-end; gap: 16px; text-align: right;">
+                  <div>
+                    <span style="font-size: 11px; font-weight: 800; color: #3498db; letter-spacing: 1px; text-transform: uppercase;">VISITANTE</span>
+                    <div style="font-size: 22px; font-weight: 900; text-transform: uppercase; color: #ffffff; letter-spacing: 0.5px;">${data.visitor}</div>
+                  </div>
+                  <img src="${visitorLogo}" alt="Logo Visitante" style="width: 58px; height: 58px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255,255,255,0.2); background:#111;">
+                </div>
+              </div>
+            </div>
+
+            <!-- NÓMINAS: DOS COLUMNAS PARALELAS -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
+              
+              <!-- COLUMNA LOCAL -->
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(46,204,113,0.3); border-radius: 12px; padding: 14px; overflow: hidden;">
+                <div style="background: rgba(46,204,113,0.12); padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: 900; color: #2ecc71; text-transform: uppercase; font-size: 14px;">${data.local}</span>
+                  <span style="font-size: 11px; font-weight: 800; color: #fff;">TITULARES</span>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: #8899a6; font-size: 10px; text-transform: uppercase;">
+                      <th style="padding: 6px 10px; width: 35px; text-align: center;">No.</th>
+                      <th style="padding: 6px 10px;">Jugador</th>
+                      <th style="padding: 6px 10px; width: 45px; text-align: center; color: #f1c40f;">T.A</th>
+                      <th style="padding: 6px 10px; width: 45px; text-align: center; color: #e74c3c;">T.R</th>
+                      <th style="padding: 6px 10px; width: 50px; text-align: center; color: #2ecc71;">Goles</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${renderPlayerRows(data.playersLocal)}
+                  </tbody>
+                </table>
+
+                <!-- Cambios Local -->
+                <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+                  <div style="font-size: 11px; font-weight: 800; color: #f1c40f; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 1px;">
+                    🔄 CAMBIOS REALIZADOS
+                  </div>
+                  <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+                    <thead>
+                      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #8899a6; font-size: 9px; text-transform: uppercase;">
+                        <th style="padding: 4px 6px; width: 35px; text-align: center;">Entra</th>
+                        <th style="padding: 4px 6px; width: 35px; text-align: center;">Sale</th>
+                        <th style="padding: 4px 6px;">Jugador</th>
+                        <th style="padding: 4px 6px; width: 35px; text-align: center; color: #f1c40f;">T.A</th>
+                        <th style="padding: 4px 6px; width: 35px; text-align: center; color: #e74c3c;">T.R</th>
+                        <th style="padding: 4px 6px; width: 40px; text-align: center; color: #2ecc71;">Goles</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${renderChangesRows(data.changesLocal)}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- COLUMNA VISITANTE -->
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(52,152,219,0.3); border-radius: 12px; padding: 14px; overflow: hidden;">
+                <div style="background: rgba(52,152,219,0.12); padding: 8px 12px; border-radius: 8px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                  <span style="font-weight: 900; color: #3498db; text-transform: uppercase; font-size: 14px;">${data.visitor}</span>
+                  <span style="font-size: 11px; font-weight: 800; color: #fff;">TITULARES</span>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                  <thead>
+                    <tr style="border-bottom: 2px solid rgba(255,255,255,0.1); color: #8899a6; font-size: 10px; text-transform: uppercase;">
+                      <th style="padding: 6px 10px; width: 35px; text-align: center;">No.</th>
+                      <th style="padding: 6px 10px;">Jugador</th>
+                      <th style="padding: 6px 10px; width: 45px; text-align: center; color: #f1c40f;">T.A</th>
+                      <th style="padding: 6px 10px; width: 45px; text-align: center; color: #e74c3c;">T.R</th>
+                      <th style="padding: 6px 10px; width: 50px; text-align: center; color: #2ecc71;">Goles</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${renderPlayerRows(data.playersVisitor)}
+                  </tbody>
+                </table>
+
+                <!-- Cambios Visitante -->
+                <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.08);">
+                  <div style="font-size: 11px; font-weight: 800; color: #f1c40f; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 1px;">
+                    🔄 CAMBIOS REALIZADOS
+                  </div>
+                  <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
+                    <thead>
+                      <tr style="border-bottom: 1px solid rgba(255,255,255,0.1); color: #8899a6; font-size: 9px; text-transform: uppercase;">
+                        <th style="padding: 4px 6px; width: 35px; text-align: center;">Entra</th>
+                        <th style="padding: 4px 6px; width: 35px; text-align: center;">Sale</th>
+                        <th style="padding: 4px 6px;">Jugador</th>
+                        <th style="padding: 4px 6px; width: 35px; text-align: center; color: #f1c40f;">T.A</th>
+                        <th style="padding: 4px 6px; width: 35px; text-align: center; color: #e74c3c;">T.R</th>
+                        <th style="padding: 4px 6px; width: 40px; text-align: center; color: #2ecc71;">Goles</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${renderChangesRows(data.changesVisitor)}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- INFORMES Y FIRMAS -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+              
+              <!-- INFORME DE VOCALÍA Y FIRMAS -->
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 12px; font-weight: 800; color: #f1c40f; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-bottom: 8px;">
+                  📋 INFORME DE MESA Y VOCALÍA
+                </div>
+                <div style="font-size: 11px; color: #ccc; margin-bottom: 6px;">
+                  <strong>Inicio:</strong> ${data.vocalReport?.startTime || 'Normal'} | <strong>Vocal:</strong> ${data.vocalReport?.vocalName || data.vocal || 'Oficial'} (${data.vocalReport?.vocalClub || 'Club Asignado'})
+                </div>
+                <div style="font-size: 11px; color: #ccc; margin-bottom: 10px;">
+                  <strong>Observaciones:</strong> ${data.vocalReport?.observations || 'Sin novedades registradas.'}
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; border-top: 1px dashed rgba(255,255,255,0.15); padding-top: 10px; text-align: center;">
+                  <div>
+                    <div style="font-size: 10px; color: #888;">Capitán Local</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #2ecc71; margin-top: 2px;">${data.vocalReport?.capSignatureLocal || 'Firma Registrada'}</div>
+                    <div style="font-size: 9px; color: #666;">No. ${data.vocalReport?.capNoLocal || '-'}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10px; color: #888;">Capitán Visitante</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #3498db; margin-top: 2px;">${data.vocalReport?.capSignatureVisitor || 'Firma Registrada'}</div>
+                    <div style="font-size: 9px; color: #666;">No. ${data.vocalReport?.capNoVisitor || '-'}</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10px; color: #888;">Firma Vocal</div>
+                    <div style="font-size: 11px; font-weight: 700; color: #f1c40f; margin-top: 2px;">${data.vocalReport?.vocalSignature || 'Firma Registrada'}</div>
+                    <div style="font-size: 9px; color: #666;">Mesa Oficial</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- INFORME ARBITRAL Y VEEDOR -->
+              <div style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px;">
+                <div style="font-size: 12px; font-weight: 800; color: #f1c40f; text-transform: uppercase; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 6px; margin-bottom: 8px;">
+                  ⚖️ INFORME ARBITRAL Y VEEDURÍA
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #ccc; margin-bottom: 6px;">
+                  <span><strong>Árbitro Central:</strong> ${data.refereeReport?.judgeName || 'Designado'}</span>
+                  <span><strong>Calificación:</strong> <strong style="color: #2ecc71;">${data.refereeReport?.judgeRating ? data.refereeReport.judgeRating + '/10' : 'S/C'}</strong></span>
+                </div>
+                <div style="font-size: 11px; color: #ccc; margin-bottom: 6px;">
+                  <strong>Observaciones Árbitro:</strong> ${data.refereeReport?.observations || 'Partido finalizado sin incidentes.'}
+                </div>
+                <div style="font-size: 11px; color: #ccc; margin-bottom: 6px; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 6px;">
+                  <strong>Veedor:</strong> ${data.vedorReport?.nombre || data.veedor || 'Oficial'} ${data.vedorReport?.club ? '(' + data.vedorReport.club + ')' : ''} | <strong>Obs:</strong> ${data.vedorReport?.observaciones || 'Comportamiento normal.'}
+                </div>
+                <div style="text-align: right; margin-top: 8px; font-size: 10px; color: #888;">
+                  Firma Juez: <span style="color: #fff; font-weight: bold;">${data.refereeReport?.judgeSignature || 'Validado Digitalmente'}</span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- PIE DE COMPROBANTE -->
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 10px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: #777;">
+              <div>🔒 Documento Digital Auténtico de Respaldo - Liga Deportiva Barrial Argelia Alta</div>
+              <div>ID: <span style="color: #aaa; font-family: monospace;">${data.matchId || (data.local + '_' + data.visitor)}</span></div>
+            </div>
+
+          </div>
+        `;
+      };
+
+      window.generarYDescargarRespaldoImagenActa = async function (data) {
+        if (!data) data = window.extraerDatosActaParaRespaldo();
+        if (!data) {
+          Swal.fire("Aviso", "No se encontraron datos del acta para respaldar.", "warning");
+          return;
+        }
+
+        Swal.fire({
+          title: "📸 Generando Respaldo Visual...",
+          html: `
+            <div class="py-3 text-center">
+              <div class="spinner-border text-warning mb-3" role="status"></div>
+              <p class="text-white-50 small mb-0">Creando la imagen oficial en alta resolución del acta para tu galería...</p>
+            </div>
+          `,
+          background: "#111",
+          allowOutsideClick: false,
+          showConfirmButton: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        let tempContainer = null;
+        try {
+          // 1. Crear contenedor temporal fuera de pantalla
+          tempContainer = document.createElement("div");
+          tempContainer.id = "temp_acta_image_capture_container";
+          tempContainer.style.position = "fixed";
+          tempContainer.style.left = "-9999px";
+          tempContainer.style.top = "0";
+          tempContainer.style.width = "1080px";
+          tempContainer.style.zIndex = "-9999";
+          tempContainer.innerHTML = window.construirHtmlRespaldoActa(data);
+          document.body.appendChild(tempContainer);
+
+          // Esperar breve carga de imágenes si hubiere
+          await new Promise((resolve) => setTimeout(resolve, 250));
+
+          // 2. Renderizar con html2canvas en HD (scale: 2)
+          const canvas = await html2canvas(tempContainer, {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            backgroundColor: "#0c1017",
+            logging: false,
+            width: 1080,
+            windowWidth: 1080,
+          });
+
+          // 3. Limpiar contenedor temporal
+          if (tempContainer && tempContainer.parentNode) {
+            tempContainer.parentNode.removeChild(tempContainer);
+            tempContainer = null;
+          }
+
+          const imageDataUrl = canvas.toDataURL("image/png");
+          const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+
+          const safeLocal = String(data.local || "Local").trim().replace(/[\s/\\?%*:|"<>]/g, "_");
+          const safeVisitor = String(data.visitor || "Visitante").trim().replace(/[\s/\\?%*:|"<>]/g, "_");
+          const safeJornada = data.jornada || 1;
+          const fileName = `Vocalia_LDBAA_J${safeJornada}_${safeLocal}_vs_${safeVisitor}.png`;
+
+          // 4. Descargar automáticamente la imagen al dispositivo
+          try {
+            const downloadLink = document.createElement("a");
+            downloadLink.download = fileName;
+            downloadLink.href = imageDataUrl;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+          } catch (dlErr) {
+            console.warn("Fallo descarga directa automática:", dlErr);
+          }
+
+          // 5. Presentar confirmación visual con vista previa y opciones
+          Swal.fire({
+            title: "¡Respaldo Visual Descargado!",
+            html: `
+              <div class="text-center">
+                <div class="alert alert-success bg-success bg-opacity-10 border border-success border-opacity-25 text-white py-2 mb-3 rounded-3 small">
+                  <i class="fas fa-check-circle text-success me-1"></i> Se ha guardado el acta y descargado la <strong>imagen oficial (PNG)</strong> como respaldo permanente.
+                </div>
+                <div style="max-height: 260px; overflow-y: auto; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; margin-bottom: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                  <img src="${imageDataUrl}" style="width: 100%; display: block;" alt="Respaldo Acta">
+                </div>
+                <p class="text-white-50 small mb-0">Archivo guardado: <strong class="text-warning">${fileName}</strong></p>
+              </div>
+            `,
+            background: "#111",
+            showCancelButton: true,
+            confirmButtonText: '<i class="fab fa-whatsapp me-1"></i> Compartir por WhatsApp',
+            confirmButtonColor: "#2ecc71",
+            cancelButtonText: '<i class="fas fa-download me-1"></i> Descargar Otra Copia',
+            cancelButtonColor: "#3498db",
+            showDenyButton: true,
+            denyButtonText: 'Cerrar',
+            denyButtonColor: "#6c757d",
+          }).then(async (result) => {
+            if (result.isConfirmed) {
+              const msg = encodeURIComponent(
+                `*VOCALÍA OFICIAL - LDBAA*\n*Jornada:* ${safeJornada} | *Cat:* ${data.category || 'MÁXIMA'}\n*${data.local} (${data.scoreLocal}) - (${data.scoreVisitor}) ${data.visitor}*\n\n_Se ha generado y respaldado el acta digital del encuentro._`
+              );
+              window.open(`https://api.whatsapp.com/send?text=${msg}`, "_blank");
+            } else if (result.dismiss === Swal.DismissReason.cancel) {
+              const reLink = document.createElement("a");
+              reLink.download = fileName;
+              reLink.href = imageDataUrl;
+              document.body.appendChild(reLink);
+              reLink.click();
+              document.body.removeChild(reLink);
+            }
+          });
+
+        } catch (error) {
+          if (tempContainer && tempContainer.parentNode) {
+            tempContainer.parentNode.removeChild(tempContainer);
+          }
+          console.error("Error generando imagen de respaldo:", error);
+          Swal.fire({
+            title: "Acta Guardada",
+            text: "El acta se guardó en el sistema, pero ocurrió un aviso al generar la imagen: " + error.message,
+            icon: "info",
+            confirmButtonColor: "#2ecc71"
+          });
+        }
+      };
+
+      window.generarYDescargarRespaldoImagenActaDesdeModal = async function () {
+        const data = window.extraerDatosActaParaRespaldo();
+        if (!data) {
+          return Swal.fire("Aviso", "No hay ningún encuentro abierto para respaldar.", "warning");
+        }
+        await window.generarYDescargarRespaldoImagenActa(data);
       };
     </script>
     <style>
