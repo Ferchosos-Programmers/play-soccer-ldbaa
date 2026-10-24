@@ -1066,6 +1066,14 @@
         const campId = document.getElementById("campSelect").value;
         if (!campId) return;
 
+        // Limpiar cachés en memoria para evitar contaminación entre campeonatos
+        if (typeof teamPlayersMemoryCache !== "undefined" && teamPlayersMemoryCache.clear) {
+          teamPlayersMemoryCache.clear();
+        }
+        if (typeof teamPlayersFetchPromises !== "undefined" && teamPlayersFetchPromises.clear) {
+          teamPlayersFetchPromises.clear();
+        }
+
         // Detach previous listeners if exist
         if (fixturesListener) fixturesListener();
         if (fixturesListener2) fixturesListener2();
@@ -3558,38 +3566,25 @@
         if (!teamName || teamName === "DESCANSA" || teamName === "LIBRE") return [];
         const normTeam = normalizeTeamName(teamName);
         const normCat = normalizeCategory(category);
-        const cleanCamp = (currentCampId || "").trim().toUpperCase();
+        
+        // Resolver ID del campeonato de forma estricta (preservando formato case sensible de Firestore)
+        const campSelect = document.getElementById("campSelect");
+        const cleanCamp = (
+          currentCampId ||
+          campSelect?.value ||
+          window.currentMatchOpened?._campId ||
+          (window.currentMatchOpened?._fixId && fixturesMap.get(window.currentMatchOpened._fixId)?.championshipId) ||
+          "p7eMp1ciqd67iQCiA4JV"
+        ).trim();
 
         const primaryKey = `${normTeam}___${normCat}___${cleanCamp}`;
-        const secondaryKey = `${normTeam}___${normCat}___`;
-        const neutralKey = `${normTeam}______${cleanCamp}`;
 
-        // 1. Verificación instantánea en memoria RAM (0ms)
+        // 1. Verificación instantánea en memoria RAM (0ms) con aislamiento estricto de campeonato
         if (
           teamPlayersMemoryCache.has(primaryKey) &&
           teamPlayersMemoryCache.get(primaryKey).length > 0
         ) {
           return teamPlayersMemoryCache.get(primaryKey);
-        }
-        if (
-          teamPlayersMemoryCache.has(secondaryKey) &&
-          teamPlayersMemoryCache.get(secondaryKey).length > 0
-        ) {
-          return teamPlayersMemoryCache.get(secondaryKey);
-        }
-        if (
-          !normCat &&
-          teamPlayersMemoryCache.has(neutralKey) &&
-          teamPlayersMemoryCache.get(neutralKey).length > 0
-        ) {
-          return teamPlayersMemoryCache.get(neutralKey);
-        }
-
-        // Búsqueda flexible en memoria por coincidencia de equipo
-        for (let [k, list] of teamPlayersMemoryCache) {
-          if (list && list.length > 0 && k.startsWith(`${normTeam}___`)) {
-            return list;
-          }
         }
 
         // 2. Coalescing de promesas en vuelo para evitar llamadas duplicadas simultáneas
@@ -3604,63 +3599,58 @@
               .replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?)\s+/i, "")
               .trim();
 
-            // CARGA QUIRÚRGICA: Solo consultamos por este equipo específico
-            // Evitamos traer todo el campeonato en memoria (protección de RAM)
-            const teamQueryPromises = [
-              db
-                .collection("teams")
-                .where("name", "==", teamName)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("teams")
-                .where("name", "==", cleanTeam)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            ];
-
-            if (strippedTeam && strippedTeam !== cleanTeam) {
+            // CARGA QUIRÚRGICA: Solo consultamos equipos vinculados al campeonato activo
+            const teamQueryPromises = [];
+            if (cleanCamp) {
               teamQueryPromises.push(
                 db
                   .collection("teams")
-                  .where("name", "==", strippedTeam)
+                  .where("name", "==", teamName)
+                  .where("championshipId", "==", cleanCamp)
                   .get()
                   .catch(() => ({ forEach: () => {} })),
-              );
-            }
-
-            const playerQueryPromises = [
-              db
-                .collection("players")
-                .where("teamName", "==", teamName)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("players")
-                .where("teamName", "==", cleanTeam)
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-              db
-                .collection("players")
-                .where("teamName", "==", teamName.replace(/\./g, ""))
-                .get()
-                .catch(() => ({ forEach: () => {} })),
-            ];
-
-            if (strippedTeam && strippedTeam !== cleanTeam) {
-              playerQueryPromises.push(
                 db
-                  .collection("players")
-                  .where("teamName", "==", strippedTeam)
+                  .collection("teams")
+                  .where("name", "==", cleanTeam)
+                  .where("championshipId", "==", cleanCamp)
                   .get()
                   .catch(() => ({ forEach: () => {} })),
               );
+              if (strippedTeam && strippedTeam !== cleanTeam) {
+                teamQueryPromises.push(
+                  db
+                    .collection("teams")
+                    .where("name", "==", strippedTeam)
+                    .where("championshipId", "==", cleanCamp)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                );
+              }
+            } else {
+              teamQueryPromises.push(
+                db
+                  .collection("teams")
+                  .where("name", "==", teamName)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+                db
+                  .collection("teams")
+                  .where("name", "==", cleanTeam)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              );
+              if (strippedTeam && strippedTeam !== cleanTeam) {
+                teamQueryPromises.push(
+                  db
+                    .collection("teams")
+                    .where("name", "==", strippedTeam)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                );
+              }
             }
 
-            const [teamSnaps, playerSnapsInitial] = await Promise.all([
-              Promise.all(teamQueryPromises),
-              Promise.all(playerQueryPromises),
-            ]);
+            const teamSnaps = await Promise.all(teamQueryPromises);
 
             const teamMetaMap = new Map();
             const validTeamIdsForCat = new Set();
@@ -3668,6 +3658,10 @@
 
             const processTeamDoc = (tDoc) => {
               const tData = tDoc.data();
+              // Filtro estricto de campeonato en documentos de equipo
+              const tCamp = (tData.championshipId || tData.campeonatoId || "").trim();
+              if (cleanCamp && tCamp && tCamp !== cleanCamp) return;
+
               if (
                 tData.name &&
                 (normalizeTeamName(tData.name) === normTeam ||
@@ -3688,7 +3682,7 @@
               if (snap && snap.forEach) snap.forEach(processTeamDoc);
             });
 
-            // Si existen teamIds para este equipo, traemos únicamente los jugadores vinculados por su teamId
+            // Si existen teamIds para este equipo y categoría, traemos únicamente los jugadores vinculados por su teamId
             const teamIdsToQuery =
               validTeamIdsForCat.size > 0 ? validTeamIdsForCat : allClubTeamIds;
             let teamIdSnaps = [];
@@ -3701,6 +3695,14 @@
                   .catch(() => ({ forEach: () => {} })),
               );
               teamIdSnaps = await Promise.all(idPromises);
+            } else {
+              // Fallback quirúrgico si no se encontró teamId (por ejemplo si el equipo aún no tiene doc en teams)
+              let pQuery = db.collection("players").where("teamName", "==", teamName);
+              if (cleanCamp) {
+                pQuery = pQuery.where("campeonatoId", "==", cleanCamp);
+              }
+              const pSnap = await pQuery.get().catch(() => ({ forEach: () => {} }));
+              teamIdSnaps = [pSnap];
             }
 
             const playersList = [];
@@ -3718,22 +3720,26 @@
               )
                 return;
 
-              // Validar que pertenezca a este club
-              const pTeamNorm = normalizeTeamName(p.teamName);
-              const belongsToClub =
-                (p.teamId &&
-                  (allClubTeamIds.has(p.teamId) ||
-                    validTeamIdsForCat.has(p.teamId))) ||
-                (pTeamNorm &&
-                  (pTeamNorm === normTeam ||
-                    (strippedTeam &&
-                      pTeamNorm === normalizeTeamName(strippedTeam)))) ||
-                (p.teamName &&
-                  (p.teamName.trim().toUpperCase() === cleanTeam ||
-                    (strippedTeam &&
-                      p.teamName.trim().toUpperCase() === strippedTeam)));
+              // FILTRO ESTRICTO DE CAMPEONATO
+              const pCamp = (p.campeonatoId || p.championshipId || "").trim();
+              if (cleanCamp && pCamp && pCamp !== cleanCamp) return;
 
-              if (!belongsToClub) return;
+              // Validar pertenencia a los equipos identificados del campeonato
+              if (teamIdsToQuery.size > 0) {
+                if (!p.teamId || !teamIdsToQuery.has(p.teamId)) return;
+              } else {
+                const pTeamNorm = normalizeTeamName(p.teamName);
+                const belongsToClub =
+                  (pTeamNorm &&
+                    (pTeamNorm === normTeam ||
+                      (strippedTeam &&
+                        pTeamNorm === normalizeTeamName(strippedTeam)))) ||
+                  (p.teamName &&
+                    (p.teamName.trim().toUpperCase() === cleanTeam ||
+                      (strippedTeam &&
+                        p.teamName.trim().toUpperCase() === strippedTeam)));
+                if (!belongsToClub) return;
+              }
 
               // FILTRADO POR CATEGORÍA
               const pDocCat = p.teamCategory || p.category || "";
@@ -3757,9 +3763,6 @@
               });
             };
 
-            playerSnapsInitial.forEach((snap) => {
-              if (snap && snap.forEach) snap.forEach(processPlayerDoc);
-            });
             teamIdSnaps.forEach((snap) => {
               if (snap && snap.forEach) snap.forEach(processPlayerDoc);
             });
@@ -3778,20 +3781,14 @@
               return numA - numB;
             });
 
-            // Guardar en caché ligero en memoria
+            // Guardar en caché ligero en memoria con clave aislada por campeonato
             teamPlayersMemoryCache.set(primaryKey, playersList);
-            teamPlayersMemoryCache.set(secondaryKey, playersList);
             if (strippedTeam) {
               teamPlayersMemoryCache.set(
                 `${normalizeTeamName(strippedTeam)}___${normCat}___${cleanCamp}`,
                 playersList,
               );
-              teamPlayersMemoryCache.set(
-                `${normalizeTeamName(strippedTeam)}___${normCat}___`,
-                playersList,
-              );
             }
-            if (!normCat) teamPlayersMemoryCache.set(neutralKey, playersList);
 
             return playersList;
           } catch (err) {
@@ -4383,13 +4380,14 @@
             : `<i class="fas fa-tshirt me-2 text-warning"></i> SELECCIÓN POR DORSAL: <span class="text-primary-glow">${teamName}</span>${catBadge}`;
 
         const campSelect = document.getElementById("campSelect");
-        const currentCampId =
+        const currentCampId = (
           campSelect?.value ||
           window.currentMatchOpened?._campId ||
           (window.currentMatchOpened?._fixId &&
             fixturesMap.get(window.currentMatchOpened._fixId)
               ?.championshipId) ||
-          "";
+          "p7eMp1ciqd67iQCiA4JV"
+        ).trim();
 
         currentCampName =
           campSelect && campSelect.selectedIndex >= 0
@@ -4397,14 +4395,12 @@
             : window.currentMatchOpened?.championshipName ||
               "CAMPEONATO ACTIVO";
 
-        // Comprobación síncrona en memoria RAM (0ms) con aislamiento estricto de categoría
+        // Comprobación síncrona en memoria RAM (0ms) con aislamiento estricto de categoría y campeonato
         const normTeam = normalizeTeamName(teamName);
         const normCat = normalizeCategory(category);
-        const cleanCamp = (currentCampId || "").trim().toUpperCase();
+        const cleanCamp = currentCampId;
 
         const primaryKey = `${normTeam}___${normCat}___${cleanCamp}`;
-        const secondaryKey = `${normTeam}___${normCat}___`;
-        const neutralKey = `${normTeam}______${cleanCamp}`;
 
         let cachedPlayers = null;
         if (
@@ -4412,25 +4408,6 @@
           teamPlayersMemoryCache.get(primaryKey).length > 0
         ) {
           cachedPlayers = teamPlayersMemoryCache.get(primaryKey);
-        } else if (
-          teamPlayersMemoryCache.has(secondaryKey) &&
-          teamPlayersMemoryCache.get(secondaryKey).length > 0
-        ) {
-          cachedPlayers = teamPlayersMemoryCache.get(secondaryKey);
-        } else if (
-          teamPlayersMemoryCache.has(neutralKey) &&
-          teamPlayersMemoryCache.get(neutralKey).length > 0
-        ) {
-          cachedPlayers = teamPlayersMemoryCache.get(neutralKey);
-        }
-
-        if (!cachedPlayers || cachedPlayers.length === 0) {
-          for (let [k, list] of teamPlayersMemoryCache) {
-            if (k.startsWith(`${normTeam}___`) && list.length > 0) {
-              cachedPlayers = list;
-              break;
-            }
-          }
         }
 
         if (cachedPlayers && cachedPlayers.length > 0) {
@@ -5927,8 +5904,12 @@
         }
 
         const campSelect = document.getElementById("campSelect");
-        const currentCampId =
-          campSelect?.value || window.currentMatchOpened?._campId || "";
+        const currentCampId = (
+          campSelect?.value ||
+          window.currentMatchOpened?._campId ||
+          (window.currentMatchOpened?._fixId && fixturesMap.get(window.currentMatchOpened._fixId)?.championshipId) ||
+          "p7eMp1ciqd67iQCiA4JV"
+        ).trim();
         currentTeamPlayersList = await fetchTeamPlayers(
           teamName,
           category,

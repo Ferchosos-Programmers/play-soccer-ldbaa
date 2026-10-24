@@ -564,8 +564,8 @@
             // Semillas oficiales para emparejar exactamente con la 1era Fecha jugada y descanso programado
             const officialSeeds = {
                 'FEMENINO': ['PALMEIRAS', 'VENTANAS', 'ALIANZA JUVENIL', 'CD SPENCER', 'CHELSEA', 'MANCHESTER', 'AC LATINOS', 'PORTOVIEJO', 'DEP SPENCER'],
-                'MÁXIMA': ['INDEPENDIENTE', 'FLUMINENSE', 'ESTUDIANTES', 'SOLO PANAS', 'MANCHESTER', 'ALIANZA JUVENIL', 'VENTANAS', 'PORTOVIEJO', 'GALAXY'],
-                'MAXIMA': ['INDEPENDIENTE', 'FLUMINENSE', 'ESTUDIANTES', 'SOLO PANAS', 'MANCHESTER', 'ALIANZA JUVENIL', 'VENTANAS', 'PORTOVIEJO', 'GALAXY'],
+                'MÁXIMA': ['INDEPENDIENTE', 'FLUMINENSE', 'ESTUDIANTES', 'SOLO PANAS', 'MANCHESTER', 'CD SPENCER', 'ALIANZA JUVENIL', 'VENTANAS', 'PORTOVIEJO', 'GALAXY'],
+                'MAXIMA': ['INDEPENDIENTE', 'FLUMINENSE', 'ESTUDIANTES', 'SOLO PANAS', 'MANCHESTER', 'CD SPENCER', 'ALIANZA JUVENIL', 'VENTANAS', 'PORTOVIEJO', 'GALAXY'],
                 'PRIMERA': ['AC LATINOS', '3 DE JULIO', 'NAPOLES', 'AMAZONAS', 'LOS PRIMOS', 'LAKERS', 'ARGENTINA', 'PALMEIRAS', 'MARSELLA FC', 'INTER', 'CHELSEA', 'RIVER PLATE', 'ALMAGUER', 'DINAMO FC']
             };
 
@@ -790,11 +790,12 @@
                             return {
                                 ...newM,
                                 ...found,
-                                local: newM.local,
-                                visitor: newM.visitor,
-                                fecha: newM.fecha,
-                                etiqueta: newM.etiqueta,
-                                tag: newM.tag
+                                local: found.local || newM.local,
+                                visitor: found.visitor || newM.visitor,
+                                fecha: found.fecha || newM.fecha,
+                                etiqueta: found.etiqueta || newM.etiqueta,
+                                tag: found.tag || newM.tag,
+                                jornada: found.jornada || newM.jornada
                             };
                         }
                         return newM;

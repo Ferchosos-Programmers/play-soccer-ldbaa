@@ -1689,6 +1689,24 @@
         { cat: "PRIMERA", local: "DINAMO", visitor: "RIVER PLATE", day: "Domingo", time: "16:20", camL: "2", camV: "4", vocal: "INDEPENDIENTE", veedor: "PORTOVIEJO" }
       ];
 
+      const officialJornada4Data = [
+        // SÁBADO 24-10-2026
+        { cat: "PRIMERA", local: "AMAZONAS FC", visitor: "LOS PRIMOS", day: "Sábado", time: "09:40", camL: "3", camV: "1", vocal: "INDEPENDIENTE", veedor: "VENTANAS SC" },
+        { cat: "MÁXIMA", local: "INDEPENDIENTE", visitor: "VENTANAS SC", day: "Sábado", time: "11:20", camL: "4", camV: "2", vocal: "AMAZONAS FC", veedor: "LOS PRIMOS" },
+        { cat: "PRIMERA", local: "DINAMO", visitor: "PALMEIRAS", day: "Sábado", time: "13:00", camL: "3", camV: "1", vocal: "AC LATINOS", veedor: "CHELSEA" },
+        { cat: "PRIMERA", local: "AC LATINOS", visitor: "CHELSEA", day: "Sábado", time: "14:40", camL: "4", camV: "2", vocal: "PALMEIRAS", veedor: "DINAMO" },
+        { cat: "MÁXIMA", local: "FLUMINENSE", visitor: "MANCHESTER", day: "Sábado", time: "16:20", camL: "1", camV: "3", vocal: "ALMAGUER", veedor: "MARSELLA FC" },
+        { cat: "PRIMERA", local: "ALMAGUER", visitor: "MARSELLA FC", day: "Sábado", time: "18:00", camL: "4", camV: "2", vocal: "FLUMINENSE", veedor: "MANCHESTER" },
+
+        // DOMINGO 25-10-2026
+        { cat: "PRIMERA", local: "RIVER PLATE", visitor: "INTER", day: "Domingo", time: "08:00", camL: "1", camV: "3", vocal: "ESTUDIANTES", veedor: "SOLO PANAS" },
+        { cat: "MÁXIMA", local: "ESTUDIANTES", visitor: "SOLO PANAS", day: "Domingo", time: "09:40", camL: "4", camV: "2", vocal: "RIVER PLATE", veedor: "INTER" },
+        { cat: "MÁXIMA", local: "PORTOVIEJO FC", visitor: "ALIANZA JUVENIL", day: "Domingo", time: "11:20", camL: "1", camV: "3", vocal: "CD NAPOLES", veedor: "LAKERS" },
+        { cat: "PRIMERA", local: "CD NAPOLES", visitor: "LAKERS", day: "Domingo", time: "13:00", camL: "2", camV: "4", vocal: "PORTOVIEJO FC", veedor: "ALIANZA JUVENIL" },
+        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "SD ARGENTINA", day: "Domingo", time: "14:40", camL: "1", camV: "3", vocal: "SPENCER", veedor: "GALAXY" },
+        { cat: "MÁXIMA", local: "CD SPENCER", visitor: "GALAXY", day: "Domingo", time: "16:20", camL: "2", camV: "4", vocal: "3 DE JULIO", veedor: "SD ARGENTINA" }
+      ];
+
       function aplicarProgramacionOficialFecha1() {
         let appliedCount = 0;
 
@@ -1878,6 +1896,84 @@
         });
       }
 
+      function aplicarProgramacionOficialFecha4() {
+        let appliedCount = 0;
+
+        officialJornada4Data.forEach((item) => {
+          let matchFound = null;
+
+          fixturesMap.forEach((meta) => {
+            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            if (!catMatch) return;
+
+            meta.data.forEach((m) => {
+              const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              if (is2daVuelta) return;
+
+              // En caso de que en Máxima estuviera como descanso (GALAXY vs DESCANSA)
+              if (normalizeTeamText(item.cat).includes("MAXIMA") && (matchTeamFlex(item.local, "SPENCER") || matchTeamFlex(item.visitor, "SPENCER"))) {
+                if (m.local === "DESCANSA" || m.visitor === "DESCANSA" || m.isRest) {
+                  const otherTeam = m.local === "DESCANSA" ? m.visitor : m.local;
+                  if (matchTeamFlex(otherTeam, "GALAXY") && (m.jornada === 4 || tag.includes("3") || tag.includes("FECHA 3"))) {
+                    m.local = "CD SPENCER";
+                    m.visitor = "GALAXY";
+                    m.isRest = false;
+                    m.tag = "1ra Vuelta (Fecha 3)";
+                    m.etiqueta = "1ra Vuelta (Fecha 3)";
+                    matchFound = m;
+                    return;
+                  }
+                }
+              }
+
+              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+
+              const locMatch = matchTeamFlex(m.local, item.local);
+              const visMatch = matchTeamFlex(m.visitor, item.visitor);
+              const locInverted = matchTeamFlex(m.local, item.visitor);
+              const visInverted = matchTeamFlex(m.visitor, item.local);
+
+              if ((locMatch && visMatch) || (locInverted && visInverted)) {
+                matchFound = m;
+              }
+            });
+          });
+
+          if (matchFound) {
+            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+              const temp = matchFound.local;
+              matchFound.local = matchFound.visitor;
+              matchFound.visitor = temp;
+            }
+            matchFound.jornada = 4;
+            matchFound.fechaRealAsignadaText = item.day;
+            matchFound.horaRealAsignada = item.time;
+            matchFound.camerinoLocal = item.camL;
+            matchFound.camerinoVisitor = item.camV;
+            matchFound.vocalAsignado = item.vocal;
+            matchFound.veedorAsignado = item.veedor;
+            appliedCount++;
+          }
+        });
+
+        renderMatches();
+
+        Swal.fire({
+          title: "¡4ta Fecha Oficial Programada!",
+          html: `
+            <div class="text-start small">
+              <p class="mb-2 text-white">✅ Se cargó la programación oficial para los <strong>${appliedCount} partidos exactos</strong> de Sábado 24 y Domingo 25 de Octubre 2026, incluyendo <strong>CD SPENCER vs GALAXY</strong> con sus horarios, mesas y camerinos.</p>
+              <p class="mb-0 text-success fw-bold">👉 Recuerda presionar el botón <strong>'Guardar'</strong> para oficializar los cambios en la base de datos.</p>
+            </div>
+          `,
+          icon: "success",
+          confirmButtonColor: "#2ecc71",
+          background: "#121212",
+          color: "#ffffff",
+        });
+      }
+
       function openProgramacionModal() {
         if (!currentJornada) {
           return Swal.fire("Aviso", "Selecciona una jornada primero.", "info");
@@ -1890,6 +1986,11 @@
 
         if (currentJornada === 2) {
           aplicarProgramacionOficialFecha2();
+          return;
+        }
+
+        if (currentJornada === 4) {
+          aplicarProgramacionOficialFecha4();
           return;
         }
 
@@ -2602,6 +2703,11 @@
                   ${currentJornada === 2 ? `
                     <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha2()" title="Cargar días, horas, mesas y camerinos oficiales de la Fecha 2">
                       <i class="fas fa-file-invoice me-1"></i> Cargar Fecha 2 Oficial
+                    </button>
+                  ` : ''}
+                  ${currentJornada === 4 ? `
+                    <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha4()" title="Cargar días, horas, mesas y camerinos oficiales de la 4ta Fecha">
+                      <i class="fas fa-file-invoice me-1"></i> Cargar 4ta Fecha Oficial
                     </button>
                   ` : ''}
                   <button class="btn btn-outline-success rounded-pill px-3 btn-sm fw-bold shadow-sm" onclick="exportarTodoElFixtureExcel()" title="Descargar todo el fixture oficial de todas las fechas">
