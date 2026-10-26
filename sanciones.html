@@ -19,7 +19,10 @@
     <meta name="theme-color" content="#050505" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="apple-mobile-web-app-title" content="LDBAA" />
     <link rel="apple-touch-icon" href="img/logo.png" />
 
@@ -31,7 +34,277 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/global-swal-patch.js"></script>
     <script src="js/pwa-installer.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
+      /* Estilos para Reporte Oficial de Sanciones de la Fecha */
+      #reporteSancionesModal .modal-dialog {
+        max-width: 1250px;
+      }
+      .reporte-paper {
+        background: rgba(18, 18, 18, 0.95);
+        color: #fff;
+        border-radius: 18px;
+        padding: 24px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .reporte-header-box {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid rgba(46, 204, 113, 0.4);
+        margin-bottom: 20px;
+      }
+      .reporte-logo {
+        width: 75px;
+        height: 75px;
+        object-fit: contain;
+      }
+      .metric-badge-box {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        padding: 12px;
+        text-align: center;
+      }
+      .metric-badge-box .num {
+        font-size: 1.4rem;
+        font-weight: 900;
+        line-height: 1.1;
+      }
+      .metric-badge-box .lbl {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .match-report-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        border-radius: 16px;
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: 0.2s;
+      }
+      .match-report-header {
+        background: linear-gradient(
+          90deg,
+          rgba(46, 204, 113, 0.12),
+          rgba(52, 152, 219, 0.08),
+          transparent
+        );
+        padding: 12px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+      .match-scoreboard {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        padding: 18px 20px;
+        background: rgba(0, 0, 0, 0.25);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      }
+      .team-display {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .team-display.is-right {
+        justify-content: flex-end;
+        text-align: right;
+      }
+      .team-logo-small {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid rgba(255, 255, 255, 0.15);
+      }
+      .score-box-central {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(46, 204, 113, 0.4);
+        padding: 6px 18px;
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(46, 204, 113, 0.2);
+      }
+      .score-digit {
+        font-size: 1.6rem;
+        font-weight: 900;
+        font-family: monospace;
+        color: #fff;
+      }
+      .score-sep {
+        font-size: 1.2rem;
+        color: #2ecc71;
+        font-weight: 900;
+      }
+      .table-sanctions-mini {
+        font-size: 0.8rem;
+        color: #eee;
+        margin-bottom: 0;
+      }
+      .table-sanctions-mini th {
+        background: rgba(255, 255, 255, 0.04);
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .table-sanctions-mini td {
+        padding: 8px 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        vertical-align: middle;
+      }
+      .team-col-box {
+        padding: 16px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .team-subtotal-bar {
+        margin-top: auto;
+        padding-top: 10px;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: bold;
+      }
+      .signatures-row {
+        margin-top: 35px;
+        padding-top: 25px;
+        border-top: 1px dashed rgba(255, 255, 255, 0.15);
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+      }
+      .sig-line {
+        width: 200px;
+        border-top: 1px solid rgba(255, 255, 255, 0.4);
+        margin: 0 auto 6px auto;
+      }
+      /* MODO IMPRESIÓN Y PDF BLANCO Y NEGRO / PAPEL */
+      @media print {
+        body {
+          background: #ffffff !important;
+          color: #000000 !important;
+        }
+        nav,
+        .main-bg,
+        .btn-logout-premium,
+        .btn-back-jornadas,
+        #btnGenerarReporteJornada,
+        .modal-backdrop,
+        .modal-header .btn,
+        .modal-footer,
+        .no-print {
+          display: none !important;
+        }
+        #reporteSancionesModal {
+          position: absolute !important;
+          left: 0 !important;
+          top: 0 !important;
+          width: 100% !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          background: #ffffff !important;
+          display: block !important;
+          opacity: 1 !important;
+          z-index: 99999 !important;
+        }
+        #reporteSancionesModal .modal-dialog {
+          max-width: 100% !important;
+          margin: 0 !important;
+        }
+        #reporteSancionesModal .modal-content {
+          background: #ffffff !important;
+          color: #111111 !important;
+          border: none !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+        }
+        .reporte-paper {
+          background: #ffffff !important;
+          color: #000000 !important;
+          border: none !important;
+          padding: 10px !important;
+        }
+        .reporte-header-box {
+          border-bottom: 2px solid #333 !important;
+        }
+        .metric-badge-box {
+          background: #f7f7f7 !important;
+          border: 1px solid #ddd !important;
+          color: #000 !important;
+        }
+        .metric-badge-box .num {
+          color: #000 !important;
+        }
+        .metric-badge-box .lbl {
+          color: #555 !important;
+        }
+        .match-report-card {
+          background: #ffffff !important;
+          border: 1px solid #aaa !important;
+          color: #000 !important;
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          margin-bottom: 25px !important;
+        }
+        .match-report-header {
+          background: #f0f0f0 !important;
+          color: #000 !important;
+          border-bottom: 1px solid #ccc !important;
+        }
+        .match-scoreboard {
+          background: #fafafa !important;
+          border-bottom: 1px solid #ccc !important;
+          color: #000 !important;
+        }
+        .score-box-central {
+          background: #eee !important;
+          border: 2px solid #000 !important;
+          box-shadow: none !important;
+        }
+        .score-digit {
+          color: #000 !important;
+        }
+        .score-sep {
+          color: #000 !important;
+        }
+        .table-sanctions-mini th {
+          background: #e9ecef !important;
+          color: #000 !important;
+          border: 1px solid #bbb !important;
+        }
+        .table-sanctions-mini td {
+          border: 1px solid #ccc !important;
+          color: #000 !important;
+        }
+        .text-white,
+        .text-white-50 {
+          color: #111111 !important;
+        }
+        .badge {
+          border: 1px solid #888 !important;
+          color: #000 !important;
+        }
+        .sig-line {
+          border-top: 1px solid #000 !important;
+        }
+      }
       .btn-back-jornadas {
         background: rgba(255, 255, 255, 0.05);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -303,7 +576,9 @@
         letter-spacing: 3.5px;
         text-transform: uppercase;
         border-radius: 10px;
-        box-shadow: 0 0 25px rgba(239, 68, 68, 0.5), inset 0 0 15px rgba(239, 68, 68, 0.25);
+        box-shadow:
+          0 0 25px rgba(239, 68, 68, 0.5),
+          inset 0 0 15px rgba(239, 68, 68, 0.25);
         pointer-events: none;
         z-index: 10;
         white-space: nowrap;
@@ -311,19 +586,26 @@
         animation: pulseStamp 3s infinite ease-in-out;
       }
       @keyframes pulseStamp {
-        0%, 100% {
+        0%,
+        100% {
           opacity: 0.92;
           transform: translate(-50%, -50%) rotate(-22deg) scale(1);
         }
         50% {
           opacity: 1;
           transform: translate(-50%, -50%) rotate(-22deg) scale(1.03);
-          box-shadow: 0 0 35px rgba(239, 68, 68, 0.7), inset 0 0 20px rgba(239, 68, 68, 0.35);
+          box-shadow:
+            0 0 35px rgba(239, 68, 68, 0.7),
+            inset 0 0 20px rgba(239, 68, 68, 0.35);
         }
       }
       .jornada-card-elite.is-sanctioned {
         border-color: rgba(239, 68, 68, 0.45) !important;
-        background: linear-gradient(145deg, rgba(239, 68, 68, 0.08), rgba(20, 20, 20, 0.95)) !important;
+        background: linear-gradient(
+          145deg,
+          rgba(239, 68, 68, 0.08),
+          rgba(20, 20, 20, 0.95)
+        ) !important;
         box-shadow: 0 10px 30px rgba(239, 68, 68, 0.15) !important;
       }
       .jornada-card-elite.is-sanctioned:hover {
@@ -435,18 +717,29 @@
       <!-- Sección de Partidos (Vocalías) -->
       <div id="partidosSection" class="row" style="display: none">
         <div
-          class="col-12 mb-4 d-flex justify-content-between align-items-center"
+          class="col-12 mb-4 d-flex flex-wrap justify-content-between align-items-center gap-3"
         >
-          <button class="btn-back-jornadas" onclick="volverAJornadas()">
-            <i class="fas fa-arrow-left me-2"></i> Volver
-          </button>
-          <h4
-            class="mb-0 text-white text-uppercase fw-900"
-            id="partidosTitulo"
-            style="letter-spacing: 3px"
+          <div class="d-flex align-items-center gap-3">
+            <button class="btn-back-jornadas" onclick="volverAJornadas()">
+              <i class="fas fa-arrow-left me-2"></i> Volver
+            </button>
+            <h4
+              class="mb-0 text-white text-uppercase fw-900"
+              id="partidosTitulo"
+              style="letter-spacing: 2px"
+            >
+              Partidos de la Jornada
+            </h4>
+          </div>
+          <button
+            class="btn btn-premium d-flex align-items-center gap-2 px-4 py-2 shadow-sm"
+            onclick="generarReporteSancionesJornada()"
+            id="btnGenerarReporteJornada"
+            title="Generar consolidado de sanciones, tarjetas, multas y marcadores de esta fecha"
           >
-            Partidos de la Jornada
-          </h4>
+            <i class="fas fa-file-invoice-dollar fs-5 text-warning"></i>
+            <span class="fw-bold">GENERAR REPORTE DE LA FECHA</span>
+          </button>
         </div>
         <div
           id="partidosLista"
@@ -696,13 +989,23 @@
                 <label class="form-label">TIPO DE MULTA</label>
                 <select class="select-premium" id="tipoMulta" required>
                   <option value="">Seleccione tipo de multa</option>
-                  <option value="multa_barra">MULTA A LA BARRA / DISTURBIOS</option>
-                  <option value="no_presentacion">NO PRESENTACIÓN / ABANDONO</option>
+                  <option value="multa_barra">
+                    MULTA A LA BARRA / DISTURBIOS
+                  </option>
+                  <option value="no_presentacion">
+                    NO PRESENTACIÓN / ABANDONO
+                  </option>
                   <option value="vocalia_veeduria">VOCALÍAS Y VEEDURÍAS</option>
                   <option value="balon_implementos">BALÓN E IMPLEMENTOS</option>
-                  <option value="sesiones_asambleas">SESIONES Y ASAMBLEAS</option>
-                  <option value="mingas_comisiones">MINGAS, COMISIONES E INSTALACIONES</option>
-                  <option value="cuotas_garantias">DERECHOS, TRÁMITES Y GARANTÍAS</option>
+                  <option value="sesiones_asambleas">
+                    SESIONES Y ASAMBLEAS
+                  </option>
+                  <option value="mingas_comisiones">
+                    MINGAS, COMISIONES E INSTALACIONES
+                  </option>
+                  <option value="cuotas_garantias">
+                    DERECHOS, TRÁMITES Y GARANTÍAS
+                  </option>
                 </select>
               </div>
               <div class="mb-4">
@@ -712,7 +1015,9 @@
                   id="multaArticulo"
                   onchange="actualizarLiteralesMulta()"
                 >
-                  <option value="132">Art. 132 - Aportes y Sanciones Económicas</option>
+                  <option value="132">
+                    Art. 132 - Aportes y Sanciones Económicas
+                  </option>
                 </select>
               </div>
               <div class="mb-4">
@@ -781,6 +1086,95 @@
           </div>
           <div class="modal-body p-4" id="vocaliaCompletaBody">
             <!-- El contenido se llena dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal para Reporte de Sanciones de la Fecha / Jornada -->
+    <div
+      class="modal fade"
+      id="reporteSancionesModal"
+      tabindex="-1"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content modal-premium">
+          <div
+            class="modal-header border-bottom border-white border-opacity-10 d-flex flex-wrap justify-content-between align-items-center gap-2"
+          >
+            <div class="d-flex align-items-center gap-3">
+              <div
+                style="
+                  width: 44px;
+                  height: 44px;
+                  border-radius: 12px;
+                  background: rgba(46, 204, 113, 0.15);
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 1.3rem;
+                  color: #2ecc71;
+                "
+              >
+                <i class="fas fa-file-invoice-dollar"></i>
+              </div>
+              <div>
+                <h5
+                  class="modal-title fw-800 text-uppercase mb-0 text-white"
+                  style="letter-spacing: 1.5px"
+                >
+                  REPORTE OFICIAL DE SANCIONES Y VALORES
+                </h5>
+                <span class="text-white-50 small" id="reporteModalSubtitle"
+                  >Jornada Programada - LDBAA</span
+                >
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <button
+                class="btn btn-sm btn-outline-light d-flex align-items-center gap-2 fw-bold"
+                onclick="imprimirReporteFecha()"
+              >
+                <i class="fas fa-print"></i> <span>Imprimir</span>
+              </button>
+              <button
+                class="btn btn-sm btn-danger d-flex align-items-center gap-2 fw-bold"
+                onclick="descargarReporteFechaPDF()"
+              >
+                <i class="fas fa-file-pdf"></i> <span>Descargar PDF</span>
+              </button>
+              <button
+                class="btn btn-sm btn-success d-flex align-items-center gap-2 fw-bold"
+                onclick="copiarReporteWhatsApp()"
+              >
+                <i class="fab fa-whatsapp"></i> <span>Copiar WhatsApp</span>
+              </button>
+              <button
+                type="button"
+                class="btn-close btn-close-white ms-2"
+                data-bs-dismiss="modal"
+              ></button>
+            </div>
+          </div>
+          <div class="modal-body p-4" id="reporteSancionesModalBody">
+            <!-- El contenido del reporte se llena dinámicamente -->
+          </div>
+          <div
+            class="modal-footer border-top border-white border-opacity-10 d-flex justify-content-between"
+          >
+            <div class="text-white-50 small">
+              <i class="fas fa-shield-alt text-success me-1"></i> Documento
+              oficial emitido por la Comisión de Calificación y Sanciones -
+              LDBAA
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary-glass"
+              data-bs-dismiss="modal"
+            >
+              Cerrar
+            </button>
           </div>
         </div>
       </div>
@@ -913,14 +1307,28 @@
                     if (!m.matchId || m.matchId === "undefined") {
                       m.matchId = `${doc.id}_${idx}_${(m.local || "").replace(/\s+/g, "")}_${(m.visitor || "").replace(/\s+/g, "")}`;
                     }
-                    if (m.jornada === undefined || m.jornada === null || isNaN(m.jornada)) {
-                      const rawNum = parseInt(String(m.fecha || m.round || m.etiqueta || "").replace(/\D/g, ""));
+                    if (
+                      m.jornada === undefined ||
+                      m.jornada === null ||
+                      isNaN(m.jornada)
+                    ) {
+                      const rawNum = parseInt(
+                        String(m.fecha || m.round || m.etiqueta || "").replace(
+                          /\D/g,
+                          "",
+                        ),
+                      );
                       m.jornada = !isNaN(rawNum) && rawNum > 0 ? rawNum : 1;
                     } else {
                       m.jornada = parseInt(m.jornada) || 1;
                     }
                     if (!m.fechaRealAsignadaText) {
-                      m.fechaRealAsignadaText = m.fechaReal || m.dia || m.date || m.fecha || "Por Definir";
+                      m.fechaRealAsignadaText =
+                        m.fechaReal ||
+                        m.dia ||
+                        m.date ||
+                        m.fecha ||
+                        "Por Definir";
                     }
                     if (!m.horaRealAsignada) {
                       m.horaRealAsignada = m.hora || "--:--";
@@ -971,11 +1379,28 @@
       }
 
       function isMatchProgrammed(m) {
-        if (!m || m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return false;
-        const fecha = (m.fechaRealAsignadaText || m.fechaReal || m.dia || m.date || "").trim();
+        if (
+          !m ||
+          m.isRest ||
+          m.local === "DESCANSA" ||
+          m.visitor === "DESCANSA"
+        )
+          return false;
+        const fecha = (
+          m.fechaRealAsignadaText ||
+          m.fechaReal ||
+          m.dia ||
+          m.date ||
+          ""
+        ).trim();
         const hora = (m.horaRealAsignada || m.hora || "").trim();
-        const hasFecha = fecha !== "" && fecha !== "Por Definir" && fecha !== "---";
-        const hasHora = hora !== "" && hora !== "--:--" && hora !== "Por programar" && hora !== "---";
+        const hasFecha =
+          fecha !== "" && fecha !== "Por Definir" && fecha !== "---";
+        const hasHora =
+          hora !== "" &&
+          hora !== "--:--" &&
+          hora !== "Por programar" &&
+          hora !== "---";
         return hasFecha && hasHora;
       }
 
@@ -1018,10 +1443,17 @@
             "beforeend",
             `
             <div class="col">
-              <div class="jornada-card-elite" onclick="mostrarPartidosJornada(${j})">
-                <i class="fas fa-calendar-alt"></i>
-                <h5 class="text-white">Jornada ${j}</h5>
-                <span class="match-count">${counts[j]} PARTIDOS PROGRAMADOS</span>
+              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between" onclick="mostrarPartidosJornada(${j})">
+                <div>
+                  <i class="fas fa-calendar-alt"></i>
+                  <h5 class="text-white">Jornada ${j}</h5>
+                  <span class="match-count">${counts[j]} PARTIDOS PROGRAMADOS</span>
+                </div>
+                <div class="mt-3 pt-2 border-top border-white border-opacity-10">
+                  <button class="btn btn-xs btn-outline-warning w-100 fw-bold py-1" onclick="event.stopPropagation(); currentSelectedJornada = ${j}; generarReporteSancionesJornada(${j});" title="Ver reporte disciplinario y económico de esta jornada">
+                    <i class="fas fa-file-invoice-dollar me-1"></i>Reporte de Fecha
+                  </button>
+                </div>
               </div>
             </div>
           `,
@@ -1072,10 +1504,7 @@
         fixturesMap.forEach((meta, fixId) => {
           meta.data.forEach((m) => {
             const matchJornada = parseInt(m.jornada) || 1;
-            if (
-              matchJornada === jornada &&
-              isMatchProgrammed(m)
-            ) {
+            if (matchJornada === jornada && isMatchProgrammed(m)) {
               matches.push({ ...m, _cat: meta.category, _fixId: fixId });
             }
           });
@@ -1108,23 +1537,32 @@
             const sJornada = parseInt(s.jornada) || 1;
             if (sJornada !== jornada) return false;
             if (s.matchId && m.matchId && s.matchId === m.matchId) return true;
-            if (s.teamId && (s.teamId === localId || s.teamId === visitorId)) return true;
-            if (s.teamName && (s.teamName === m.local || s.teamName === m.visitor)) return true;
+            if (s.teamId && (s.teamId === localId || s.teamId === visitorId))
+              return true;
+            if (
+              s.teamName &&
+              (s.teamName === m.local || s.teamName === m.visitor)
+            )
+              return true;
             return false;
           });
 
-          const isSanctioned = !!(m.isSanctioned || m.sancionado || matchSanctions.length > 0);
+          const isSanctioned = !!(
+            m.isSanctioned ||
+            m.sancionado ||
+            matchSanctions.length > 0
+          );
           const sanctionCount = matchSanctions.length;
 
           const matchJornadaNum = parseInt(m.jornada) || parseInt(jornada) || 1;
           const card = `
             <div class="col">
-              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 ${isSanctioned ? 'is-sanctioned' : ''}" style="position: relative; overflow: hidden;" onclick="verDetallesMatch('${m._fixId}', '${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}', ${matchJornadaNum}, '${(m._cat || '').replace(/'/g, "\\'")}')">
-                  ${isSanctioned ? `<div class="watermark-sancionada"><i class="fas fa-gavel me-2"></i>SANCIONADA</div>` : ''}
+              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 ${isSanctioned ? "is-sanctioned" : ""}" style="position: relative; overflow: hidden;" onclick="verDetallesMatch('${m._fixId}', '${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}', ${matchJornadaNum}, '${(m._cat || "").replace(/'/g, "\\'")}')">
+                  ${isSanctioned ? `<div class="watermark-sancionada"><i class="fas fa-gavel me-2"></i>SANCIONADA</div>` : ""}
                   <div class="mb-3 text-center">
                       <div class="d-flex justify-content-between align-items-center mb-3">
                           <span class="badge bg-primary-glass text-uppercase" style="font-size:0.5rem; letter-spacing:2px; opacity:0.8">${m._cat}</span>
-                          ${isSanctioned ? `<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50" style="font-size:0.55rem; letter-spacing:1px"><i class="fas fa-check-circle me-1"></i>SANCIONADA${sanctionCount > 0 ? ` (${sanctionCount})` : ''}</span>` : `<span class="badge bg-secondary bg-opacity-25 text-white-50 border border-white border-opacity-10" style="font-size:0.55rem; letter-spacing:1px">PENDIENTE</span>`}
+                          ${isSanctioned ? `<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50" style="font-size:0.55rem; letter-spacing:1px"><i class="fas fa-check-circle me-1"></i>SANCIONADA${sanctionCount > 0 ? ` (${sanctionCount})` : ""}</span>` : `<span class="badge bg-secondary bg-opacity-25 text-white-50 border border-white border-opacity-10" style="font-size:0.55rem; letter-spacing:1px">PENDIENTE</span>`}
                       </div>
                       <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
                           <div style="flex:1">
@@ -1167,7 +1605,14 @@
         document.getElementById("jornadasSection").style.display = "block";
       }
 
-      async function verDetallesMatch(fixId, matchId, local, visitor, jornada, category) {
+      async function verDetallesMatch(
+        fixId,
+        matchId,
+        local,
+        visitor,
+        jornada,
+        category,
+      ) {
         // Guardar para refrescar después
         lastMatchFixId = fixId || lastMatchFixId;
         lastMatchId = matchId;
@@ -1182,7 +1627,13 @@
         if (fixId && fixturesMap.has(fixId)) {
           const meta = fixturesMap.get(fixId);
           const found = meta.data.find((m) => {
-            if (m.matchId && matchId && m.matchId === matchId && m.matchId !== "undefined") return true;
+            if (
+              m.matchId &&
+              matchId &&
+              m.matchId === matchId &&
+              m.matchId !== "undefined"
+            )
+              return true;
             const mJornada = parseInt(m.jornada) || 1;
             return (
               m.local === local &&
@@ -1201,12 +1652,19 @@
             if (
               lastMatchCat &&
               meta.category &&
-              meta.category.trim().toUpperCase() !== lastMatchCat.trim().toUpperCase()
+              meta.category.trim().toUpperCase() !==
+                lastMatchCat.trim().toUpperCase()
             ) {
               continue;
             }
             const found = meta.data.find((m) => {
-              if (m.matchId && matchId && m.matchId === matchId && m.matchId !== "undefined") return true;
+              if (
+                m.matchId &&
+                matchId &&
+                m.matchId === matchId &&
+                m.matchId !== "undefined"
+              )
+                return true;
               const mJornada = parseInt(m.jornada) || 1;
               return (
                 m.local === local &&
@@ -1242,11 +1700,19 @@
         }
 
         if (!match) {
-          console.error("Match not found:", { fixId, matchId, local, visitor, jornada, category });
+          console.error("Match not found:", {
+            fixId,
+            matchId,
+            local,
+            visitor,
+            jornada,
+            category,
+          });
           return;
         }
 
-        lastMatchJornada = parseInt(match.jornada) || currentSelectedJornada || 1;
+        lastMatchJornada =
+          parseInt(match.jornada) || currentSelectedJornada || 1;
         lastMatchFixId = match._fixId;
         lastMatchCat = match._cat || "";
 
@@ -1281,26 +1747,26 @@
           <div class="row g-4">
             <!-- Barra Superior de Estado de Sanción -->
             <div class="col-12">
-              <div class="glass-panel p-3 d-flex flex-wrap justify-content-between align-items-center gap-3" style="background: ${isSanctioned ? 'linear-gradient(90deg, rgba(239,68,68,0.18), rgba(20,20,20,0.85))' : 'rgba(255,255,255,0.03)'}; border: 1px solid ${isSanctioned ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.08)'}; border-radius: 16px;">
+              <div class="glass-panel p-3 d-flex flex-wrap justify-content-between align-items-center gap-3" style="background: ${isSanctioned ? "linear-gradient(90deg, rgba(239,68,68,0.18), rgba(20,20,20,0.85))" : "rgba(255,255,255,0.03)"}; border: 1px solid ${isSanctioned ? "rgba(239,68,68,0.4)" : "rgba(255,255,255,0.08)"}; border-radius: 16px;">
                 <div class="d-flex align-items-center gap-3">
-                  <div style="width: 44px; height: 44px; border-radius: 12px; background: ${isSanctioned ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.05)'}; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: ${isSanctioned ? '#ff4d4d' : '#888'};">
-                    <i class="fas ${isSanctioned ? 'fa-gavel' : 'fa-clock'}"></i>
+                  <div style="width: 44px; height: 44px; border-radius: 12px; background: ${isSanctioned ? "rgba(239,68,68,0.25)" : "rgba(255,255,255,0.05)"}; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: ${isSanctioned ? "#ff4d4d" : "#888"};">
+                    <i class="fas ${isSanctioned ? "fa-gavel" : "fa-clock"}"></i>
                   </div>
                   <div>
                     <div class="d-flex align-items-center gap-2">
-                      <span class="badge ${isSanctioned ? 'bg-danger text-white' : 'bg-warning text-dark'} fw-bold text-uppercase" style="font-size:0.65rem; letter-spacing:1px">
-                        ${isSanctioned ? 'PARTIDO SANCIONADO' : 'PENDIENTE DE SANCIÓN'}
+                      <span class="badge ${isSanctioned ? "bg-danger text-white" : "bg-warning text-dark"} fw-bold text-uppercase" style="font-size:0.65rem; letter-spacing:1px">
+                        ${isSanctioned ? "PARTIDO SANCIONADO" : "PENDIENTE DE SANCIÓN"}
                       </span>
-                      <span class="text-white-50 small">Jornada ${match.jornada || currentSelectedJornada} - ${match._cat || ''}</span>
+                      <span class="text-white-50 small">Jornada ${match.jornada || currentSelectedJornada} - ${match._cat || ""}</span>
                     </div>
                     <div class="text-white-50" style="font-size: 0.75rem; margin-top: 2px;">
-                      ${isSanctioned ? 'Este encuentro ya cuenta con sanciones procesadas o marcadas (Marca de agua activa).' : 'Aún no se ha marcado este encuentro como sancionado.'}
+                      ${isSanctioned ? "Este encuentro ya cuenta con sanciones procesadas o marcadas (Marca de agua activa)." : "Aún no se ha marcado este encuentro como sancionado."}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <button class="btn ${isSanctioned ? 'btn-outline-danger' : 'btn-outline-success'} btn-sm px-3 fw-bold" onclick="window.toggleMatchSanctionStatus('${match.matchId}', '${match._fixId}', ${!isSanctioned})">
-                    <i class="fas ${isSanctioned ? 'fa-undo' : 'fa-check-circle'} me-2"></i>${isSanctioned ? 'Marcar como Pendiente' : 'Marcar como Sancionada'}
+                  <button class="btn ${isSanctioned ? "btn-outline-danger" : "btn-outline-success"} btn-sm px-3 fw-bold" onclick="window.toggleMatchSanctionStatus('${match.matchId}', '${match._fixId}', ${!isSanctioned})">
+                    <i class="fas ${isSanctioned ? "fa-undo" : "fa-check-circle"} me-2"></i>${isSanctioned ? "Marcar como Pendiente" : "Marcar como Sancionada"}
                   </button>
                 </div>
               </div>
@@ -1551,11 +2017,18 @@
         try {
           let snap = null;
           if (campeonatoActual) {
-            let q = db.collection("teams").where("name", "==", nombreEquipo).where("championshipId", "==", campeonatoActual);
+            let q = db
+              .collection("teams")
+              .where("name", "==", nombreEquipo)
+              .where("championshipId", "==", campeonatoActual);
             if (categoria) q = q.where("category", "==", categoria);
             snap = await q.get();
             if (snap.empty && categoria) {
-              snap = await db.collection("teams").where("name", "==", nombreEquipo).where("championshipId", "==", campeonatoActual).get();
+              snap = await db
+                .collection("teams")
+                .where("name", "==", nombreEquipo)
+                .where("championshipId", "==", campeonatoActual)
+                .get();
             }
           }
           if (!snap || snap.empty) {
@@ -1564,7 +2037,10 @@
             snap = await q2.get();
           }
           if (snap.empty) {
-            snap = await db.collection("teams").where("name", "==", nombreEquipo).get();
+            snap = await db
+              .collection("teams")
+              .where("name", "==", nombreEquipo)
+              .get();
           }
 
           if (snap.empty) throw new Error("Equipo no encontrado");
@@ -1618,15 +2094,24 @@
           if (!playerDoc) {
             let teamSnap = null;
             if (campeonatoActual) {
-              let tQuery = db.collection("teams").where("name", "==", nombreEquipo).where("championshipId", "==", campeonatoActual);
+              let tQuery = db
+                .collection("teams")
+                .where("name", "==", nombreEquipo)
+                .where("championshipId", "==", campeonatoActual);
               if (categoria) tQuery = tQuery.where("category", "==", categoria);
               teamSnap = await tQuery.get();
               if (teamSnap.empty && categoria) {
-                teamSnap = await db.collection("teams").where("name", "==", nombreEquipo).where("championshipId", "==", campeonatoActual).get();
+                teamSnap = await db
+                  .collection("teams")
+                  .where("name", "==", nombreEquipo)
+                  .where("championshipId", "==", campeonatoActual)
+                  .get();
               }
             }
             if (!teamSnap || teamSnap.empty) {
-              let tQuery = db.collection("teams").where("name", "==", nombreEquipo);
+              let tQuery = db
+                .collection("teams")
+                .where("name", "==", nombreEquipo);
               if (categoria) tQuery = tQuery.where("category", "==", categoria);
               teamSnap = await tQuery.get();
             }
@@ -2242,7 +2727,10 @@
               };
             }
           } catch (eFetch) {
-            console.warn("Error fetching extra player info for sanction:", eFetch);
+            console.warn(
+              "Error fetching extra player info for sanction:",
+              eFetch,
+            );
           }
         }
 
@@ -2300,7 +2788,9 @@
       }
 
       // Lógica de Multas
+      let multaEquipoNombreActual = "";
       window.abrirModalMulta = function (equipoId, equipoNombre) {
+        multaEquipoNombreActual = equipoNombre || "";
         document.getElementById("multaJugadorId").value = equipoId; // Usamos este ID para el equipo
         document.getElementById("tipoMulta").value = "";
         document.getElementById("valorMulta").value = "";
@@ -2437,6 +2927,7 @@
         db.collection("sanciones")
           .add({
             teamId: id,
+            teamName: multaEquipoNombreActual || "",
             matchId: lastMatchId || "",
             tipo: tipo,
             articulo: art,
@@ -2623,6 +3114,969 @@
                 popup: "glass-card border-secondary",
               },
             });
+          });
+      };
+
+      // ==============================================================
+      // MOTOR DE GENERACIÓN DE REPORTE DISCIPLINARIO Y ECONÓMICO
+      // ==============================================================
+      const DICCIONARIO_ARTICULOS = {
+        124: {
+          nombre: "Art. 124 (1 Partido de Suspensión)",
+          literales: {
+            a: "Acumulación de cuatro (4) tarjetas amarillas",
+            b: "Acumulación de 2 tarjetas amarillas / Expulsado por reclamos indebidos",
+            c: "Lanzar la camiseta al suelo antes de finalizar el encuentro",
+            d: "Sacarse la camiseta dentro del terreno de juego",
+            e: "Jugar con aliento a licor o estado etílico (excluido sin cambio)",
+          },
+        },
+        125: {
+          nombre: "Art. 125 (2 Partidos de Suspensión)",
+          literales: {
+            a: "Realizar necesidades biológicas en el perímetro de la cancha",
+            b: "Juego Brusco (J.B.): golpear a rival en disputa reglamentaria",
+            c: "Provocar a las barras con palabras soeces o mímicas obscenas",
+            d: "Lanzar balón fuera de juego (asume costo de reposición)",
+            e: "Suplantación de identidad (sanción a suplantador y suplantado)",
+            f: "Jugar un partido oficial estando suspendido",
+            g: "Rayar o escribir arbitrariamente en la hoja de vocalía",
+            h: "Insultar u ofender después de haber sido expulsado",
+          },
+        },
+        126: {
+          nombre: "Art. 126 (3 Partidos de Suspensión)",
+          literales: {
+            a: "Juego Brusco Grave (J.B.G.): excesiva fuerza y/o mala intención",
+            b: "Insultos o epítetos agraviantes a vocales, veedores o árbitros",
+            c: "Lanzar balón e impactar por la espalda a rival, compañero o árbitro",
+            d: "Reincidencia en faltas de este artículo (sanción y multa duplicada)",
+          },
+        },
+        127: {
+          nombre: "Art. 127 (4 Partidos de Suspensión)",
+          literales: {
+            a: "Mímicas, gestos o señas obscenas a público, barras o directivos",
+            b: "Intento de agresión física o empujón leve",
+            c: "Conducta Violenta (C.V.): agredir con mala intención sin disputa del balón",
+            d: "Reincidencia en sanciones de este artículo (sanción duplicada)",
+          },
+        },
+        128: {
+          nombre: "Art. 128 (1 Año / Expulsión)",
+          literales: {
+            a: "Epítetos racistas, xenófobos o actos de discriminación",
+            b: "Escupir de frente o impactar con escupitajo a árbitro, rival o autoridades",
+            c: "Lanzar tierra u objetos a árbitro, directivos, compañeros o rivales",
+            d: "Lanzar balón al rostro fuera de juego causando hematomas o sangrado",
+            e: "Conducta violenta / brutalidad extrema causando daño o lesión",
+            f: "Intento de agresión o amenazas a árbitro, vocal o veedor (inmunidad 48h)",
+            g: "Intento de agresión física o verbal a directivos de LBAA",
+            h: "Agresión consumada (puño, cabezazo, puntapié, codazo u objeto contundente)",
+            i: "Incitar o participar en gresca o batalla campal (cancha o parque infantil)",
+            j: "Adulteración o falsificación de documentos de la LBAA o clubes",
+            k: "Suplantación dirigida por dirigente (pérdida de garantía y puntos)",
+            l: "Jugador condicionado: pérdida de garantía (40% 1ra, 40% 2da, 20% 3ra + expulsión)",
+            m: "Fianza de habilitación condicionados ($30.00 / reincidente $60.00)",
+            n: "Doble militancia reglamentaria (ASOLIGAS y LBAA)",
+          },
+        },
+        129: {
+          nombre: "Art. 129 (1 Año / Expulsión)",
+          literales: {
+            a: "Sanción reglamentaria 1 año calendario",
+          },
+        },
+        132: {
+          nombre: "Art. 132 (Aportes y Sanciones Económicas / Multas)",
+          literales: {
+            multa_barra: "Multa a la barra / disturbios",
+            no_presentacion: "No presentación / abandono",
+            vocalia_veeduria: "Vocalías y veedurías",
+            balon_implementos: "Balón e implementos",
+            sesiones_asambleas: "Sesiones y asambleas",
+            mingas_comisiones: "Mingas, comisiones e instalaciones",
+            cuotas_garantias: "Derechos, trámites y garantías",
+          },
+        },
+      };
+
+      function getMatchScore(m) {
+        let scoreL = null;
+        let scoreV = null;
+
+        if (
+          m.golesLocal !== undefined &&
+          m.golesLocal !== null &&
+          m.golesLocal !== ""
+        ) {
+          scoreL = parseInt(m.golesLocal);
+        } else if (
+          m.liveStatus?.scoreLocal !== undefined &&
+          m.liveStatus?.scoreLocal !== null
+        ) {
+          scoreL = parseInt(m.liveStatus.scoreLocal);
+        } else if (
+          m.vocalReport?.totalGolesLocal !== undefined &&
+          m.vocalReport?.totalGolesLocal !== null &&
+          m.vocalReport?.totalGolesLocal !== ""
+        ) {
+          scoreL = parseInt(m.vocalReport.totalGolesLocal);
+        }
+
+        if (
+          m.golesVisitor !== undefined &&
+          m.golesVisitor !== null &&
+          m.golesVisitor !== ""
+        ) {
+          scoreV = parseInt(m.golesVisitor);
+        } else if (
+          m.liveStatus?.scoreVisitor !== undefined &&
+          m.liveStatus?.scoreVisitor !== null
+        ) {
+          scoreV = parseInt(m.liveStatus.scoreVisitor);
+        } else if (
+          m.vocalReport?.totalGolesVisitor !== undefined &&
+          m.vocalReport?.totalGolesVisitor !== null &&
+          m.vocalReport?.totalGolesVisitor !== ""
+        ) {
+          scoreV = parseInt(m.vocalReport.totalGolesVisitor);
+        }
+
+        if (
+          scoreL === null &&
+          (Array.isArray(m.playersLocal) || Array.isArray(m.changesLocal))
+        ) {
+          let sumL = 0;
+          let hasGoles = false;
+          (m.playersLocal || []).forEach((p) => {
+            if (p.goles) {
+              sumL += parseInt(p.goles) || 0;
+              hasGoles = true;
+            }
+          });
+          (m.changesLocal || []).forEach((c) => {
+            if (c.goles) {
+              sumL += parseInt(c.goles) || 0;
+              hasGoles = true;
+            }
+          });
+          if (hasGoles || m.isFinalized) scoreL = sumL;
+        }
+        if (
+          scoreV === null &&
+          (Array.isArray(m.playersVisitor) || Array.isArray(m.changesVisitor))
+        ) {
+          let sumV = 0;
+          let hasGoles = false;
+          (m.playersVisitor || []).forEach((p) => {
+            if (p.goles) {
+              sumV += parseInt(p.goles) || 0;
+              hasGoles = true;
+            }
+          });
+          (m.changesVisitor || []).forEach((c) => {
+            if (c.goles) {
+              sumV += parseInt(c.goles) || 0;
+              hasGoles = true;
+            }
+          });
+          if (hasGoles || m.isFinalized) scoreV = sumV;
+        }
+
+        const isDefined =
+          (scoreL !== null && !isNaN(scoreL)) ||
+          (scoreV !== null && !isNaN(scoreV)) ||
+          !!m.isFinalized;
+        return {
+          scoreL: scoreL !== null && !isNaN(scoreL) ? scoreL : 0,
+          scoreV: scoreV !== null && !isNaN(scoreV) ? scoreV : 0,
+          isDefined: isDefined,
+          display: isDefined
+            ? `${scoreL !== null ? scoreL : 0} - ${scoreV !== null ? scoreV : 0}`
+            : "Pendiente",
+        };
+      }
+
+      function getSanctionDescription(s) {
+        if (s.tipo === "amarilla") {
+          return {
+            tipoBadge:
+              '<span class="badge bg-warning text-dark"><i class="fas fa-square me-1"></i>AMARILLA</span>',
+            tipoTexto: "Tarjeta Amarilla",
+            detalle: "Amonestación con Tarjeta Amarilla",
+            suspension: "---",
+            valor: s.valor !== undefined ? parseFloat(s.valor) : 0.5,
+          };
+        }
+
+        if (s.tipo === "roja") {
+          const art = s.articulo || "";
+          const litRaw = (s.literal || "").trim();
+          const litKey = litRaw.charAt(0).toLowerCase();
+          let descLiteral = litRaw;
+
+          if (
+            DICCIONARIO_ARTICULOS[art] &&
+            DICCIONARIO_ARTICULOS[art].literales[litKey]
+          ) {
+            descLiteral = `Lit. ${litKey}) ${DICCIONARIO_ARTICULOS[art].literales[litKey]}`;
+          }
+
+          let susp = s.partidosSuspension
+            ? `${s.partidosSuspension} partido${s.partidosSuspension > 1 ? "s" : ""}`
+            : "";
+          if (art === "128" || art === "129") susp = "1 año (Expulsión)";
+
+          return {
+            tipoBadge:
+              '<span class="badge bg-danger text-white"><i class="fas fa-square me-1"></i>ROJA</span>',
+            tipoTexto: "Tarjeta Roja",
+            detalle: `Art. ${art}${descLiteral ? " - " + descLiteral : ""}`,
+            suspension: susp || "1 partido",
+            valor: s.valor !== undefined ? parseFloat(s.valor) : 1.0,
+          };
+        }
+
+        // Multas administrativas / club
+        const art = s.articulo || "132";
+        const lit = s.literal || "";
+        let tipoLabel = (s.tipo || "Multa").replace(/_/g, " ").toUpperCase();
+        if (s.tipo === "multa_barra") tipoLabel = "MULTA BARRA";
+        if (s.tipo === "no_presentacion") tipoLabel = "NO PRESENTACIÓN";
+        if (s.tipo === "vocalia_veeduria") tipoLabel = "VOCALÍA / VEEDURÍA";
+        if (s.tipo === "balon_implementos") tipoLabel = "BALÓN / IMPLEMENTOS";
+        if (s.tipo === "sesiones_asambleas") tipoLabel = "SESIONES";
+        if (s.tipo === "mingas_comisiones") tipoLabel = "MINGAS / COMISIONES";
+        if (s.tipo === "cuotas_garantias") tipoLabel = "DERECHOS / GARANTÍAS";
+
+        return {
+          tipoBadge:
+            '<span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-50"><i class="fas fa-dollar-sign me-1"></i>MULTA</span>',
+          tipoTexto: tipoLabel,
+          detalle: `Art. ${art} ${lit ? "- " + lit : ""}`,
+          suspension: "---",
+          valor: s.valor !== undefined ? parseFloat(s.valor) : 0.0,
+        };
+      }
+
+      window.currentReporteFechaData = null;
+
+      window.generarReporteSancionesJornada = async function (jornadaNum) {
+        const jNum = parseInt(jornadaNum) || currentSelectedJornada || 1;
+
+        if (!campeonatoActual) {
+          Swal.fire("Atención", "Seleccione primero un campeonato.", "warning");
+          return;
+        }
+
+        Swal.fire({
+          title: "Generando Reporte de la Fecha...",
+          html: `<div class="p-3 text-white-50"><div class="spinner-border text-success mb-3" role="status"></div><br>Compilando marcadores, vocalías y sanciones de la <strong>Jornada ${jNum}</strong>...</div>`,
+          allowOutsideClick: false,
+          showConfirmButton: false,
+        });
+
+        try {
+          // 1. Cargar equipos y sanciones activas en paralelo
+          const [teamsSnapshot, sancionesSnapshot] = await Promise.all([
+            db
+              .collection("teams")
+              .where("championshipId", "==", campeonatoActual)
+              .get(),
+            db
+              .collection("sanciones")
+              .where("campeonatoId", "==", campeonatoActual)
+              .where("estado", "==", "activa")
+              .get(),
+          ]);
+
+          const logosMap = {};
+          const teamIdToNameMap = {};
+          const teamNameToIdMap = {};
+          teamsSnapshot.forEach((doc) => {
+            const t = doc.data();
+            logosMap[t.name] = t.logo || "img/logo.png";
+            teamIdToNameMap[doc.id] = t.name;
+            teamNameToIdMap[t.name] = doc.id;
+          });
+
+          // Filtrar sanciones de esta jornada
+          const activeSanctions = [];
+          sancionesSnapshot.forEach((doc) => {
+            const s = { id: doc.id, ...doc.data() };
+            const sJornada = parseInt(s.jornada) || 1;
+            if (sJornada === jNum) {
+              activeSanctions.push(s);
+            }
+          });
+
+          // 2. Obtener partidos programados de esta jornada
+          let matches = [];
+          fixturesMap.forEach((meta, fixId) => {
+            if (Array.isArray(meta.data)) {
+              meta.data.forEach((m) => {
+                const mJornada = parseInt(m.jornada) || 1;
+                if (mJornada === jNum && isMatchProgrammed(m)) {
+                  matches.push({ ...m, _cat: meta.category, _fixId: fixId });
+                }
+              });
+            }
+          });
+
+          // Si fixturesMap estuviera vacío, intentar cargarlo directamente
+          if (matches.length === 0) {
+            const fSnap = await db
+              .collection("fixtures")
+              .where("championshipId", "==", campeonatoActual)
+              .get();
+            fSnap.forEach((doc) => {
+              const meta = doc.data();
+              if (meta && Array.isArray(meta.data)) {
+                meta.data.forEach((m) => {
+                  const mJornada = parseInt(m.jornada) || 1;
+                  if (mJornada === jNum && isMatchProgrammed(m)) {
+                    matches.push({ ...m, _cat: meta.category, _fixId: doc.id });
+                  }
+                });
+              }
+            });
+          }
+
+          // Ordenar partidos por día y hora
+          const dayOrder = { Viernes: 1, Sábado: 2, Domingo: 3 };
+          matches.sort((a, b) => {
+            if (
+              dayOrder[a.fechaRealAsignadaText] !==
+              dayOrder[b.fechaRealAsignadaText]
+            ) {
+              return (
+                (dayOrder[a.fechaRealAsignadaText] || 99) -
+                (dayOrder[b.fechaRealAsignadaText] || 99)
+              );
+            }
+            return (a.horaRealAsignada || "99:99").localeCompare(
+              b.horaRealAsignada || "99:99",
+            );
+          });
+
+          // 3. Procesar cada encuentro y emparejar sanciones
+          let totalAmarillas = 0;
+          let totalRojas = 0;
+          let totalMultas = 0;
+          let totalRecaudacionFecha = 0;
+
+          // Mapa consolidado por equipo para resumen de cobro
+          const consolidadoEquipos = {};
+
+          const matchesData = matches.map((m, idx) => {
+            const localId = teamNameToIdMap[m.local];
+            const visitorId = teamNameToIdMap[m.visitor];
+            const scoreInfo = getMatchScore(m);
+
+            // Filtrar sanciones de Local
+            const localSanctions = activeSanctions.filter((s) => {
+              const isMatch = s.matchId && m.matchId && s.matchId === m.matchId;
+              const isTeamName = s.teamName && s.teamName === m.local;
+              const isTeamId = s.teamId && localId && s.teamId === localId;
+              if (isMatch) {
+                if (isTeamName || isTeamId) return true;
+                const inLocal =
+                  (m.playersLocal || []).some(
+                    (p) => p.name === s.nombreJugador || p.id === s.jugadorId,
+                  ) ||
+                  (m.changesLocal || []).some(
+                    (c) => c.name === s.nombreJugador || c.id === s.jugadorId,
+                  );
+                return inLocal;
+              }
+              return isTeamName || isTeamId;
+            });
+
+            // Filtrar sanciones de Visitante
+            const visitorSanctions = activeSanctions.filter((s) => {
+              const isMatch = s.matchId && m.matchId && s.matchId === m.matchId;
+              const isTeamName = s.teamName && s.teamName === m.visitor;
+              const isTeamId = s.teamId && visitorId && s.teamId === visitorId;
+              if (isMatch) {
+                if (isTeamName || isTeamId) return true;
+                const inVisitor =
+                  (m.playersVisitor || []).some(
+                    (p) => p.name === s.nombreJugador || p.id === s.jugadorId,
+                  ) ||
+                  (m.changesVisitor || []).some(
+                    (c) => c.name === s.nombreJugador || c.id === s.jugadorId,
+                  );
+                return inVisitor;
+              }
+              return isTeamName || isTeamId;
+            });
+
+            // Procesar y enriquecer sanciones locales
+            let subtotalLocal = 0;
+            const processedLocal = localSanctions.map((s) => {
+              const desc = getSanctionDescription(s);
+              subtotalLocal += desc.valor;
+              if (s.tipo === "amarilla") totalAmarillas++;
+              else if (s.tipo === "roja") totalRojas++;
+              else totalMultas++;
+
+              let dorsal = s.numeroJugador;
+              if (!dorsal && s.nombreJugador) {
+                const found =
+                  (m.playersLocal || []).find(
+                    (p) => p.name === s.nombreJugador,
+                  ) ||
+                  (m.changesLocal || []).find(
+                    (c) => c.name === s.nombreJugador,
+                  );
+                if (found) dorsal = found.num || found.entraNum;
+              }
+
+              return { ...s, desc, dorsal: dorsal || "-" };
+            });
+
+            // Procesar y enriquecer sanciones visitantes
+            let subtotalVisitor = 0;
+            const processedVisitor = visitorSanctions.map((s) => {
+              const desc = getSanctionDescription(s);
+              subtotalVisitor += desc.valor;
+              if (s.tipo === "amarilla") totalAmarillas++;
+              else if (s.tipo === "roja") totalRojas++;
+              else totalMultas++;
+
+              let dorsal = s.numeroJugador;
+              if (!dorsal && s.nombreJugador) {
+                const found =
+                  (m.playersVisitor || []).find(
+                    (p) => p.name === s.nombreJugador,
+                  ) ||
+                  (m.changesVisitor || []).find(
+                    (c) => c.name === s.nombreJugador,
+                  );
+                if (found) dorsal = found.num || found.entraNum;
+              }
+
+              return { ...s, desc, dorsal: dorsal || "-" };
+            });
+
+            const matchTotal = subtotalLocal + subtotalVisitor;
+            totalRecaudacionFecha += matchTotal;
+
+            // Acumular en consolidado de equipos
+            const addToConsolidado = (teamName, cat, sanctions, subtotal) => {
+              if (!consolidadoEquipos[teamName]) {
+                consolidadoEquipos[teamName] = {
+                  teamName,
+                  category: cat || m._cat || "---",
+                  amarillas: 0,
+                  rojas: 0,
+                  multas: 0,
+                  total: 0,
+                };
+              }
+              sanctions.forEach((s) => {
+                if (s.tipo === "amarilla")
+                  consolidadoEquipos[teamName].amarillas++;
+                else if (s.tipo === "roja")
+                  consolidadoEquipos[teamName].rojas++;
+                else consolidadoEquipos[teamName].multas++;
+              });
+              consolidadoEquipos[teamName].total += subtotal;
+            };
+
+            addToConsolidado(m.local, m._cat, processedLocal, subtotalLocal);
+            addToConsolidado(
+              m.visitor,
+              m._cat,
+              processedVisitor,
+              subtotalVisitor,
+            );
+
+            return {
+              matchNum: idx + 1,
+              category: m._cat || "---",
+              dia: m.fechaRealAsignadaText || "---",
+              hora: m.horaRealAsignada || "---",
+              vocal: m.vocalAsignado || "---",
+              veedor: m.veedorAsignado || "---",
+              local: m.local,
+              visitor: m.visitor,
+              localLogo: logosMap[m.local] || "img/logo.png",
+              visitorLogo: logosMap[m.visitor] || "img/logo.png",
+              score: scoreInfo,
+              localSanctions: processedLocal,
+              visitorSanctions: processedVisitor,
+              subtotalLocal,
+              subtotalVisitor,
+              matchTotal,
+              isSanctioned: !!(
+                m.isSanctioned ||
+                m.sancionado ||
+                localSanctions.length > 0 ||
+                visitorSanctions.length > 0
+              ),
+            };
+          });
+
+          // Guardar objeto de reporte para descargas y wsp
+          window.currentReporteFechaData = {
+            campeonatoNombre: campeonatoNombreActual || "Campeonato Oficial",
+            jornada: jNum,
+            fechaEmision: new Date().toLocaleDateString("es-EC", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            }),
+            horaEmision: new Date().toLocaleTimeString("es-EC", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+            totalPartidos: matches.length,
+            totalAmarillas,
+            totalRojas,
+            totalMultas,
+            totalRecaudacionFecha,
+            matchesData,
+            consolidadoEquipos: Object.values(consolidadoEquipos).sort(
+              (a, b) =>
+                b.total - a.total || a.teamName.localeCompare(b.teamName),
+            ),
+          };
+
+          // Construir HTML del reporte
+          renderReporteModalHTML(window.currentReporteFechaData);
+
+          Swal.close();
+
+          const modalEl = document.getElementById("reporteSancionesModal");
+          const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl, {
+            backdrop: true,
+          });
+          modalInstance.show();
+        } catch (error) {
+          console.error("Error al generar reporte de jornada:", error);
+          Swal.fire(
+            "Error",
+            "No se pudo generar el reporte: " + (error.message || error),
+            "error",
+          );
+        }
+      };
+
+      function renderReporteModalHTML(data) {
+        document.getElementById("reporteModalSubtitle").textContent =
+          `Jornada ${data.jornada} • ${data.campeonatoNombre} • Emisión: ${data.horaEmision}`;
+
+        let matchesHtml = "";
+
+        if (data.matchesData.length === 0) {
+          matchesHtml = `
+            <div class="text-center py-5 text-white-50">
+              <i class="fas fa-calendar-times mb-3 opacity-25" style="font-size:3.5rem"></i>
+              <h5>No hay partidos programados en la Jornada ${data.jornada}</h5>
+            </div>
+          `;
+        } else {
+          data.matchesData.forEach((m) => {
+            // Render tabla sanciones local
+            let localRows = "";
+            if (m.localSanctions.length === 0) {
+              localRows = `<tr><td colspan="5" class="text-center py-3 text-success small opacity-75"><i class="fas fa-check-circle me-1"></i>Sin sanciones registradas ($0.00)</td></tr>`;
+            } else {
+              m.localSanctions.forEach((s) => {
+                localRows += `
+                  <tr>
+                    <td class="text-center fw-bold font-monospace">${s.dorsal}</td>
+                    <td class="fw-bold">${s.nombreJugador || m.local}</td>
+                    <td>
+                      ${s.desc.tipoBadge}
+                      <span class="ms-1 small text-white-50">${s.desc.detalle}</span>
+                    </td>
+                    <td class="text-center small">${s.desc.suspension}</td>
+                    <td class="text-end fw-bold text-success">$${s.desc.valor.toFixed(2)}</td>
+                  </tr>
+                `;
+              });
+            }
+
+            // Render tabla sanciones visitante
+            let visitorRows = "";
+            if (m.visitorSanctions.length === 0) {
+              visitorRows = `<tr><td colspan="5" class="text-center py-3 text-success small opacity-75"><i class="fas fa-check-circle me-1"></i>Sin sanciones registradas ($0.00)</td></tr>`;
+            } else {
+              m.visitorSanctions.forEach((s) => {
+                visitorRows += `
+                  <tr>
+                    <td class="text-center fw-bold font-monospace">${s.dorsal}</td>
+                    <td class="fw-bold">${s.nombreJugador || m.visitor}</td>
+                    <td>
+                      ${s.desc.tipoBadge}
+                      <span class="ms-1 small text-white-50">${s.desc.detalle}</span>
+                    </td>
+                    <td class="text-center small">${s.desc.suspension}</td>
+                    <td class="text-end fw-bold text-success">$${s.desc.valor.toFixed(2)}</td>
+                  </tr>
+                `;
+              });
+            }
+
+            matchesHtml += `
+              <div class="match-report-card">
+                <!-- Encabezado del Partido -->
+                <div class="match-report-header">
+                  <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <span class="badge bg-primary text-uppercase" style="font-size:0.65rem; letter-spacing:1px">${m.category}</span>
+                    <span class="text-white fw-bold">PARTIDO #${m.matchNum}</span>
+                    <span class="text-white-50 small">| <i class="far fa-calendar-alt me-1"></i>${m.dia} • <i class="far fa-clock me-1"></i>${m.hora}</span>
+                    <span class="text-white-50 small">| Vocal: <strong class="text-warning">${m.vocal}</strong></span>
+                  </div>
+                  <div>
+                    ${m.isSanctioned ? `<span class="badge bg-danger bg-opacity-25 text-danger border border-danger border-opacity-50"><i class="fas fa-check-circle me-1"></i>VOCALÍA SANCIONADA</span>` : `<span class="badge bg-secondary text-white-50">PENDIENTE</span>`}
+                  </div>
+                </div>
+
+                <!-- Marcador Oficial -->
+                <div class="match-scoreboard">
+                  <div class="team-display is-right">
+                    <span class="fw-900 text-uppercase fs-6 text-white">${m.local}</span>
+                    <img src="${m.localLogo}" alt="${m.local}" class="team-logo-small">
+                  </div>
+                  <div class="score-box-central">
+                    <span class="score-digit">${m.score.isDefined ? m.score.scoreL : "-"}</span>
+                    <span class="score-sep">:</span>
+                    <span class="score-digit">${m.score.isDefined ? m.score.scoreV : "-"}</span>
+                  </div>
+                  <div class="team-display">
+                    <img src="${m.visitorLogo}" alt="${m.visitor}" class="team-logo-small">
+                    <span class="fw-900 text-uppercase fs-6 text-white">${m.visitor}</span>
+                  </div>
+                </div>
+
+                <!-- Columnas de Sanciones por Equipo -->
+                <div class="row g-0">
+                  <!-- Columna Local -->
+                  <div class="col-lg-6 border-end border-white border-opacity-10">
+                    <div class="team-col-box">
+                      <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-white border-opacity-10">
+                        <span class="fw-800 text-uppercase small text-primary"><i class="fas fa-shield-alt me-1"></i>${m.local} (LOCAL)</span>
+                        <span class="badge bg-dark border border-white border-opacity-10">${m.localSanctions.length} sancion${m.localSanctions.length === 1 ? "" : "es"}</span>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-sanctions-mini table-report-print">
+                          <thead>
+                            <tr>
+                              <th width="8%" class="text-center">#</th>
+                              <th width="32%">Jugador</th>
+                              <th width="36%">Infracción / Art.</th>
+                              <th width="12%" class="text-center">Susp.</th>
+                              <th width="12%" class="text-end">Valor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${localRows}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="team-subtotal-bar">
+                        <span class="text-white-50 small">TOTAL A PAGAR ${m.local}:</span>
+                        <span class="text-warning fs-6 fw-900">$${m.subtotalLocal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Columna Visitante -->
+                  <div class="col-lg-6">
+                    <div class="team-col-box">
+                      <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom border-white border-opacity-10">
+                        <span class="fw-800 text-uppercase small text-info"><i class="fas fa-shield-alt me-1"></i>${m.visitor} (VISITANTE)</span>
+                        <span class="badge bg-dark border border-white border-opacity-10">${m.visitorSanctions.length} sancion${m.visitorSanctions.length === 1 ? "" : "es"}</span>
+                      </div>
+                      <div class="table-responsive">
+                        <table class="table table-sanctions-mini table-report-print">
+                          <thead>
+                            <tr>
+                              <th width="8%" class="text-center">#</th>
+                              <th width="32%">Jugador</th>
+                              <th width="36%">Infracción / Art.</th>
+                              <th width="12%" class="text-center">Susp.</th>
+                              <th width="12%" class="text-end">Valor</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            ${visitorRows}
+                          </tbody>
+                        </table>
+                      </div>
+                      <div class="team-subtotal-bar">
+                        <span class="text-white-50 small">TOTAL A PAGAR ${m.visitor}:</span>
+                        <span class="text-warning fs-6 fw-900">$${m.subtotalVisitor.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Barra Inferior de Total del Encuentro -->
+                <div class="p-2 px-3 bg-black bg-opacity-40 d-flex justify-content-between align-items-center border-top border-white border-opacity-10">
+                  <span class="small text-white-50 text-uppercase" style="letter-spacing:1px">Subtotal de Sanciones del Encuentro:</span>
+                  <span class="badge bg-success bg-opacity-20 text-white border border-success border-opacity-30 fs-6 fw-900">$${m.matchTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            `;
+          });
+        }
+
+        // Tabla de Consolidado por Equipo
+        let consolidadoRows = "";
+        data.consolidadoEquipos.forEach((c, idx) => {
+          consolidadoRows += `
+            <tr>
+              <td class="text-center text-white-50">${idx + 1}</td>
+              <td class="fw-bold text-white">${c.teamName}</td>
+              <td class="text-white-50 small">${c.category}</td>
+              <td class="text-center text-warning fw-bold">${c.amarillas}</td>
+              <td class="text-center text-danger fw-bold">${c.rojas}</td>
+              <td class="text-center text-info fw-bold">${c.multas}</td>
+              <td class="text-end fw-900 fs-6 text-success">$${c.total.toFixed(2)}</td>
+            </tr>
+          `;
+        });
+
+        const body = document.getElementById("reporteSancionesModalBody");
+        body.innerHTML = `
+          <div id="reportePrintArea" class="reporte-paper">
+            <!-- Membrete Oficial -->
+            <div class="reporte-header-box">
+              <img src="img/logo.png" alt="Logo LDBAA" class="reporte-logo">
+              <div class="flex-grow-1 text-center">
+                <h4 class="fw-900 mb-1 text-uppercase letter-spacing-1 text-white">LIGA DEPORTIVA BARRIAL "ARGELIA ALTA"</h4>
+                <div class="text-white-50 small text-uppercase fw-bold" style="letter-spacing: 1px">
+                  Fundada el 15 de Mayo de 1978 • Filial a FEDELIBAL • Quito - Ecuador
+                </div>
+                <div class="badge bg-primary-glass text-uppercase px-3 py-1 mt-2 fw-bold" style="font-size:0.8rem; letter-spacing:1px">
+                  COMISIÓN DE CALIFICACIÓN Y SANCIONES • INFORME OFICIAL
+                </div>
+                <div class="mt-2 text-white small">
+                  <strong>${data.campeonatoNombre}</strong> — <span class="text-warning fw-bold">JORNADA N.° ${data.jornada}</span> | Fecha de Emisión: ${data.fechaEmision}
+                </div>
+              </div>
+              <img src="img/logo.png" alt="Logo LDBAA" class="reporte-logo d-none d-md-block" style="opacity: 0.8">
+            </div>
+
+            <!-- Métricas Resumen -->
+            <div class="row g-3 mb-4">
+              <div class="col-6 col-md-3">
+                <div class="metric-badge-box">
+                  <div class="num text-info">${data.totalPartidos}</div>
+                  <div class="lbl">Partidos en Jornada</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="metric-badge-box">
+                  <div class="num text-warning">${data.totalAmarillas}</div>
+                  <div class="lbl">T. Amarillas ($${(data.totalAmarillas * 0.5).toFixed(2)})</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="metric-badge-box">
+                  <div class="num text-danger">${data.totalRojas}</div>
+                  <div class="lbl">T. Rojas ($${(data.totalRojas * 1.0).toFixed(2)})</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-2">
+                <div class="metric-badge-box">
+                  <div class="num text-info">${data.totalMultas}</div>
+                  <div class="lbl">Multas Clubes</div>
+                </div>
+              </div>
+              <div class="col-12 col-md-3">
+                <div class="metric-badge-box" style="background: rgba(46, 204, 113, 0.12); border-color: rgba(46, 204, 113, 0.4);">
+                  <div class="num text-success">$${data.totalRecaudacionFecha.toFixed(2)}</div>
+                  <div class="lbl text-success fw-bold">Total a Recaudar Fecha</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Título de Sección -->
+            <div class="d-flex justify-content-between align-items-center mb-3 pt-2 border-top border-white border-opacity-10">
+              <h6 class="text-uppercase fw-900 text-white mb-0" style="letter-spacing:1px">
+                <i class="fas fa-futbol me-2 text-primary"></i>DETALLE DISCIPLINARIO Y MARCADORES POR ENCUENTRO
+              </h6>
+              <span class="badge bg-secondary-glass text-white-50 small">${data.totalPartidos} Encuentros programados</span>
+            </div>
+
+            <!-- Lista de Encuentros -->
+            ${matchesHtml}
+
+            <!-- Tabla de Consolidado por Equipo para Cobro -->
+            <div class="mt-5 pt-4 border-top border-white border-opacity-10">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h6 class="text-uppercase fw-900 text-white mb-0" style="letter-spacing:1px">
+                  <i class="fas fa-hand-holding-usd me-2 text-warning"></i>CONSOLIDADO DE COBRO POR CLUB (TESORERÍA)
+                </h6>
+                <span class="text-white-50 small">Valores a cancelar antes del siguiente encuentro</span>
+              </div>
+              <div class="table-responsive">
+                <table class="table table-premium table-report-print align-middle">
+                  <thead>
+                    <tr>
+                      <th width="5%" class="text-center">#</th>
+                      <th width="35%">Equipo</th>
+                      <th width="15%">Categoría</th>
+                      <th width="10%" class="text-center">Amarillas</th>
+                      <th width="10%" class="text-center">Rojas</th>
+                      <th width="10%" class="text-center">Multas</th>
+                      <th width="15%" class="text-end">Total a Pagar</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${consolidadoRows}
+                  </tbody>
+                  <tfoot>
+                    <tr class="border-top border-white border-opacity-25" style="background: rgba(255,255,255,0.04);">
+                      <td colspan="3" class="fw-900 text-uppercase text-white ps-3">GRAN TOTAL A COBRAR EN LA JORNADA ${data.jornada}:</td>
+                      <td class="text-center fw-bold text-warning">${data.totalAmarillas}</td>
+                      <td class="text-center fw-bold text-danger">${data.totalRojas}</td>
+                      <td class="text-center fw-bold text-info">${data.totalMultas}</td>
+                      <td class="text-end fw-900 fs-5 text-success pe-3">$${data.totalRecaudacionFecha.toFixed(2)}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+
+            <!-- Firmas de Responsabilidad -->
+            <div class="signatures-row">
+              <div>
+                <div class="sig-line"></div>
+                <div class="fw-bold text-white small">Comisión de Calificación y Sanciones</div>
+                <div class="text-white-50" style="font-size:0.65rem">L.D.B. Argelia Alta</div>
+              </div>
+              <div>
+                <div class="sig-line"></div>
+                <div class="fw-bold text-white small">Secretaría / Tesorería General</div>
+                <div class="text-white-50" style="font-size:0.65rem">L.D.B. Argelia Alta</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      window.imprimirReporteFecha = function () {
+        window.print();
+      };
+
+      window.descargarReporteFechaPDF = async function () {
+        if (!window.currentReporteFechaData) return;
+        const data = window.currentReporteFechaData;
+        const element = document.getElementById("reportePrintArea");
+        if (!element) return;
+
+        Swal.fire({
+          title: "Generando PDF...",
+          text: "Preparando documento oficial...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading(),
+        });
+
+        try {
+          const opt = {
+            margin: [8, 8, 8, 8],
+            filename: `Reporte_Sanciones_Jornada_${data.jornada}_${data.campeonatoNombre.replace(/\s+/g, "_")}.pdf`,
+            image: { type: "jpeg", quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+            jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+          };
+
+          await html2pdf().set(opt).from(element).save();
+          Swal.close();
+        } catch (err) {
+          console.error("Error al exportar PDF:", err);
+          Swal.fire("Error", "No se pudo generar el archivo PDF.", "error");
+        }
+      };
+
+      window.copiarReporteWhatsApp = function () {
+        if (!window.currentReporteFechaData) return;
+        const d = window.currentReporteFechaData;
+
+        let txt = `⚽ *LDBAA - REPORTE DE SANCIONES Y VALORES* ⚽\n`;
+        txt += `🏆 *Campeonato:* ${d.campeonatoNombre}\n`;
+        txt += `📅 *Jornada:* ${d.jornada}\n`;
+        txt += `🗓️ *Fecha:* ${d.fechaEmision}\n`;
+        txt += `━━━━━━━━━━━━━━━━━━━━━\n`;
+        txt += `📋 *DETALLE POR ENCUENTRO:*\n\n`;
+
+        d.matchesData.forEach((m) => {
+          const scoreText = m.score.isDefined
+            ? `${m.score.scoreL} - ${m.score.scoreV}`
+            : "vs";
+          txt += `⚽ *PARTIDO #${m.matchNum}* (${m.category})\n`;
+          txt += `🏟️ *${m.local} [ ${scoreText} ] ${m.visitor}*\n`;
+
+          // Local
+          txt += `🔸 *${m.local}:* Total $${m.subtotalLocal.toFixed(2)}\n`;
+          if (m.localSanctions.length === 0) {
+            txt += `   └ Sin sanciones registradas\n`;
+          } else {
+            m.localSanctions.forEach((s) => {
+              if (s.tipo === "amarilla") {
+                txt += `   └ #${s.dorsal} ${s.nombreJugador || m.local}: Tarjeta Amarilla ($0.50)\n`;
+              } else if (s.tipo === "roja") {
+                txt += `   └ #${s.dorsal} ${s.nombreJugador || m.local}: Tarjeta Roja (${s.desc.detalle}, Susp: ${s.desc.suspension}) - $${s.desc.valor.toFixed(2)}\n`;
+              } else {
+                txt += `   └ Multa: ${s.desc.detalle} - $${s.desc.valor.toFixed(2)}\n`;
+              }
+            });
+          }
+
+          // Visitante
+          txt += `🔹 *${m.visitor}:* Total $${m.subtotalVisitor.toFixed(2)}\n`;
+          if (m.visitorSanctions.length === 0) {
+            txt += `   └ Sin sanciones registradas\n`;
+          } else {
+            m.visitorSanctions.forEach((s) => {
+              if (s.tipo === "amarilla") {
+                txt += `   └ #${s.dorsal} ${s.nombreJugador || m.visitor}: Tarjeta Amarilla ($0.50)\n`;
+              } else if (s.tipo === "roja") {
+                txt += `   └ #${s.dorsal} ${s.nombreJugador || m.visitor}: Tarjeta Roja (${s.desc.detalle}, Susp: ${s.desc.suspension}) - $${s.desc.valor.toFixed(2)}\n`;
+              } else {
+                txt += `   └ Multa: ${s.desc.detalle} - $${s.desc.valor.toFixed(2)}\n`;
+              }
+            });
+          }
+          txt += `💵 *Subtotal Encuentro:* $${m.matchTotal.toFixed(2)}\n\n`;
+        });
+
+        txt += `━━━━━━━━━━━━━━━━━━━━━\n`;
+        txt += `💰 *TOTAL A PAGAR POR EQUIPO:*\n`;
+        d.consolidadoEquipos.forEach((c) => {
+          txt += `• *${c.teamName}* (${c.category}): *$${c.total.toFixed(2)}* (🟨 ${c.amarillas} | 🟥 ${c.rojas} | 📑 ${c.multas})\n`;
+        });
+
+        txt += `\n💵 *TOTAL GENERAL FECHA ${d.jornada}:* *$${d.totalRecaudacionFecha.toFixed(2)}*\n`;
+        txt += `━━━━━━━━━━━━━━━━━━━━━\n`;
+        txt += `_Comisión de Calificación y Sanciones - LDBAA_`;
+
+        navigator.clipboard
+          .writeText(txt)
+          .then(() => {
+            Swal.fire({
+              icon: "success",
+              title: "¡Copiado para WhatsApp!",
+              text: "El reporte detallado con marcadores y sanciones se copió al portapapeles.",
+              timer: 2000,
+              showConfirmButton: false,
+            });
+          })
+          .catch((err) => {
+            console.error("Clipboard error:", err);
+            Swal.fire(
+              "Info",
+              "No se pudo copiar automáticamente. Por favor seleccione y copie el texto.",
+              "info",
+            );
           });
       };
 
