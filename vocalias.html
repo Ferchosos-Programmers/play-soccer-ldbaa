@@ -3927,8 +3927,51 @@
           sanctionedPlayersMap.clear();
 
           if (sancionSnap && !sancionSnap.empty) {
+            // Estructura para registrar jugador en sanctionedPlayersMap
+            const indexPlayerSanction = (sObj, s, jId) => {
+              if (jId) sanctionedPlayersMap.set(jId, sObj);
+              if (s.id) sanctionedPlayersMap.set(s.id, sObj);
+              if (s.cedula)
+                sanctionedPlayersMap.set(
+                  s.cedula.replace(/\s+/g, ""),
+                  sObj,
+                );
+              if (s.numeroJugador && s.teamName) {
+                sanctionedPlayersMap.set(
+                  String(s.numeroJugador).trim() +
+                    "_" +
+                    s.teamName.trim().toUpperCase(),
+                  sObj,
+                );
+              }
+              if (s.numeroJugador && s.teamId) {
+                sanctionedPlayersMap.set(
+                  String(s.numeroJugador).trim() + "_" + s.teamId,
+                  sObj,
+                );
+              }
+              if (s.nombreJugador && s.teamName) {
+                sanctionedPlayersMap.set(
+                  s.nombreJugador.trim().toLowerCase().replace(/\s+/g, " ") +
+                    "_" +
+                    s.teamName.trim().toUpperCase(),
+                  sObj,
+                );
+              }
+              if (s.nombreJugador) {
+                sanctionedPlayersMap.set(
+                  s.nombreJugador.trim().toLowerCase().replace(/\s+/g, " "),
+                  sObj,
+                );
+              }
+            };
+
+            // Agrupador para contabilizar acumulación de tarjetas amarillas por jugador
+            const yellowCardsGroup = new Map();
+
             sancionSnap.forEach((sDoc) => {
               const s = sDoc.data();
+              s.id = sDoc.id;
               const estado = (s.estado || "activa").toLowerCase();
               if (
                 estado === "cumplida" ||
@@ -3938,21 +3981,55 @@
                 return;
 
               const jId = s.jugadorId || s.playerId || s.id || "";
-              let totalPartidos =
-                parseInt(s.partidosSuspension, 10) ||
-                parseInt(s.partidos, 10) ||
-                (s.tipo === "roja" ? 1 : 1);
-              if (String(s.articulo) === "128" || String(s.articulo) === "129")
+              const sTeam = (s.teamName || currentTeamName || "").trim();
+
+              // Si es tarjeta amarilla SIN suspensión explícita, se acumula para verificar regla de 4 amarillas
+              const isExplicitAmarillaSusp =
+                s.tipo === "amarilla" &&
+                ((s.partidosSuspension && parseInt(s.partidosSuspension, 10) > 0) ||
+                  (s.articulo && String(s.articulo) === "124" && s.literal && s.literal.toLowerCase().startsWith("a")));
+
+              if (s.tipo === "amarilla" && !isExplicitAmarillaSusp) {
+                // Clave única para agrupar por jugador
+                const playerKey = jId || (s.cedula ? s.cedula.replace(/\s+/g, "") : "") || (s.nombreJugador ? s.nombreJugador.trim().toLowerCase() : sDoc.id);
+                if (!yellowCardsGroup.has(playerKey)) {
+                  yellowCardsGroup.set(playerKey, {
+                    items: [],
+                    sample: s,
+                    jId: jId,
+                    team: sTeam,
+                  });
+                }
+                yellowCardsGroup.get(playerKey).items.push(s);
+                return; // Tarjeta amarilla individual: paga su multa y puede jugar normalmente
+              }
+
+              // Sanciones con suspensión (Rojas, artículos específicos o 4ta amarilla explícita)
+              let totalPartidos = 0;
+              const parsedSusp = parseInt(s.partidosSuspension, 10);
+              const parsedPart = parseInt(s.partidos, 10);
+              if (!isNaN(parsedSusp) && parsedSusp > 0) {
+                totalPartidos = parsedSusp;
+              } else if (!isNaN(parsedPart) && parsedPart > 0) {
+                totalPartidos = parsedPart;
+              } else if (s.tipo === "roja") {
+                totalPartidos = 1; // Tarjeta roja por defecto 1 partido mínimo
+              } else {
+                totalPartidos = 0;
+              }
+
+              if (String(s.articulo) === "128" || String(s.articulo) === "129") {
                 totalPartidos = 40;
+              }
+
+              if (totalPartidos <= 0) return; // Si no tiene partidos de suspensión, no inhabilita
 
               // Determinar la jornada de origen de la sanción
               let startJornada = parseInt(s.jornada, 10);
               if (isNaN(startJornada) || startJornada <= 0) {
-                // Si la sanción no tiene jornada explícita, se considera incurrida en la Fecha 1
                 startJornada = 1;
               }
 
-              const sTeam = (s.teamName || currentTeamName || "").trim();
               const matchesServed = getMatchesServed(
                 sTeam,
                 startJornada,
@@ -3960,7 +4037,7 @@
               );
               const pendingPartidos = totalPartidos - matchesServed;
 
-              // Si ya cumplió todos los partidos en fechas anteriores programadas -> LA SANCIÓN SE ALZA AUTOMÁTICAMENTE
+              // Si ya cumplió todos los partidos en fechas anteriores programadas -> Habilitado automáticamente
               if (pendingPartidos <= 0) {
                 return;
               }
@@ -3969,7 +4046,7 @@
               if (s.tipo === "roja") {
                 reasonText = `Tarjeta Roja ${s.articulo ? "(Art. " + s.articulo + (s.literal ? " " + s.literal : "") + ")" : ""} — ${totalPartidos >= 40 ? "1 Año de Suspensión / Expulsión" : pendingPartidos + " partido(s) pendiente(s)"}`;
               } else if (s.tipo === "amarilla") {
-                reasonText = `Acumulación de Tarjetas Amarillas (${pendingPartidos} partido(s) de suspensión pendiente(s))`;
+                reasonText = `Acumulación de Tarjetas Amarillas (Art. 124 lit. a) — ${pendingPartidos} partido(s) pendiente(s)`;
               } else {
                 reasonText = `Sanción Disciplinaria ${s.articulo ? "(Art. " + s.articulo + (s.literal ? " " + s.literal : "") + ")" : ""} (${totalPartidos >= 40 ? "1 Año de Suspensión" : pendingPartidos + " partido(s) pendiente(s)"})`;
               }
@@ -3987,41 +4064,44 @@
                 jugadorId: jId,
               };
 
-              // Indexar por todas las formas posibles de identificación del jugador
-              if (jId) sanctionedPlayersMap.set(jId, sanctionObj);
-              if (sDoc.id) sanctionedPlayersMap.set(sDoc.id, sanctionObj);
-              if (s.cedula)
-                sanctionedPlayersMap.set(
-                  s.cedula.replace(/\s+/g, ""),
-                  sanctionObj,
+              indexPlayerSanction(sanctionObj, s, jId);
+            });
+
+            // Procesar acumulación de tarjetas amarillas (REGLA: Cada 4 amarillas = 1 partido de suspensión)
+            yellowCardsGroup.forEach((group) => {
+              const count = group.items.length;
+              if (count >= 4) {
+                // Ordenar por jornada ascendente para saber en cuál jornada ocurrió la 4.ª (u 8.ª) amarilla
+                group.items.sort((a, b) => (parseInt(a.jornada, 10) || 1) - (parseInt(b.jornada, 10) || 1));
+                
+                // Determinar la jornada en la que se completó el último ciclo de 4 amarillas
+                const cycleIndex = Math.floor(count / 4) * 4 - 1; // índice de la 4.ª, 8.ª, etc.
+                const triggeringCard = group.items[cycleIndex] || group.items[group.items.length - 1];
+                let startJ = parseInt(triggeringCard.jornada, 10);
+                if (isNaN(startJ) || startJ <= 0) startJ = 1;
+
+                const matchesServed = getMatchesServed(
+                  group.team,
+                  startJ,
+                  targetMatchJornada,
                 );
-              if (s.numeroJugador && s.teamName) {
-                sanctionedPlayersMap.set(
-                  String(s.numeroJugador).trim() +
-                    "_" +
-                    s.teamName.trim().toUpperCase(),
-                  sanctionObj,
-                );
-              }
-              if (s.numeroJugador && s.teamId) {
-                sanctionedPlayersMap.set(
-                  String(s.numeroJugador).trim() + "_" + s.teamId,
-                  sanctionObj,
-                );
-              }
-              if (s.nombreJugador && s.teamName) {
-                sanctionedPlayersMap.set(
-                  s.nombreJugador.trim().toLowerCase().replace(/\s+/g, " ") +
-                    "_" +
-                    s.teamName.trim().toUpperCase(),
-                  sanctionObj,
-                );
-              }
-              if (s.nombreJugador) {
-                sanctionedPlayersMap.set(
-                  s.nombreJugador.trim().toLowerCase().replace(/\s+/g, " "),
-                  sanctionObj,
-                );
+                const pending = 1 - matchesServed;
+
+                if (pending > 0) {
+                  const sanctionObj = {
+                    reason: `Acumulación de ${count} Tarjetas Amarillas (Art. 124 lit. a) — ${pending} partido de suspensión pendiente`,
+                    tipo: "amarilla",
+                    partidos: pending,
+                    totalPartidos: 1,
+                    cumplidos: matchesServed,
+                    jornadaInicio: startJ,
+                    articulo: "124",
+                    literal: "a",
+                    sancionId: triggeringCard.id || "",
+                    jugadorId: group.jId,
+                  };
+                  indexPlayerSanction(sanctionObj, group.sample, group.jId);
+                }
               }
             });
           }

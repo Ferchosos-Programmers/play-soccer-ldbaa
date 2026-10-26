@@ -2052,6 +2052,38 @@
         }
       };
 
+      // Helper para contar tarjetas amarillas acumuladas en el torneo
+      async function getPlayerAccumulatedYellowCards(
+        jugadorId,
+        cedula,
+        campeonatoId,
+      ) {
+        let count = 0;
+        try {
+          let q = db.collection("sanciones").where("tipo", "==", "amarilla");
+          if (campeonatoId) {
+            q = q.where("campeonatoId", "==", campeonatoId);
+          }
+          const snap = await q.get();
+          const cleanCi = cedula ? String(cedula).replace(/\s+/g, "") : "";
+          snap.forEach((doc) => {
+            const data = doc.data();
+            const st = (data.estado || "activa").toLowerCase();
+            if (st === "anulada") return;
+            const dCi = (data.cedula || "").replace(/\s+/g, "");
+            if (
+              (jugadorId && data.jugadorId === jugadorId) ||
+              (cleanCi && dCi && dCi === cleanCi)
+            ) {
+              count++;
+            }
+          });
+        } catch (err) {
+          console.warn("Error consultando amarillas acumuladas:", err);
+        }
+        return count;
+      }
+
       window.sancionarDesdeVocal = async function (
         nombreJugador,
         nombreEquipo,
@@ -2208,14 +2240,26 @@
           Swal.close();
 
           if (tipo === "amarilla") {
-            // Sanción automática para amarillas
+            // Sanción automática para amarillas con verificación de acumulación (4 amarillas = 1 partido de suspensión)
             Swal.fire({
-              title: "Aplicando Tarjeta Amarilla...",
+              title: "Verificando tarjetas amarillas...",
               allowOutsideClick: false,
               didOpen: () => {
                 Swal.showLoading();
               },
             });
+
+            const prevCount = await getPlayerAccumulatedYellowCards(
+              pId,
+              pData.cedula,
+              campeonatoActual,
+            );
+            const totalAmarillas = prevCount + 1;
+            const isCuartaAmarilla = totalAmarillas % 4 === 0;
+            const partidosSuspension = isCuartaAmarilla ? 1 : 0;
+            const articuloSancion = isCuartaAmarilla ? "124" : null;
+            const literalSancion = isCuartaAmarilla ? "a" : null;
+            const ciclo = ((totalAmarillas - 1) % 4) + 1;
 
             db.collection("sanciones")
               .add({
@@ -2227,9 +2271,10 @@
                 teamId: targetTeamId || "",
                 matchId: lastMatchId || "",
                 tipo: "amarilla",
-                articulo: null,
-                literal: null,
+                articulo: articuloSancion,
+                literal: literalSancion,
                 valor: 0.5,
+                partidosSuspension: partidosSuspension,
                 jornada: lastMatchJornada || currentSelectedJornada || 1,
                 fecha: new Date(),
                 createdAt: new Date(),
@@ -2238,13 +2283,42 @@
               })
               .then(async () => {
                 await autoMarkCurrentMatchAsSanctioned();
-                Swal.fire({
-                  title: "¡Aplicada!",
-                  text: "Tarjeta Amarilla registrada correctamente.",
-                  icon: "success",
-                  timer: 1500,
-                  showConfirmButton: false,
-                });
+
+                if (isCuartaAmarilla) {
+                  Swal.fire({
+                    title: "¡4.ª Amarilla - Suspensión!",
+                    html: `<div class="text-start">
+                      <p class="mb-2"><b>${pNombre}</b> (${nombreEquipo})</p>
+                      <div class="badge bg-danger text-white px-3 py-2 fs-6 rounded-pill mb-3">
+                        <i class="fas fa-ban me-1"></i> 4 TARJETAS AMARILLAS ACUMULADAS
+                      </div>
+                      <div class="alert alert-danger py-2 px-3 rounded-3 mb-2" style="font-size:0.9rem;">
+                        <i class="fas fa-gavel me-1"></i> <b>1 Partido de Suspensión</b> (Art. 124 lit. a)
+                      </div>
+                      <div class="small text-white-50"><i class="fas fa-dollar-sign me-1 text-warning"></i>Multa reglamentaria: <b>$0.50</b></div>
+                    </div>`,
+                    icon: "warning",
+                    confirmButtonText: "Entendido",
+                    confirmButtonColor: "#e74c3c",
+                  });
+                } else {
+                  Swal.fire({
+                    title: "¡Tarjeta Amarilla Registrada!",
+                    html: `<div class="text-start">
+                      <p class="mb-2">Jugador: <b>${pNombre}</b> (${nombreEquipo})</p>
+                      <div class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill mb-2">
+                        <i class="fas fa-square me-1"></i> ${ciclo}/4 Amarillas Acumuladas
+                      </div>
+                      <div class="alert alert-success py-2 px-3 rounded-3 mb-2" style="font-size:0.85rem; background:rgba(46,204,113,0.15); border:1px solid #2ecc71; color:#fff;">
+                        <i class="fas fa-check-circle me-1 text-success"></i> <b>HABILITADO PARA JUGAR</b><br>
+                        <span class="text-white-50 small">No está suspendido. Solo paga su multa de $0.50 y puede seguir jugando.</span>
+                      </div>
+                    </div>`,
+                    icon: "success",
+                    timer: 2800,
+                    showConfirmButton: false,
+                  });
+                }
 
                 // Refrescar vistas
                 if (equipoActual) mostrarJugadores(equipoActual, "");
@@ -2278,7 +2352,7 @@
         }
       };
 
-      window.manualSelectPlayerSancion = function (
+      window.manualSelectPlayerSancion = async function (
         id,
         nombre,
         tipo,
@@ -2286,25 +2360,55 @@
       ) {
         Swal.close();
         if (tipo === "amarilla") {
-          // Aplicación automática desde selección manual
           Swal.fire({
-            title: "Aplicando Tarjeta Amarilla...",
+            title: "Verificando tarjetas amarillas...",
             allowOutsideClick: false,
             didOpen: () => {
               Swal.showLoading();
             },
           });
 
+          let pCedula = "";
+          let pNum = "";
+          let pTeamName = "";
+          try {
+            const pDoc = await db.collection("players").doc(id).get();
+            if (pDoc.exists) {
+              const pData = pDoc.data();
+              pCedula = pData.cedula || "";
+              pNum = pData.numeroJugador || pData.num || "";
+              pTeamName = pData.teamName || "";
+            }
+          } catch (eDoc) {
+            console.warn("Error leyendo jugador:", eDoc);
+          }
+
+          const prevCount = await getPlayerAccumulatedYellowCards(
+            id,
+            pCedula,
+            campeonatoActual,
+          );
+          const totalAmarillas = prevCount + 1;
+          const isCuartaAmarilla = totalAmarillas % 4 === 0;
+          const partidosSuspension = isCuartaAmarilla ? 1 : 0;
+          const articuloSancion = isCuartaAmarilla ? "124" : null;
+          const literalSancion = isCuartaAmarilla ? "a" : null;
+          const ciclo = ((totalAmarillas - 1) % 4) + 1;
+
           db.collection("sanciones")
             .add({
               jugadorId: id,
               nombreJugador: nombre,
+              numeroJugador: pNum,
+              cedula: pCedula,
+              teamName: pTeamName,
               teamId: teamId || equipoActual || "",
               matchId: lastMatchId || "",
               tipo: "amarilla",
-              articulo: null,
-              literal: null,
+              articulo: articuloSancion,
+              literal: literalSancion,
               valor: 0.5,
+              partidosSuspension: partidosSuspension,
               jornada: lastMatchJornada || currentSelectedJornada || 1,
               fecha: new Date(),
               createdAt: new Date(),
@@ -2313,13 +2417,41 @@
             })
             .then(async () => {
               await autoMarkCurrentMatchAsSanctioned();
-              Swal.fire({
-                title: "¡Aplicada!",
-                text: "Tarjeta Amarilla registrada correctamente.",
-                icon: "success",
-                timer: 1500,
-                showConfirmButton: false,
-              });
+              if (isCuartaAmarilla) {
+                Swal.fire({
+                  title: "¡4.ª Amarilla - Suspensión!",
+                  html: `<div class="text-start">
+                    <p class="mb-2"><b>${nombre}</b></p>
+                    <div class="badge bg-danger text-white px-3 py-2 fs-6 rounded-pill mb-3">
+                      <i class="fas fa-ban me-1"></i> 4 TARJETAS AMARILLAS ACUMULADAS
+                    </div>
+                    <div class="alert alert-danger py-2 px-3 rounded-3 mb-2" style="font-size:0.9rem;">
+                      <i class="fas fa-gavel me-1"></i> <b>1 Partido de Suspensión</b> (Art. 124 lit. a)
+                    </div>
+                    <div class="small text-white-50"><i class="fas fa-dollar-sign me-1 text-warning"></i>Multa reglamentaria: <b>$0.50</b></div>
+                  </div>`,
+                  icon: "warning",
+                  confirmButtonText: "Entendido",
+                  confirmButtonColor: "#e74c3c",
+                });
+              } else {
+                Swal.fire({
+                  title: "¡Tarjeta Amarilla Registrada!",
+                  html: `<div class="text-start">
+                    <p class="mb-2">Jugador: <b>${nombre}</b></p>
+                    <div class="badge bg-warning text-dark px-3 py-2 fs-6 rounded-pill mb-2">
+                      <i class="fas fa-square me-1"></i> ${ciclo}/4 Amarillas Acumuladas
+                    </div>
+                    <div class="alert alert-success py-2 px-3 rounded-3 mb-2" style="font-size:0.85rem; background:rgba(46,204,113,0.15); border:1px solid #2ecc71; color:#fff;">
+                      <i class="fas fa-check-circle me-1 text-success"></i> <b>HABILITADO PARA JUGAR</b><br>
+                      <span class="text-white-50 small">No está suspendido. Solo paga su multa de $0.50 y puede seguir jugando.</span>
+                    </div>
+                  </div>`,
+                  icon: "success",
+                  timer: 2800,
+                  showConfirmButton: false,
+                });
+              }
 
               // Refrescar vistas
               if (equipoActual) mostrarJugadores(equipoActual, "");
@@ -2433,12 +2565,59 @@
 
               sancionesSnapshot.forEach((sDoc) => {
                 const s = sDoc.data();
-                if (s.tipo === "amarilla") tarjetasAmarillas++;
-                if (s.tipo === "roja") tarjetasRojas++;
-                sancionesActivas.push(
-                  s.articulo ? `Art. ${s.articulo}` : s.tipo,
-                );
+                if (s.tipo === "amarilla") {
+                  tarjetasAmarillas++;
+                  if (
+                    (s.partidosSuspension && parseInt(s.partidosSuspension, 10) > 0) ||
+                    String(s.articulo) === "124"
+                  ) {
+                    sancionesActivas.push("Susp. 1 Part. (4 Amarillas)");
+                  }
+                } else if (s.tipo === "roja") {
+                  tarjetasRojas++;
+                  const susp = s.partidosSuspension
+                    ? `${s.partidosSuspension} Part.`
+                    : "1 Part.";
+                  sancionesActivas.push(
+                    `Roja ${s.articulo ? "(Art. " + s.articulo + ")" : ""} - Susp. ${susp}`,
+                  );
+                } else {
+                  if (
+                    s.partidosSuspension &&
+                    parseInt(s.partidosSuspension, 10) > 0
+                  ) {
+                    sancionesActivas.push(
+                      `${s.articulo ? "Art. " + s.articulo : s.tipo} (${s.partidosSuspension} Part.)`,
+                    );
+                  }
+                }
               });
+
+              // Si tiene 4 o más amarillas acumuladas y aún no tiene sanción explícita
+              if (
+                tarjetasAmarillas >= 4 &&
+                !sancionesActivas.some((s) => s.includes("Amarillas"))
+              ) {
+                sancionesActivas.push(
+                  `Susp. 1 Part. (${tarjetasAmarillas} Amarillas Acum.)`,
+                );
+              }
+
+              let estadoSancionesHtml = "";
+              if (sancionesActivas.length > 0) {
+                estadoSancionesHtml = sancionesActivas
+                  .map(
+                    (s) =>
+                      `<span class="badge bg-danger bg-opacity-20 text-danger border border-danger border-opacity-25 me-1"><i class="fas fa-ban me-1"></i>${s}</span>`,
+                  )
+                  .join("");
+              } else if (tarjetasAmarillas > 0) {
+                const amAcum = ((tarjetasAmarillas - 1) % 4) + 1;
+                estadoSancionesHtml = `<span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25"><i class="fas fa-check-circle me-1"></i>Habilitado (${amAcum}/4 amarillas)</span>`;
+              } else {
+                estadoSancionesHtml =
+                  '<span class="text-white-50 small italic">Ninguna</span>';
+              }
 
               const tr = `
                 <tr>
@@ -2456,7 +2635,7 @@
                     <span class="badge bg-danger text-white" title="Rojas">${tarjetasRojas}</span>
                   </td>
                   <td>
-                    ${sancionesActivas.length > 0 ? sancionesActivas.map((s) => `<span class="badge bg-info bg-opacity-10 text-info border border-info border-opacity-25 me-1">${s}</span>`).join("") : '<span class="text-white-50 small italic">Ninguna</span>'}
+                    ${estadoSancionesHtml}
                   </td>
                   <td class="text-center pe-4">
                     <button class="btn btn-sm btn-premium" onclick="abrirModalSancion('${doc.id}', '${jugador.nombres} ${jugador.apellidos}')">
@@ -2683,8 +2862,8 @@
           document.getElementById("sancionJugadorNombre")?.textContent || ""
         ).trim();
         const tipo = document.getElementById("tipoSancion").value;
-        const art = document.getElementById("articulo").value;
-        const lit = document.getElementById("literal").value;
+        let art = document.getElementById("articulo").value;
+        let lit = document.getElementById("literal").value;
         const valor =
           parseFloat(document.getElementById("valorSancion").value) || 0;
         let partidos =
@@ -2693,13 +2872,39 @@
         if (art === "128" || art === "129") partidos = 40;
 
         if (!tipo) return;
-        if (tipo === "roja" && (!art || !lit)) {
-          Swal.fire(
-            "Atención",
-            "Por favor seleccione artículo y literal para la tarjeta roja",
-            "warning",
-          );
-          return;
+        if (tipo === "roja") {
+          if (!art || !lit) {
+            Swal.fire(
+              "Atención",
+              "Por favor seleccione artículo y literal para la tarjeta roja",
+              "warning",
+            );
+            return;
+          }
+          if (partidos <= 0) partidos = 1;
+        }
+
+        // Si es tarjeta amarilla y no se eligió artículo de suspensión explícito:
+        if (tipo === "amarilla") {
+          if (art === "124" && lit && lit.toLowerCase().startsWith("a")) {
+            partidos = 1;
+          } else if (!art && partidos <= 0) {
+            // Verificar si con esta completa 4 amarillas
+            const prevCount = await getPlayerAccumulatedYellowCards(
+              id,
+              "",
+              campeonatoActual,
+            );
+            if ((prevCount + 1) % 4 === 0) {
+              partidos = 1;
+              art = "124";
+              lit = "a";
+            } else {
+              partidos = 0;
+              art = null;
+              lit = null;
+            }
+          }
         }
 
         // Mostrar cargando
