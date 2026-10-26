@@ -93,7 +93,16 @@
       import {
         getAuth,
         signInWithEmailAndPassword,
+        createUserWithEmailAndPassword,
+        updatePassword,
       } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+      import {
+        getFirestore,
+        collection,
+        query,
+        where,
+        getDocs,
+      } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
       const firebaseConfig = {
         apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
@@ -106,103 +115,215 @@
 
       const app = initializeApp(firebaseConfig);
       const auth = getAuth(app);
+      const db = getFirestore(app);
 
       const loginForm = document.getElementById("loginForm");
 
-      loginForm.addEventListener("submit", (e) => {
+      loginForm.addEventListener("submit", async (e) => {
         e.preventDefault();
-        
+
         // Show loading state
         Swal.fire({
-          title: 'Verificando...',
+          title: "Verificando...",
           allowOutsideClick: false,
           didOpen: () => {
             Swal.showLoading();
-          }
+          },
         });
 
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
+        const email = (document.getElementById("email").value || "")
+          .trim()
+          .toLowerCase();
+        const password = (
+          document.getElementById("password").value || ""
+        ).trim();
 
-        signInWithEmailAndPassword(auth, email, password)
-          .then(async (userCredential) => {
-            // Check if it's admin@gmail.com
-            if (email === "admin@gmail.com") {
-              window.location.href = "super-admin.html";
-              return;
-            }
+        let userCredential = null;
 
-            // Check in Firestore users collection
+        // 1. Intentar inicio de sesión directo con Firebase Auth
+        try {
+          userCredential = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password,
+          );
+        } catch (authErr) {
+          console.warn(
+            "Intento Auth directo no coincidió:",
+            authErr.code || authErr.message,
+          );
+
+          // 2. Si es correo de equipo (@ldbaa.com), verificar contra la base de datos Firestore de equipos
+          if (email.endsWith("@ldbaa.com")) {
             try {
-              const userQuery = await firebase.firestore().collection("users").where("email", "==", email).get();
-              if (!userQuery.empty) {
-                const userData = userQuery.docs[0].data();
-                if (userData.password === password) {
-                  // Direct redirection based on assigned roles
-                  Swal.fire({
-                    icon: "success",
-                    title: "¡Bienvenido!",
-                    text: "Redirigiendo según sus permisos...",
-                    timer: 1500,
-                    showConfirmButton: false
-                  }).then(() => {
-                    if (userData.roles.sanciones) {
-                      window.location.href = "sanciones.html";
-                    } else if (userData.roles.programacion) {
-                      window.location.href = "programacion-dashboard.html";
-                    } else if (userData.roles.tesorero) {
-                      window.location.href = "tesorero-dashboard.html";
-                    } else if (userData.roles.dashboard) {
-                      window.location.href = "dashboard.html";
-                    } else {
-                      window.location.href = "index.html";
+              const teamQ = query(
+                collection(db, "teams"),
+                where("email", "==", email),
+              );
+              const teamSnap = await getDocs(teamQ);
+              if (!teamSnap.empty) {
+                const teamData = teamSnap.docs[0].data();
+                const expectedPass = teamData.adminKey || teamData.password;
+                if (
+                  expectedPass &&
+                  String(expectedPass).trim() === String(password).trim()
+                ) {
+                  // La contraseña coincide con la asignada en Firestore!
+                  // Sincronizar en Firebase Auth para completar el acceso
+                  try {
+                    userCredential = await createUserWithEmailAndPassword(
+                      auth,
+                      email,
+                      password,
+                    );
+                  } catch (createErr) {
+                    if (createErr.code === "auth/email-already-in-use") {
+                      const cleanName = (teamData.name || "")
+                        .toLowerCase()
+                        .normalize("NFD")
+                        .replace(/[\u0300-\u036f]/g, "")
+                        .replace(/[^a-z0-9]/g, "");
+                      const catSuffix = teamData.category
+                        ? `.${teamData.category.toLowerCase().replace(/[^a-z0-9]/g, "")}`
+                        : "";
+                      const currentYear = new Date().getFullYear();
+                      const candidates = [
+                        `${cleanName}${catSuffix}${currentYear}`,
+                        `${cleanName}${currentYear}`,
+                        `${cleanName}${catSuffix}`,
+                        `${cleanName}`,
+                        "123456",
+                      ];
+                      for (const cPass of candidates) {
+                        try {
+                          const oldCred = await signInWithEmailAndPassword(
+                            auth,
+                            email,
+                            cPass,
+                          );
+                          await updatePassword(oldCred.user, password);
+                          userCredential = oldCred;
+                          break;
+                        } catch (eCand) {}
+                      }
                     }
-                  });
-                  return;
-                } else {
-                  // If password in Firestore doesn't match, reject access
-                  Swal.fire({
-                    icon: "error",
-                    title: "Contraseña incorrecta",
-                    text: "Por favor verifique la clave asignada por el Administrador.",
-                    confirmButtonColor: "#e74c3c"
-                  });
-                  return;
+                  }
                 }
               }
-            } catch (err) {
-              console.error("Firestore user check failed, falling back to basic flow:", err);
+            } catch (fsErr) {
+              console.warn("Error sincronizando equipo con Firestore:", fsErr);
             }
+          }
 
-            // Fallback default redirections
+          // 3. Si es usuario de la colección 'users', verificar si la contraseña coincide
+          if (!userCredential) {
+            try {
+              const uQ = query(
+                collection(db, "users"),
+                where("email", "==", email),
+              );
+              const uSnap = await getDocs(uQ);
+              if (!uSnap.empty) {
+                const uData = uSnap.docs[0].data();
+                if (
+                  uData.password &&
+                  String(uData.password).trim() === String(password).trim()
+                ) {
+                  try {
+                    userCredential = await createUserWithEmailAndPassword(
+                      auth,
+                      email,
+                      password,
+                    );
+                  } catch (eCu) {
+                    if (eCu.code === "auth/email-already-in-use") {
+                      try {
+                        const oldCred = await signInWithEmailAndPassword(
+                          auth,
+                          email,
+                          uData.password,
+                        );
+                        userCredential = oldCred;
+                      } catch (eOld) {}
+                    }
+                  }
+                }
+              }
+            } catch (uErr) {
+              console.warn("Error en colección users:", uErr);
+            }
+          }
+        }
+
+        // Si no se pudo autenticar en ninguna vía:
+        if (!userCredential) {
+          Swal.fire({
+            icon: "error",
+            title: "Acceso Denegado",
+            text: "Las credenciales no coinciden con nuestros registros.",
+            confirmButtonColor: "#2ecc71",
+          });
+          return;
+        }
+
+        // Redirección especial para super-admin
+        if (email === "admin@gmail.com") {
+          window.location.href = "super-admin.html";
+          return;
+        }
+
+        // Verificar roles en colección 'users'
+        try {
+          const userQuery = await getDocs(
+            query(collection(db, "users"), where("email", "==", email)),
+          );
+          if (!userQuery.empty) {
+            const userData = userQuery.docs[0].data();
             Swal.fire({
               icon: "success",
               title: "¡Bienvenido!",
-              text: "Autenticación exitosa. Redirigiendo...",
+              text: "Redirigiendo según sus permisos...",
               timer: 1500,
-              showConfirmButton: false
+              showConfirmButton: false,
             }).then(() => {
-              if (email === "programacion@gmail.com") {
-                window.location.href = "programacion-dashboard.html";
-              } else if (email === "sanciones@gmail.com") {
+              if (userData.roles?.sanciones) {
                 window.location.href = "sanciones.html";
-              } else if (email === "tesorero@gmail.com") {
+              } else if (userData.roles?.programacion) {
+                window.location.href = "programacion-dashboard.html";
+              } else if (userData.roles?.tesorero) {
                 window.location.href = "tesorero-dashboard.html";
-              } else if (email.endsWith("@ldbaa.com")) {
-                window.location.href = "team-dashboard.html";
-              } else {
+              } else if (userData.roles?.dashboard) {
                 window.location.href = "dashboard.html";
+              } else {
+                window.location.href = "index.html";
               }
             });
-          })
-          .catch((error) => {
-            Swal.fire({
-              icon: "error",
-              title: "Acceso Denegado",
-              text: "Las credenciales no coinciden con nuestros registros.",
-              confirmButtonColor: "#2ecc71"
-            });
-          });
+            return;
+          }
+        } catch (err) {
+          console.error("Firestore user check failed:", err);
+        }
+
+        // Redirección por defecto
+        Swal.fire({
+          icon: "success",
+          title: "¡Bienvenido!",
+          text: "Autenticación exitosa. Redirigiendo...",
+          timer: 1500,
+          showConfirmButton: false,
+        }).then(() => {
+          if (email === "programacion@gmail.com") {
+            window.location.href = "programacion-dashboard.html";
+          } else if (email === "sanciones@gmail.com") {
+            window.location.href = "sanciones.html";
+          } else if (email === "tesorero@gmail.com") {
+            window.location.href = "tesorero-dashboard.html";
+          } else if (email.endsWith("@ldbaa.com")) {
+            window.location.href = "team-dashboard.html";
+          } else {
+            window.location.href = "dashboard.html";
+          }
+        });
       });
     </script>
   </body>

@@ -166,12 +166,18 @@
                 <input type="date" class="input-premium text-white" id="teamFoundationDate" style="background: rgba(255,255,255,0.05);" />
               </div>
               <div class="mb-4">
-                <label class="form-label">CORREO DE ACCESO (AUTO)</label>
-                <input type="text" class="input-premium" id="teamEmailPreview" readonly style="background: rgba(255,255,255,0.05); color: #2ecc71; font-weight: bold;" />
+                <label class="form-label">CORREO DE ACCESO</label>
+                <div class="input-group">
+                  <input type="text" class="input-premium" id="teamUserPrefix" placeholder="ej: nombre.equipo" style="border-radius: 10px 0 0 10px; font-weight: bold; color: #2ecc71;" required />
+                  <span class="input-group-text fw-bold text-success" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 10px 10px 0; font-size: 0.95rem;">@ldbaa.com</span>
+                </div>
+                <input type="hidden" id="teamEmailPreview" />
+                <small class="text-white-50 mt-1 d-block" style="font-size: 0.75rem;">El dominio <b class="text-success">@ldbaa.com</b> va fijado por defecto. Puedes personalizar el nombre de usuario.</small>
               </div>
               <div class="mb-4">
-                <label class="form-label">CONTRASEÑA (AUTO)</label>
-                <input type="text" class="input-premium" id="teamPasswordPreview" readonly style="background: rgba(255,255,255,0.05); color: #f1c40f; font-weight: bold;" />
+                <label class="form-label">CONTRASEÑA</label>
+                <input type="text" class="input-premium" id="teamPasswordPreview" placeholder="Mínimo 6 caracteres" style="color: #f1c40f; font-weight: bold;" required />
+                <small class="text-white-50 mt-1 d-block" style="font-size: 0.75rem;">Contraseña de acceso para el panel del equipo.</small>
               </div>
               <div class="mb-4">
                 <label class="form-label text-white-50">FORMATOS DE DOCUMENTOS A ENVIAR</label>
@@ -654,7 +660,7 @@
               <button class="btn btn-outline-warning border-0 flex-grow-1" style="background: rgba(243, 156, 18, 0.1);" title="Asignar Credenciales" onclick="assignCredentials('${id}', '${team.name}')">
                 <i class="fas fa-user-plus"></i>
               </button>
-              <button class="btn btn-outline-warning border-0 flex-grow-1" style="background: rgba(243, 156, 18, 0.1);" title="Resetear Clave" onclick="resetAdminKey('${id}')">
+              <button class="btn btn-outline-warning border-0 flex-grow-1" style="background: rgba(243, 156, 18, 0.1);" title="Asignar / Cambiar Contraseña" onclick="assignCredentials('${id}', '${team.name}')">
                 <i class="fas fa-key"></i>
               </button>
               <button class="btn btn-outline-info border-0 flex-grow-1" style="background: rgba(52, 152, 219, 0.1);" title="Fecha de Fundación" onclick="editFoundationDate('${id}', '${team.name}')">
@@ -670,15 +676,24 @@
         document.getElementById("teamCardsContainer").appendChild(card);
       }
 
-      // Generar correo y clave en tiempo real incluyendo la categoría para evitar duplicados
+      // Generar sugerencia de correo y clave en tiempo real con @ldbaa.com fijo
+      let userManuallyEditedPrefix = false;
+      let userManuallyEditedPassword = false;
+
       function updateEmailAndPasswordPreview() {
         const name = document.getElementById("teamName").value;
         const category = document.getElementById("teamCategory").value;
+        const prefixInput = document.getElementById("teamUserPrefix");
+        const emailInput = document.getElementById("teamEmailPreview");
+        const passwordInput = document.getElementById("teamPasswordPreview");
+
         if (!name) {
-          document.getElementById("teamEmailPreview").value = "";
-          document.getElementById("teamPasswordPreview").value = "";
+          if (!userManuallyEditedPrefix && prefixInput) prefixInput.value = "";
+          if (emailInput) emailInput.value = "";
+          if (!userManuallyEditedPassword && passwordInput) passwordInput.value = "";
           return;
         }
+
         const currentYear = new Date().getFullYear();
         const cleanName = name.toLowerCase()
           .normalize('NFD')
@@ -691,13 +706,38 @@
           .replace(/[^a-z0-9]/g, '');
 
         const suffix = cleanCategory ? `.${cleanCategory}` : "";
+        const defaultPrefix = `${cleanName}${suffix}`;
 
-        document.getElementById("teamEmailPreview").value = `${cleanName}${suffix}@ldbaa.com`;
-        document.getElementById("teamPasswordPreview").value = `${cleanName}${suffix}${currentYear}`;
+        if (!userManuallyEditedPrefix && prefixInput) {
+          prefixInput.value = defaultPrefix;
+        }
+        const activePrefix = prefixInput ? prefixInput.value.trim().toLowerCase().replace(/@.*$/, "").replace(/[^a-z0-9._-]/g, "") : defaultPrefix;
+        if (emailInput) {
+          emailInput.value = `${activePrefix}@ldbaa.com`;
+        }
+        if (!userManuallyEditedPassword && passwordInput) {
+          passwordInput.value = `${defaultPrefix}${currentYear}`;
+        }
       }
 
       document.getElementById("teamName").addEventListener("input", updateEmailAndPasswordPreview);
       document.getElementById("teamCategory").addEventListener("change", updateEmailAndPasswordPreview);
+      
+      const pfxInputEl = document.getElementById("teamUserPrefix");
+      if (pfxInputEl) {
+        pfxInputEl.addEventListener("input", function () {
+          userManuallyEditedPrefix = true;
+          const clean = this.value.trim().toLowerCase().replace(/@.*$/, "").replace(/[^a-z0-9._-]/g, "");
+          document.getElementById("teamEmailPreview").value = `${clean}@ldbaa.com`;
+        });
+      }
+
+      const passInputEl = document.getElementById("teamPasswordPreview");
+      if (passInputEl) {
+        passInputEl.addEventListener("input", function () {
+          userManuallyEditedPassword = true;
+        });
+      }
 
       // Manejar el envío del formulario de equipo
       document
@@ -710,8 +750,19 @@
             .getElementById("teamCategory")
             .value.toUpperCase();
           const foundationDate = document.getElementById("teamFoundationDate").value || "";
-          const email = document.getElementById("teamEmailPreview").value;
-          const password = document.getElementById("teamPasswordPreview").value;
+          
+          let prefix = (document.getElementById("teamUserPrefix")?.value || "").trim().toLowerCase().replace(/@.*$/, "").replace(/[^a-z0-9._-]/g, "");
+          if (!prefix) {
+            Swal.fire("Atención", "Por favor ingresa un nombre de usuario para el correo.", "warning");
+            return;
+          }
+          const email = `${prefix}@ldbaa.com`;
+          const password = (document.getElementById("teamPasswordPreview")?.value || "").trim();
+
+          if (!password || password.length < 6) {
+            Swal.fire("Atención", "La contraseña debe tener mínimo 6 caracteres.", "warning");
+            return;
+          }
           const logoInput = document.getElementById("teamLogo");
           
           if (!logoInput.files[0]) {
@@ -816,8 +867,11 @@
                   }
                 });
                 document.getElementById("teamForm").reset();
+                if (document.getElementById("teamUserPrefix")) document.getElementById("teamUserPrefix").value = "";
                 document.getElementById("teamEmailPreview").value = "";
                 document.getElementById("teamPasswordPreview").value = "";
+                userManuallyEditedPrefix = false;
+                userManuallyEditedPassword = false;
                 const modal = bootstrap.Modal.getInstance(
                   document.getElementById("addTeamModal"),
                 );
@@ -888,52 +942,144 @@
         });
       }
 
-      // Función para asignar credenciales a equipos ya registrados
+      // Función para asignar credenciales personalizadas a equipos (solo @ldbaa.com por defecto)
       async function assignCredentials(teamId, teamName) {
+        Swal.fire({
+          title: "Cargando datos...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        let teamData = {};
+        try {
+          const doc = await db.collection("teams").doc(teamId).get();
+          if (doc.exists) teamData = doc.data();
+        } catch (eDoc) {
+          console.warn("Error obteniendo datos del equipo:", eDoc);
+        }
+
         const currentYear = new Date().getFullYear();
-        const cleanName = teamName.toLowerCase()
-          .normalize('NFD')
-          .replace(/[\u0300-\u036f]/g, '')
-          .replace(/[^a-z0-9]/g, '');
-        
-        const email = `${cleanName}@ldbaa.com`;
-        const password = `${cleanName}${currentYear}`;
+        let initialPrefix = "";
+        if (teamData.email && teamData.email.includes("@")) {
+          initialPrefix = teamData.email.split("@")[0];
+        } else {
+          const cleanName = (teamName || teamData.name || "").toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9]/g, '');
+          const catSuffix = teamData.category ? `.${teamData.category.toLowerCase().replace(/[^a-z0-9]/g, '')}` : "";
+          initialPrefix = `${cleanName}${catSuffix}`;
+        }
+
+        const initialPassword = teamData.adminKey || teamData.password || `${initialPrefix}${currentYear}`;
 
         const result = await Swal.fire({
-          title: "Asignar Credenciales",
+          title: `<div class="d-flex align-items-center justify-content-center gap-2"><i class="fas fa-key text-warning"></i><span>Credenciales de Acceso</span></div>`,
           html: `
-            <div class="text-start p-3 rounded-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
-              <p class="mb-3">Se generarán las siguientes credenciales para <b>${teamName}</b>:</p>
-              <div class="mb-2">
-                <small class="text-success d-block">CORREO:</small>
-                <code class="fs-6 text-white">${email}</code>
+            <div class="text-start p-3 rounded-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1);">
+              <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom border-secondary border-opacity-25">
+                <div>
+                  <span class="text-white-50 small d-block">EQUIPO:</span>
+                  <b class="text-white text-uppercase fs-6">${teamName || teamData.name || 'EQUIPO'}</b>
+                </div>
+                <span class="badge" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.3); color: #2ecc71;">${teamData.category || 'OFICIAL'}</span>
               </div>
-              <div>
-                <small class="text-warning d-block">CONTRASEÑA:</small>
-                <code class="fs-6 text-white">${password}</code>
+
+              <div class="mb-3">
+                <label class="form-label text-white small fw-bold mb-1">
+                  <i class="fas fa-envelope text-success me-1"></i> USUARIO / CORREO DE ACCESO:
+                </label>
+                <div class="input-group">
+                  <input 
+                    type="text" 
+                    id="swalTeamUserPrefix" 
+                    class="form-control" 
+                    value="${initialPrefix}" 
+                    placeholder="ej: nombre.equipo" 
+                    style="background: rgba(0,0,0,0.6); border: 1.5px solid rgba(46, 204, 113, 0.4); color: #2ecc71; font-weight: 700; border-radius: 10px 0 0 10px; padding: 10px 14px; font-size: 1rem;" 
+                    autocomplete="off"
+                  />
+                  <span class="input-group-text fw-bold text-success" style="background: rgba(46, 204, 113, 0.15); border: 1.5px solid rgba(46, 204, 113, 0.4); border-left: none; border-radius: 0 10px 10px 0; font-size: 0.95rem; user-select: none;">
+                    @ldbaa.com
+                  </span>
+                </div>
+                <small class="text-white-50 mt-1 d-block" style="font-size: 0.75rem;">
+                  Ingresa el usuario. El dominio <b class="text-success">@ldbaa.com</b> va fijado por defecto.
+                </small>
               </div>
-              <p class="mt-3 mb-0 small text-white-50">Si el usuario ya existe en Auth, se actualizará la información en la base de datos.</p>
+
+              <div class="mb-3">
+                <label class="form-label text-white small fw-bold mb-1">
+                  <i class="fas fa-lock text-warning me-1"></i> CONTRASEÑA:
+                </label>
+                <input 
+                  type="text" 
+                  id="swalTeamPassword" 
+                  class="form-control" 
+                  value="${initialPassword}" 
+                  placeholder="Mínimo 6 caracteres" 
+                  style="background: rgba(0,0,0,0.6); border: 1.5px solid rgba(241, 196, 15, 0.4); color: #f1c40f; font-weight: 700; border-radius: 10px; padding: 10px 14px; font-size: 1rem;" 
+                  autocomplete="off"
+                />
+                <small class="text-white-50 mt-1 d-block" style="font-size: 0.75rem;">
+                  Contraseña para que el club ingrese a sus paneles (mínimo 6 caracteres).
+                </small>
+              </div>
+
+              <div class="p-2.5 rounded-3 mt-3" style="background: rgba(52, 152, 219, 0.1); border: 1px solid rgba(52, 152, 219, 0.25);">
+                <div class="small text-info">
+                  <i class="fas fa-info-circle me-1"></i> Con estas credenciales el club ingresa en <b>login.html</b> para administrar su equipo y jugadores.
+                </div>
+              </div>
             </div>
           `,
-          icon: "question",
           showCancelButton: true,
-          confirmButtonText: "GENERAR Y GUARDAR",
-          cancelButtonText: "CANCELAR",
+          confirmButtonText: '<i class="fas fa-save me-2"></i>GUARDAR CREDENCIALES',
+          cancelButtonText: 'CANCELAR',
           customClass: {
             popup: "glass-popup rounded-4",
-            confirmButton: "btn btn-premium px-4",
-            cancelButton: "btn btn-secondary-glass px-4"
+            confirmButton: "btn btn-premium px-4 py-2 fw-bold",
+            cancelButton: "btn btn-secondary-glass px-4 py-2"
+          },
+          didOpen: () => {
+            const input = document.getElementById("swalTeamUserPrefix");
+            if (input) {
+              input.focus();
+              input.select();
+            }
+          },
+          preConfirm: () => {
+            const rawPrefix = document.getElementById("swalTeamUserPrefix").value.trim().toLowerCase();
+            const cleanPrefix = rawPrefix.replace(/@.*$/, "").replace(/[^a-z0-9._-]/g, "");
+            const pass = document.getElementById("swalTeamPassword").value.trim();
+
+            if (!cleanPrefix) {
+              Swal.showValidationMessage("Por favor ingresa un nombre de usuario válido para el correo.");
+              return false;
+            }
+            if (!pass || pass.length < 6) {
+              Swal.showValidationMessage("La contraseña debe tener al menos 6 caracteres.");
+              return false;
+            }
+
+            return {
+              email: `${cleanPrefix}@ldbaa.com`,
+              password: pass
+            };
           }
         });
 
-        if (result.isConfirmed) {
+        if (result.isConfirmed && result.value) {
+          const { email, password } = result.value;
+
           Swal.fire({
-            title: 'Procesando...',
+            title: 'Guardando credenciales...',
+            text: `Asignando ${email} a ${teamName}...`,
             allowOutsideClick: false,
             didOpen: () => Swal.showLoading()
           });
 
-          // Inicializar o usar App Secundaria
+          // Inicializar o usar App Secundaria para no cerrar la sesión del admin
           let secondaryApp;
           const secondaryAppName = "SecondaryApp";
           const existingApp = firebase.apps.find(app => app.name === secondaryAppName);
@@ -944,74 +1090,102 @@
           }
 
           try {
-            // Intentar crear el usuario
+            // Intentar crear el usuario en Auth
             await secondaryApp.auth().createUserWithEmailAndPassword(email, password);
             await secondaryApp.auth().signOut();
-            
-            // Actualizar Firestore
-            await db.collection("teams").doc(teamId).update({
-              email: email,
-              adminKey: password
-            });
+          } catch (authError) {
+            if (authError.code === 'auth/email-already-in-use') {
+              // Si el correo ya existía en Auth, intentar actualizar la contraseña
+              let updatedAuth = false;
+              try {
+                // Si ya tenía esta contraseña, verificar y salir
+                await secondaryApp.auth().signInWithEmailAndPassword(email, password);
+                await secondaryApp.auth().signOut();
+                updatedAuth = true;
+              } catch (eSame) {}
 
-            Swal.fire({
-              title: "¡Éxito!",
-              text: "Credenciales asignadas y guardadas correctamente.",
-              icon: "success"
-            });
-            loadTeams();
-          } catch (error) {
-            console.error("Error al asignar:", error);
-            if (error.code === 'auth/email-already-in-use') {
-              // Si ya existe en Auth, solo actualizamos Firestore por si acaso
-              await db.collection("teams").doc(teamId).update({
-                email: email,
-                adminKey: password
-              });
-              Swal.fire({
-                title: "Actualizado",
-                text: "El usuario ya existía en Auth. Se ha actualizado la información local del equipo.",
-                icon: "info"
-              });
-              loadTeams();
+              if (!updatedAuth) {
+                const cleanName = (teamData.name || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+                const catSuffix = teamData.category ? `.${teamData.category.toLowerCase().replace(/[^a-z0-9]/g, "")}` : "";
+                const currentYear = new Date().getFullYear();
+                const candidates = [
+                  teamData.adminKey,
+                  teamData.password,
+                  `${cleanName}${catSuffix}${currentYear}`,
+                  `${cleanName}${currentYear}`,
+                  `${cleanName}${catSuffix}`,
+                  `${cleanName}`,
+                  "123456",
+                  "admin123"
+                ].filter(Boolean);
+
+                for (const oldPass of candidates) {
+                  try {
+                    const uCred = await secondaryApp.auth().signInWithEmailAndPassword(email, oldPass);
+                    await uCred.user.updatePassword(password);
+                    await secondaryApp.auth().signOut();
+                    updatedAuth = true;
+                    break;
+                  } catch (eUp) {}
+                }
+              }
             } else {
-              Swal.fire("Error", "No se pudo completar la operación: " + error.message, "error");
+              console.warn("Error secundario en Auth:", authError);
             }
           }
+
+          // Guardar y sincronizar en Firestore (colección teams)
+          await db.collection("teams").doc(teamId).update({
+            email: email,
+            adminKey: password,
+            password: password
+          });
+
+          // Si existe en colección users, actualizar también
+          try {
+            const uSnap = await db.collection("users").where("email", "==", email).get();
+            if (!uSnap.empty) {
+              for (const uDoc of uSnap.docs) {
+                await db.collection("users").doc(uDoc.id).update({
+                  password: password
+                });
+              }
+            }
+          } catch (eU) {}
+
+          Swal.fire({
+            title: "¡Credenciales Asignadas!",
+            html: `
+              <div class="text-start p-3 rounded-4 mb-2" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);">
+                <p class="mb-2 text-white">Equipo: <b class="text-uppercase">${teamName || teamData.name}</b></p>
+                <div class="mb-2">
+                  <span class="text-white-50 small d-block">CORREO:</span>
+                  <code class="fs-6 text-success fw-bold">${email}</code>
+                </div>
+                <div>
+                  <span class="text-white-50 small d-block">CONTRASEÑA:</span>
+                  <code class="fs-6 text-warning fw-bold">${password}</code>
+                </div>
+              </div>
+              <p class="small text-white-50 mb-0">Guardado exitosamente. Ahora el equipo puede ingresar a <b>login.html</b> con estas credenciales.</p>
+            `,
+            icon: "success",
+            confirmButtonText: "ENTENDIDO",
+            customClass: {
+              popup: "glass-popup rounded-4",
+              confirmButton: "btn btn-premium px-5"
+            }
+          });
+
+          loadTeams();
         }
       }
 
-      // Función para resetear la clave de administrador
+      // Función para resetear / cambiar la clave de administrador
       function resetAdminKey(teamId) {
-        Swal.fire({
-          title: "¿Resetear la clave?",
-          text: "Se eliminará la clave actual y se deberá establecer una nueva la próxima vez que se acceda al registro de jugadores.",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#28a745",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Sí, resetear",
-          cancelButtonText: "Cancelar",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            db.collection("teams")
-              .doc(teamId)
-              .update({
-                adminKey: null,
-              })
-              .then(() => {
-                Swal.fire({
-                  title: "¡Clave reseteada!",
-                  text: "La clave ha sido eliminada. Se solicitará una nueva clave la próxima vez que se acceda al registro de jugadores.",
-                  icon: "success",
-                });
-              })
-              .catch((error) => {
-                console.error("Error al resetear la clave:", error);
-                Swal.fire("Error", "No se pudo resetear la clave", "error");
-              });
-          }
-        });
+        const team = allTeamsLocal.find(t => t.id === teamId);
+        const teamName = team ? team.name : "";
+        assignCredentials(teamId, teamName);
       }
 
       // Función para gestionar archivos
