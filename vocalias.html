@@ -1460,11 +1460,22 @@
           );
         });
 
+        const resolveLogo = (teamName) => {
+          if (!teamName) return "img/logo.png";
+          if (logosMap[teamName]) return logosMap[teamName];
+          const stripped = teamName.replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?|S\.?D\.?|F\.?C\.?)\s+/i, "").trim();
+          if (logosMap[stripped]) return logosMap[stripped];
+          if (logosMap["CD " + stripped]) return logosMap["CD " + stripped];
+          if (logosMap["SD " + stripped]) return logosMap["SD " + stripped];
+          if (logosMap["DEP " + stripped]) return logosMap["DEP " + stripped];
+          return "img/logo.png";
+        };
+
         matches.forEach((m) => {
           const cardCol = document.createElement("div");
           cardCol.className = "col";
-          const localLogo = logosMap[m.local] || "img/logo.png";
-          const visitorLogo = logosMap[m.visitor] || "img/logo.png";
+          const localLogo = resolveLogo(m.local);
+          const visitorLogo = resolveLogo(m.visitor);
           const fechaDisplay =
             m.fechaRealAsignadaText ||
             m.fechaReal ||
@@ -1473,9 +1484,10 @@
             "Por Definir";
           const horaDisplay = m.horaRealAsignada || m.hora || "--:--";
           const vocalDisplay = m.vocalAsignado || m.vocal || "Por Asignar";
+          const isDiferido = !!(m.isDiferido || m.diferido || m.status === "DIFERIDO");
 
           cardCol.innerHTML = `
-            <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4"
+            <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 ${isDiferido ? 'border border-warning border-opacity-50' : ''}"
                  onpointerdown="if (typeof preloadMatchData === 'function') preloadMatchData('${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}', '${m._cat || ''}', '${campId}', '${m.jornada || ''}')"
                  onclick="openVocalActa('${m._fixId}', '${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}')">
                 <div class="mb-3 text-center">
@@ -1503,7 +1515,7 @@
                         </span>
                     </div>
                     <div class="d-inline-flex flex-column align-items-center gap-2">
-                        ${m.billingLocal || m.billingVisitor ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 mb-1" style="font-size:0.55rem">FACTURADO</span>' : ""}
+                        ${isDiferido ? '<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 mb-1 fw-bold" style="font-size:0.55rem; letter-spacing:1px"><i class="fas fa-clock me-1"></i>DIFERIDO</span>' : (m.billingLocal || m.billingVisitor ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 mb-1" style="font-size:0.55rem">FACTURADO</span>' : "")}
                         <div style="font-size:0.75rem; color:#f1c40f; line-height:1.1">
                             <span class="text-white-50" style="font-size:0.6rem; letter-spacing:1px; opacity:0.8">VOCAL:</span> ${vocalDisplay}
                         </div>
@@ -1984,6 +1996,28 @@
           }
         }
         if (!match) return;
+
+        if ((match.isDiferido || match.diferido || match.status === "DIFERIDO") && !window._bypassDiferidoConfirm) {
+          Swal.fire({
+            title: "PARTIDO DIFERIDO",
+            html: `<div class="text-center py-2"><p class="mb-2 text-warning fs-5 fw-bold"><i class="fas fa-clock me-2"></i>ENCUENTRO DIFERIDO</p><p class="text-white mb-2"><strong>${match.local} vs ${match.visitor}</strong></p><p class="text-white-50 small mb-0">Este partido está marcado como diferido en la programación oficial. ¿Deseas abrir el acta digital de todas formas?</p></div>`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonText: "Sí, abrir acta",
+            cancelButtonText: "Volver",
+            confirmButtonColor: "#f39c12",
+            cancelButtonColor: "#6c757d",
+            background: "#121212",
+            color: "#ffffff",
+          }).then((res) => {
+            if (res.isConfirmed) {
+              window._bypassDiferidoConfirm = true;
+              openVocalActa(fixIdOrMatchId, matchIdOrLocal, localOrVisitor, visitorOpt);
+              window._bypassDiferidoConfirm = false;
+            }
+          });
+          return;
+        }
 
         // Carga Quirúrgica Inmediata: Iniciar descarga ligera de los 2 equipos del partido (0ms de espera en tablet)
         const earlyCampSelect = document.getElementById("campSelect");
@@ -3626,6 +3660,16 @@
                     .catch(() => ({ forEach: () => {} })),
                 );
               }
+              if (!cleanTeam.startsWith("CD ")) {
+                teamQueryPromises.push(
+                  db
+                    .collection("teams")
+                    .where("name", "==", "CD " + cleanTeam)
+                    .where("championshipId", "==", cleanCamp)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                );
+              }
             } else {
               teamQueryPromises.push(
                 db
@@ -3648,6 +3692,15 @@
                     .catch(() => ({ forEach: () => {} })),
                 );
               }
+              if (!cleanTeam.startsWith("CD ")) {
+                teamQueryPromises.push(
+                  db
+                    .collection("teams")
+                    .where("name", "==", "CD " + cleanTeam)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                );
+              }
             }
 
             const teamSnaps = await Promise.all(teamQueryPromises);
@@ -3662,13 +3715,15 @@
               const tCamp = (tData.championshipId || tData.campeonatoId || "").trim();
               if (cleanCamp && tCamp && tCamp !== cleanCamp) return;
 
-              if (
-                tData.name &&
-                (normalizeTeamName(tData.name) === normTeam ||
-                  (strippedTeam &&
-                    normalizeTeamName(tData.name) ===
-                      normalizeTeamName(strippedTeam)))
-              ) {
+              const tNorm = normalizeTeamName(tData.name || "");
+              const isMatch =
+                tNorm === normTeam ||
+                (strippedTeam && tNorm === normalizeTeamName(strippedTeam)) ||
+                tNorm === normalizeTeamName("CD " + cleanTeam) ||
+                (normTeam && tNorm.includes(normTeam)) ||
+                (normTeam && normTeam.includes(tNorm));
+
+              if (tData.name && isMatch) {
                 const tCat = tData.category || "";
                 teamMetaMap.set(tDoc.id, { ...tData, category: tCat });
                 allClubTeamIds.add(tDoc.id);

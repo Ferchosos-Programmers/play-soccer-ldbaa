@@ -777,6 +777,10 @@
                   <span class="badge bg-dark border border-secondary text-success fw-bold px-2.5 py-1 small">
                     <i class="fas fa-check-circle me-1"></i> Final
                   </span>
+                ` : (m.isDiferido || m.diferido || m.status === 'DIFERIDO') ? `
+                  <span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 fw-bold px-2.5 py-1 small">
+                    <i class="fas fa-clock me-1"></i> Diferido
+                  </span>
                 ` : `
                   <span class="badge bg-dark border border-secondary text-white-50 px-2.5 py-1 small">
                     <i class="far fa-clock me-1"></i> ${matchHourText}

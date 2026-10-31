@@ -1526,11 +1526,23 @@
           );
         });
 
+        const resolveLogoSanciones = (teamName) => {
+          if (!teamName) return "img/logo.png";
+          if (logosMap[teamName]) return logosMap[teamName];
+          const stripped = teamName.replace(/^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?|S\.?D\.?|F\.?C\.?)\s+/i, "").trim();
+          if (logosMap[stripped]) return logosMap[stripped];
+          if (logosMap["CD " + stripped]) return logosMap["CD " + stripped];
+          if (logosMap["SD " + stripped]) return logosMap["SD " + stripped];
+          if (logosMap["DEP " + stripped]) return logosMap["DEP " + stripped];
+          return "img/logo.png";
+        };
+
         matches.forEach((m) => {
-          const localLogo = logosMap[m.local] || "img/logo.png";
-          const visitorLogo = logosMap[m.visitor] || "img/logo.png";
+          const localLogo = resolveLogoSanciones(m.local);
+          const visitorLogo = resolveLogoSanciones(m.visitor);
           const localId = teamNameToIdMap[m.local];
           const visitorId = teamNameToIdMap[m.visitor];
+          const isDiferido = !!(m.isDiferido || m.diferido || m.status === "DIFERIDO");
 
           // Filtrar sanciones de este partido en esta jornada
           const matchSanctions = activeSanctions.filter((s) => {
@@ -1557,7 +1569,7 @@
           const matchJornadaNum = parseInt(m.jornada) || parseInt(jornada) || 1;
           const card = `
             <div class="col">
-              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 ${isSanctioned ? "is-sanctioned" : ""}" style="position: relative; overflow: hidden;" onclick="verDetallesMatch('${m._fixId}', '${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}', ${matchJornadaNum}, '${(m._cat || "").replace(/'/g, "\\'")}')">
+              <div class="jornada-card-elite h-100 d-flex flex-column justify-content-between p-4 ${isSanctioned ? "is-sanctioned" : ""} ${isDiferido ? "border border-warning border-opacity-50" : ""}" style="position: relative; overflow: hidden;" onclick="verDetallesMatch('${m._fixId}', '${m.matchId}', '${m.local.replace(/'/g, "\\'")}', '${m.visitor.replace(/'/g, "\\'")}', ${matchJornadaNum}, '${(m._cat || "").replace(/'/g, "\\'")}')">
                   ${isSanctioned ? `<div class="watermark-sancionada"><i class="fas fa-gavel me-2"></i>SANCIONADA</div>` : ""}
                   <div class="mb-3 text-center">
                       <div class="d-flex justify-content-between align-items-center mb-3">
@@ -1587,7 +1599,7 @@
                           </span>
                       </div>
                       <div class="d-inline-flex flex-column align-items-center gap-2">
-                          ${m.billingLocal || m.billingVisitor ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 mb-1" style="font-size:0.55rem">FACTURADO</span>' : ""}
+                          ${isDiferido ? '<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 mb-1 fw-bold" style="font-size:0.55rem; letter-spacing:1px"><i class="fas fa-clock me-1"></i>DIFERIDO</span>' : (m.billingLocal || m.billingVisitor ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 mb-1" style="font-size:0.55rem">FACTURADO</span>' : "")}
                           <div style="font-size:0.75rem; color:#f1c40f; line-height:1.1">
                               <span class="text-white-50" style="font-size:0.6rem; letter-spacing:1px; opacity:0.8">VOCAL:</span> ${m.vocalAsignado}
                           </div>
