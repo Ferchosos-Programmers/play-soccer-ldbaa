@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Inspect Specific Matches</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body style="background:#111; color:#fff; font-family:monospace; padding:20px;">
+  <h2>Detalle de idx 4 y idx 49 en Máxima</h2>
+  <div id="output">Cargando...</div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+      authDomain: "ldbaa-calificaciones.firebaseapp.com",
+      projectId: "ldbaa-calificaciones",
+      storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+      messagingSenderId: "277579489603",
+      appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function checkDetails() {
+      const doc = await db.collection("fixtures").doc("Kjqtm2Ss23JKFicur3uw").get();
+      const d = doc.data();
+      const matches = d.data || [];
+      const m4 = matches[4];
+      const m49 = matches[49];
+
+      const femDoc = await db.collection("fixtures").doc("k5SOL1Q5cPuwHA6MMf22").get();
+      const femMatches = femDoc.data().data || [];
+      const f14 = femMatches[14];
+      const f41 = femMatches[41];
+
+      document.getElementById("output").innerText = JSON.stringify({
+        maxima_4: m4,
+        maxima_49: m49,
+        femenino_14: f14,
+        femenino_41: f41
+      }, null, 2);
+      window.__done = true;
+    }
+    checkDetails();
+  </script>
+</body>
+</html>

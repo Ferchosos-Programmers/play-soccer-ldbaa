@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Fix Duplicates in Firestore</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body style="background:#0b1118; color:#eee; font-family:monospace; padding:24px;">
+  <h2 style="color:#2ecc71;">🔧 CORRIGIENDO DUPLICADOS EN JORNADA 5</h2>
+  <div id="output">Iniciando corrección...</div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+      authDomain: "ldbaa-calificaciones.firebaseapp.com",
+      projectId: "ldbaa-calificaciones",
+      storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+      messagingSenderId: "277579489603",
+      appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function fixDuplicates() {
+      const log = (msg) => {
+        console.log(msg);
+        document.getElementById("output").innerHTML += `<div>${msg}</div>`;
+      };
+
+      try {
+        // 1. Corregir MÁXIMA (Kjqtm2Ss23JKFicur3uw)
+        log("📋 Corrigiendo categoría MÁXIMA...");
+        const maxDocRef = db.collection("fixtures").doc("Kjqtm2Ss23JKFicur3uw");
+        const maxDoc = await maxDocRef.get();
+        const maxData = maxDoc.data();
+        const maxMatches = maxData.data || [];
+
+        // Asegurar que idx 4 es el partido oficial y único de J5
+        const m4 = maxMatches[4];
+        log(` Partido legítimo [Idx 4]: ${m4.local} vs ${m4.visitor} (Jornada: ${m4.jornada}, Hora: ${m4.horaRealAsignada}, Finalizado: ${m4.isFinalized})`);
+
+        // Corregir idx 49 (devolverlo a 2da Vuelta - Jornada 14 - Etapa 10)
+        const m49 = maxMatches[49];
+        log(` Reubicando duplicado [Idx 49]: era ${m49.local} vs ${m49.visitor} en J${m49.jornada}`);
+        m49.jornada = 14;
+        m49.fecha = "Etapa 10";
+        m49.tag = "2da Vuelta (Fecha 1)";
+        m49.etiqueta = "2da Vuelta (Fecha 1)";
+        delete m49.fechaRealAsignadaText;
+        delete m49.horaRealAsignada;
+        delete m49.camerinoLocal;
+        delete m49.camerinoVisitor;
+        delete m49.vocalAsignado;
+        delete m49.veedorAsignado;
+        log(`   -> Ahora Idx 49 está asignado correctamente a Jornada 14 (${m49.tag})`);
+
+        // Guardar MÁXIMA
+        await maxDocRef.update({
+          data: maxMatches,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        log("✅ MÁXIMA guardada con éxito.");
+
+        // 2. Corregir FEMENINO (k5SOL1Q5cPuwHA6MMf22)
+        log("\n📋 Corrigiendo categoría FEMENINO...");
+        const femDocRef = db.collection("fixtures").doc("k5SOL1Q5cPuwHA6MMf22");
+        const femDoc = await femDocRef.get();
+        const femData = femDoc.data();
+        const femMatches = femData.data || [];
+
+        // Asegurar que idx 14 es el partido oficial de J5
+        const f14 = femMatches[14];
+        log(` Partido legítimo [Idx 14]: ${f14.local} vs ${f14.visitor} (Jornada: ${f14.jornada}, Hora: ${f14.horaRealAsignada})`);
+
+        // Corregir idx 41 (devolverlo a Jornada 13 - Etapa 9)
+        const f41 = femMatches[41];
+        log(` Reubicando [Idx 41]: era ${f41.local} vs ${f41.visitor} en J${f41.jornada}`);
+        f41.jornada = 13;
+        f41.fecha = "Etapa 9";
+        f41.tag = "1ra Vuelta (Fecha 9)";
+        f41.etiqueta = "1ra Vuelta (Fecha 9)";
+        delete f41.fechaRealAsignadaText;
+        delete f41.horaRealAsignada;
+        delete f41.camerinoLocal;
+        delete f41.camerinoVisitor;
+        delete f41.vocalAsignado;
+        delete f41.veedorAsignado;
+        log(`   -> Ahora Idx 41 está asignado correctamente a Jornada 13 (${f41.tag})`);
+
+        // Guardar FEMENINO
+        await femDocRef.update({
+          data: femMatches,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        log("✅ FEMENINO guardado con éxito.");
+
+        log("\n🎉🎉 ¡CORRECCIÓN EXITOSA! Ahora solo existe 1 partido SPENCER vs MANCHESTER en Jornada 5 🎉🎉");
+        window.__done = true;
+      } catch (e) {
+        log(`❌ Error: ${e.message}`);
+        console.error(e);
+      }
+    }
+
+    fixDuplicates();
+  </script>
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Aplicar 5ta Fecha Oficial</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body style="background:#0b1118; color:#eee; font-family:monospace; padding:24px;">
+  <h2 style="color:#2ecc71;">⚡ APLICANDO PROGRAMACIÓN OFICIAL - 5TA FECHA LDBAA "NUEVA ERA 2026"</h2>
+  <div id="output" style="line-height:1.6; font-size:14px;">Iniciando conexión a Firebase...</div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+      authDomain: "ldbaa-calificaciones.firebaseapp.com",
+      projectId: "ldbaa-calificaciones",
+      storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+      messagingSenderId: "277579489603",
+      appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const officialJornada5Data = [
+      // SÁBADO 31-10-2026
+      { cat: "PRIMERA", local: "3 DE JULIO", visitor: "LOS PRIMOS", day: "Sábado", time: "09:40", camL: "3", camV: "1", vocal: "ALIANZA JUVENIL", veedor: "CD SPENCER" },
+      { cat: "FEMENINO", local: "ALIANZA JUVENIL", visitor: "CD SPENCER", day: "Sábado", time: "11:20", camL: "2", camV: "4", vocal: "3 DE JULIO", veedor: "LOS PRIMOS" },
+      { cat: "PRIMERA", local: "AC LATINOS", visitor: "INTER", day: "Sábado", time: "13:00", camL: "3", camV: "1", vocal: "CD NAPOLES", veedor: "AMAZONAS FC" },
+      { cat: "PRIMERA", local: "CD NAPOLES", visitor: "AMAZONAS FC", day: "Sábado", time: "14:40", camL: "4", camV: "2", vocal: "AC LATINOS", veedor: "INTER" },
+      { cat: "MÁXIMA", local: "SPENCER", visitor: "MANCHESTER", day: "Sábado", time: "16:20", camL: "1", camV: "3", vocal: "ALMAGUER", veedor: "SD ARGENTINA" },
+      { cat: "PRIMERA", local: "ALMAGUER", visitor: "SD ARGENTINA", day: "Sábado", time: "18:00", camL: "2", camV: "4", vocal: "MANCHESTER", veedor: "SPENCER" },
+
+      // DOMINGO 01-11-2026
+      { cat: "FEMENINO", local: "PALMEIRAS", visitor: "AC LATINOS", day: "Domingo", time: "08:00", camL: "3", camV: "1", vocal: "VENTANAS SC", veedor: "CHELSEA" },
+      { cat: "PRIMERA", local: "CHELSEA", visitor: "MARSELLA FC", day: "Domingo", time: "09:40", camL: "2", camV: "4", vocal: "PALMEIRAS", veedor: "AC LATINOS" },
+      { cat: "FEMENINO", local: "VENTANAS SC", visitor: "CHELSEA", day: "Domingo", time: "11:20", camL: "3", camV: "1", vocal: "MARSELLA FC", veedor: "CHELSEA" },
+      { cat: "FEMENINO", local: "PORTOVIEJO FC", visitor: "MANCHESTER", day: "Domingo", time: "13:00", camL: "2", camV: "4", vocal: "RIVER PLATE", veedor: "PALMEIRAS" },
+      { cat: "PRIMERA", local: "RIVER PLATE", visitor: "PALMEIRAS", day: "Domingo", time: "14:40", camL: "3", camV: "1", vocal: "PORTOVIEJO FC", veedor: "MANCHESTER" },
+
+      // DIFERIDO (PRIMERA)
+      { cat: "PRIMERA", local: "DINAMO", visitor: "LAKERS", day: "No Programado", time: "", camL: "", camV: "", vocal: "", veedor: "", isDiferido: true, diferido: true, status: "DIFERIDO" }
+    ];
+
+    function normalizeTeamText(s) {
+      return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+    }
+
+    function matchTeamFlex(dbTeam, target) {
+      const nDb = normalizeTeamText(dbTeam).replace(/PALMERAS/g, "PALMEIRAS");
+      const nTarget = normalizeTeamText(target).replace(/PALMERAS/g, "PALMEIRAS");
+      if (nDb === nTarget) return true;
+      const cleanDb = nDb.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|S\.D\.|SD)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
+      const cleanTarget = nTarget.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|S\.D\.|SD)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
+      if (cleanDb === cleanTarget) return true;
+      if (cleanDb.includes(cleanTarget) || cleanTarget.includes(cleanDb)) return true;
+      return false;
+    }
+
+    function computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat) {
+      const normCat = normalizeTeamText(cat);
+      const etiqueta = (m.etiqueta || m.tag || "").toUpperCase();
+      const is1raVuelta = etiqueta.includes("1RA") || etiqueta.includes("1ERA") || (!etiqueta.includes("2DA") && !etiqueta.includes("LIGUILLA") && !etiqueta.includes("SEMI") && !etiqueta.includes("FINAL") && etapaNum <= 13);
+      const is2daVuelta = etiqueta.includes("2DA") || (!is1raVuelta && !etiqueta.includes("LIGUILLA") && !etiqueta.includes("SEMI") && !etiqueta.includes("FINAL") && etapaNum <= 26);
+
+      let fechaRelativa = 0;
+      const matchFecha = etiqueta.match(/FECHA\s*(\d+)/i);
+      if (matchFecha && matchFecha[1]) {
+        fechaRelativa = parseInt(matchFecha[1], 10);
+      } else {
+        if (is1raVuelta) fechaRelativa = etapaNum;
+        else if (is2daVuelta) {
+          let offset = 13;
+          if (normCat.includes("MAXIMA") || normCat === "FEMENINO") offset = 9;
+          fechaRelativa = etapaNum > offset ? (etapaNum - offset) : etapaNum;
+        }
+      }
+
+      if (is1raVuelta) {
+        if (normCat === "PRIMERA") return Math.min(13, Math.max(1, fechaRelativa || etapaNum));
+        if (normCat === "FEMENINO") {
+          const mapFem1 = [1, 3, 5, 7, 9, 11, 13, 13, 13];
+          const idx = Math.min(mapFem1.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
+          return mapFem1[idx];
+        }
+        if (normCat.includes("MAXIMA")) {
+          const mapMax1 = [1, 2, 4, 6, 8, 10, 12, 13, 13];
+          const idx = Math.min(mapMax1.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
+          return mapMax1[idx];
+        }
+        return etapaNum || 1;
+      }
+      return etapaNum || 1;
+    }
+
+    async function execute() {
+      const output = document.getElementById("output");
+      let logs = [];
+      const log = (msg) => {
+        console.log(msg);
+        logs.push(msg);
+        output.innerHTML = logs.map(l => `<div>${l}</div>`).join("");
+      };
+
+      try {
+        log("🔍 Buscando campeonatos activos...");
+        const campSnap = await db.collection("championships").get();
+        let targetCampIds = [];
+        campSnap.forEach(doc => {
+          const name = doc.data().name || "";
+          log(`🏆 Campeonato encontrado: [${doc.id}] "${name}"`);
+          if (name.toUpperCase().includes("NUEVA ERA") || doc.id === "p7eMp1ciqd67iQCiA4JV") {
+            targetCampIds.push({ id: doc.id, name: name });
+          }
+        });
+
+        if (targetCampIds.length === 0 && !campSnap.empty) {
+          // Si no tiene nombre exacto, tomar el más reciente
+          const first = campSnap.docs[0];
+          targetCampIds.push({ id: first.id, name: first.data().name });
+        }
+
+        log(`🎯 Campeonatos seleccionados para actualizar: ${targetCampIds.map(c => `"${c.name}" (${c.id})`).join(", ")}`);
+
+        for (const camp of targetCampIds) {
+          log(`\n======================================================`);
+          log(`📁 Procesando Fixtures de Campeonato: ${camp.name} (${camp.id})`);
+          
+          const fixSnap = await db.collection("fixtures").where("championshipId", "==", camp.id).get();
+          if (fixSnap.empty) {
+            log(`⚠️ No se encontraron fixtures para ${camp.id}`);
+            continue;
+          }
+
+          // Agrupar último por categoría
+          const docsByCategory = {};
+          fixSnap.forEach(doc => {
+            const data = doc.data();
+            const cat = data.category || "UNKNOWN";
+            if (!docsByCategory[cat] || (data.createdAt?.toMillis() || 0) > (docsByCategory[cat].data.createdAt?.toMillis() || 0)) {
+              docsByCategory[cat] = { id: doc.id, data: data };
+            }
+          });
+
+          // Iterar por cada categoría
+          for (const [catName, docObj] of Object.entries(docsByCategory)) {
+            const docId = docObj.id;
+            const docData = docObj.data;
+            const matches = docData.data || [];
+            let catModified = false;
+            let appliedInCat = 0;
+
+            log(`\n📋 Categoría: ${catName} (Doc ID: ${docId}, Partidos totales: ${matches.length})`);
+
+            // 1. Limpiar 2da vuelta si tenía jornada 5
+            let totalEtapasCat = 0;
+            matches.forEach(m => {
+              const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+              if (j > totalEtapasCat) totalEtapasCat = j;
+            });
+
+            matches.forEach(m => {
+              const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              if (is2daVuelta && m.jornada === 5) {
+                const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+                m.jornada = computeSynchronizedJornada(catName, m, etapaNum, totalEtapasCat);
+                catModified = true;
+              }
+            });
+
+            // 2. Programar oficiales de esta categoría
+            officialJornada5Data.forEach(item => {
+              if (normalizeTeamText(item.cat) !== normalizeTeamText(catName)) return;
+
+              let matchFound = null;
+              matches.forEach(m => {
+                const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+                const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+                if (is2daVuelta) return;
+
+                // Caso especial MÁXIMA Spencer vs Manchester
+                if (normalizeTeamText(item.cat).includes("MAXIMA") && (matchTeamFlex(item.local, "SPENCER") || matchTeamFlex(item.visitor, "SPENCER"))) {
+                  if (m.local === "DESCANSA" || m.visitor === "DESCANSA" || m.isRest) {
+                    const otherTeam = m.local === "DESCANSA" ? m.visitor : m.local;
+                    if (matchTeamFlex(otherTeam, "MANCHESTER")) {
+                      m.local = "CD SPENCER";
+                      m.visitor = "MANCHESTER";
+                      m.isRest = false;
+                      m.tag = "1ra Vuelta (Fecha 5)";
+                      m.etiqueta = "1ra Vuelta (Fecha 5)";
+                      matchFound = m;
+                      return;
+                    }
+                  }
+                }
+
+                if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+
+                const locMatch = matchTeamFlex(m.local, item.local);
+                const visMatch = matchTeamFlex(m.visitor, item.visitor);
+                const locInverted = matchTeamFlex(m.local, item.visitor);
+                const visInverted = matchTeamFlex(m.visitor, item.local);
+
+                if ((locMatch && visMatch) || (locInverted && visInverted)) {
+                  matchFound = m;
+                }
+              });
+
+              if (matchFound) {
+                if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+                  const temp = matchFound.local;
+                  matchFound.local = matchFound.visitor;
+                  matchFound.visitor = temp;
+                }
+                matchFound.jornada = 5;
+                matchFound.fechaRealAsignadaText = item.day;
+                matchFound.horaRealAsignada = item.time;
+                matchFound.camerinoLocal = item.camL;
+                matchFound.camerinoVisitor = item.camV;
+                matchFound.vocalAsignado = item.vocal;
+                matchFound.veedorAsignado = item.veedor;
+
+                if (item.isDiferido) {
+                  matchFound.isDiferido = true;
+                  matchFound.diferido = true;
+                  matchFound.status = "DIFERIDO";
+                  log(`   ⏸️ DIFERIDO: ${matchFound.local} vs ${matchFound.visitor}`);
+                } else {
+                  delete matchFound.isDiferido;
+                  delete matchFound.diferido;
+                  if (matchFound.status === "DIFERIDO") delete matchFound.status;
+                  log(`   ✅ ASIGNADO: [${item.day} ${item.time}] ${matchFound.local} (C${item.camL}) vs ${matchFound.visitor} (C${item.camV}) | Vocal: ${item.vocal} | Veedor: ${item.veedor}`);
+                }
+                catModified = true;
+                appliedInCat++;
+              } else {
+                log(`   ❌ NO ENCONTRADO en ${catName}: ${item.local} vs ${item.visitor}`);
+              }
+            });
+
+            // 3. Reubicar cualquier otro partido de 1ra vuelta que tenga jornada 5 por error
+            matches.forEach(m => {
+              if (m.jornada === 5 && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA") {
+                const isOfficial = officialJornada5Data.some(item => {
+                  const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(catName);
+                  const locMatch = matchTeamFlex(m.local, item.local) && matchTeamFlex(m.visitor, item.visitor);
+                  const locInverted = matchTeamFlex(m.local, item.visitor) && matchTeamFlex(m.visitor, item.local);
+                  return catMatch && (locMatch || locInverted);
+                });
+                if (!isOfficial) {
+                  const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+                  const newJ = computeSynchronizedJornada(catName, m, etapaNum, totalEtapasCat);
+                  log(`   🔄 Reubicando partido sobrante: ${m.local} vs ${m.visitor} de J5 a J${newJ}`);
+                  m.jornada = newJ;
+                  catModified = true;
+                }
+              }
+            });
+
+            if (catModified) {
+              log(`   💾 Guardando cambios en Firestore doc ${docId}...`);
+              await db.collection("fixtures").doc(docId).update({
+                data: matches,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+              });
+              log(`   ✨ ¡Guardado exitoso! (${appliedInCat} partidos actualizados).`);
+            } else {
+              log(`   ℹ️ No se requirieron modificaciones.`);
+            }
+          }
+        }
+
+        log(`\n🎉🎉 ¡PROCESO DE PROGRAMACIÓN OFICIAL FECHA 5 FINALIZADO CON ÉXITO! 🎉🎉`);
+        window.__done = true;
+      } catch (err) {
+        log(`\n❌ ERROR: ${err.message}`);
+        console.error(err);
+      }
+    }
+
+    execute();
+  </script>
+</body>
+</html>

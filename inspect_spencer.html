@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Find All Spencer vs Manchester across ALL fixture docs</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body style="background:#111; color:#fff; font-family:monospace; padding:20px;">
+  <h2>Todos los partidos de Spencer vs Manchester en TODAS las categorías y documentos</h2>
+  <div id="output">Cargando...</div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+      authDomain: "ldbaa-calificaciones.firebaseapp.com",
+      projectId: "ldbaa-calificaciones",
+      storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+      messagingSenderId: "277579489603",
+      appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function searchAll() {
+      const snap = await db.collection("fixtures").get();
+      let results = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        const matches = d.data || [];
+        matches.forEach((m, idx) => {
+          const l = (m.local || "").toUpperCase();
+          const v = (m.visitor || "").toUpperCase();
+          if ((l.includes("SPENCER") || v.includes("SPENCER")) && (l.includes("MANCHESTER") || v.includes("MANCHESTER"))) {
+            results.push({
+              docId: doc.id,
+              championshipId: d.championshipId,
+              cat: d.category,
+              idx: idx,
+              local: m.local,
+              visitor: m.visitor,
+              jornada: m.jornada,
+              dia: m.fechaRealAsignadaText,
+              hora: m.horaRealAsignada,
+              matchId: m.matchId,
+              status: m.status,
+              isFinalized: m.isFinalized,
+              billingLocal: !!m.billingLocal
+            });
+          }
+        });
+      });
+      document.getElementById("output").innerText = JSON.stringify(results, null, 2);
+      window.__done = true;
+    }
+    searchAll();
+  </script>
+</body>
+</html>

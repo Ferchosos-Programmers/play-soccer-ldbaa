@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Find Spencer Dupe</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body style="background:#111; color:#fff; font-family:monospace; padding:20px;">
+  <h2>Buscando todos los partidos en JORNADA 5 que se muestran en Sanciones/Vocalías</h2>
+  <div id="output">Buscando...</div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+      authDomain: "ldbaa-calificaciones.firebaseapp.com",
+      projectId: "ldbaa-calificaciones",
+      storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+      messagingSenderId: "277579489603",
+      appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function checkSancionesMatches() {
+      // Sanciones y vocalias cargan fixtures del campeonato activo (p7eMp1ciqd67iQCiA4JV)
+      const snap = await db.collection("fixtures").where("championshipId", "==", "p7eMp1ciqd67iQCiA4JV").get();
+      let allMatchesJ5 = [];
+      snap.forEach(doc => {
+        const d = doc.data();
+        const matches = d.data || [];
+        matches.forEach((m, idx) => {
+          const j = parseInt(m.jornada) || 1;
+          if (j === 5) {
+            allMatchesJ5.push({
+              docId: doc.id,
+              cat: d.category,
+              idx: idx,
+              local: m.local,
+              visitor: m.visitor,
+              dia: m.fechaRealAsignadaText,
+              hora: m.horaRealAsignada,
+              matchId: m.matchId,
+              isFinalized: !!m.isFinalized,
+              isRest: !!m.isRest
+            });
+          }
+        });
+      });
+      document.getElementById("output").innerText = JSON.stringify(allMatchesJ5, null, 2);
+      window.__done = true;
+    }
+    checkSancionesMatches();
+  </script>
+</body>
+</html>

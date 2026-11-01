@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Inspect Maxima around 49</title>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+</head>
+<body style="background:#111; color:#fff; font-family:monospace; padding:20px;">
+  <h2>Maxima alrededor de idx 49</h2>
+  <div id="output">Cargando...</div>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00",
+      authDomain: "ldbaa-calificaciones.firebaseapp.com",
+      projectId: "ldbaa-calificaciones",
+      storageBucket: "ldbaa-calificaciones.firebasestorage.app",
+      messagingSenderId: "277579489603",
+      appId: "1:277579489603:web:bc93c22fea5f5f6b63cff6"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    async function checkRange() {
+      const doc = await db.collection("fixtures").doc("Kjqtm2Ss23JKFicur3uw").get();
+      const matches = doc.data().data || [];
+      const slice = matches.slice(45, 55).map((m, i) => ({
+        realIdx: 45 + i,
+        local: m.local,
+        visitor: m.visitor,
+        jornada: m.jornada,
+        fecha: m.fecha,
+        tag: m.tag || m.etiqueta,
+        isRest: m.isRest
+      }));
+
+      // También revisar Femenino idx 41
+      const femDoc = await db.collection("fixtures").doc("k5SOL1Q5cPuwHA6MMf22").get();
+      const femMatches = femDoc.data().data || [];
+      const femSlice = femMatches.slice(38, 45).map((m, i) => ({
+        realIdx: 38 + i,
+        local: m.local,
+        visitor: m.visitor,
+        jornada: m.jornada,
+        fecha: m.fecha,
+        tag: m.tag || m.etiqueta,
+        isRest: m.isRest
+      }));
+
+      document.getElementById("output").innerText = JSON.stringify({
+        maxima_slice: slice,
+        fem_slice: femSlice
+      }, null, 2);
+      window.__done = true;
+    }
+    checkRange();
+  </script>
+</body>
+</html>
