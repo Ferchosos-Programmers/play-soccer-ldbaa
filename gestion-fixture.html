@@ -1727,6 +1727,24 @@
         { cat: "PRIMERA", local: "DINAMO", visitor: "LAKERS", day: "No Programado", time: "", camL: "", camV: "", vocal: "", veedor: "", isDiferido: true, diferido: true, status: "DIFERIDO" }
       ];
 
+      const officialJornada6Data = [
+        // SÁBADO 07-11-2026
+        { cat: "MÁXIMA", local: "GALAXY", visitor: "SOLO PANAS", day: "Sábado", time: "09:40", camL: "1", camV: "3", vocal: "ALMAGUER", veedor: "LOS PRIMOS" },
+        { cat: "PRIMERA", local: "ALMAGUER", visitor: "LOS PRIMOS", day: "Sábado", time: "11:20", camL: "2", camV: "4", vocal: "GALAXY", veedor: "SOLO PANAS" },
+        { cat: "PRIMERA", local: "DINAMO", visitor: "AMAZONAS FC", day: "Sábado", time: "13:00", camL: "3", camV: "1", vocal: "RIVER PLATE", veedor: "LAKERS" },
+        { cat: "PRIMERA", local: "RIVER PLATE", visitor: "LAKERS", day: "Sábado", time: "14:40", camL: "4", camV: "2", vocal: "DINAMO", veedor: "AMAZONAS FC" },
+        { cat: "MÁXIMA", local: "FLUMINENSE", visitor: "ESTUDIANTES", day: "Sábado", time: "16:20", camL: "3", camV: "1", vocal: "CHELSEA", veedor: "SD ARGENTINA" },
+        { cat: "PRIMERA", local: "CHELSEA", visitor: "SD ARGENTINA", day: "Sábado", time: "18:00", camL: "2", camV: "4", vocal: "FLUMINENSE", veedor: "ESTUDIANTES" },
+
+        // DOMINGO 08-11-2026
+        { cat: "PRIMERA", local: "AC LATINOS", visitor: "MARSELLA FC", day: "Domingo", time: "08:00", camL: "1", camV: "3", vocal: "INTER", veedor: "PALMEIRAS" },
+        { cat: "PRIMERA", local: "INTER", visitor: "PALMEIRAS", day: "Domingo", time: "09:40", camL: "2", camV: "4", vocal: "AC LATINOS", veedor: "MARSELLA FC" },
+        { cat: "MÁXIMA", local: "PORTOVIEJO FC", visitor: "MANCHESTER", day: "Domingo", time: "11:20", camL: "1", camV: "3", vocal: "CD NAPOLES", veedor: "3 DE JULIO" },
+        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "CD NAPOLES", day: "Domingo", time: "13:00", camL: "2", camV: "4", vocal: "PORTOVIEJO FC", veedor: "MANCHESTER" },
+        { cat: "MÁXIMA", local: "INDEPENDIENTE", visitor: "ALIANZA JUVENIL", day: "Domingo", time: "14:40", camL: "1", camV: "3", vocal: "SPENCER", veedor: "VENTANAS SC" },
+        { cat: "MÁXIMA", local: "VENTANAS SC", visitor: "SPENCER", day: "Domingo", time: "16:20", camL: "2", camV: "4", vocal: "INDEPENDIENTE", veedor: "ALIANZA JUVENIL" }
+      ];
+
       function aplicarProgramacionOficialFecha1() {
         let appliedCount = 0;
 
@@ -2127,6 +2145,133 @@
         });
       }
 
+      function aplicarProgramacionOficialFecha6() {
+        let appliedCount = 0;
+
+        // 1. Limpiar partidos de 2da vuelta si tuvieran erróneamente jornada 6
+        fixturesMap.forEach((meta) => {
+          const cat = meta.category;
+          let totalEtapasCat = 0;
+          meta.data.forEach((m) => {
+            const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            if (j > totalEtapasCat) totalEtapasCat = j;
+          });
+
+          meta.data.forEach((m) => {
+            const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+            const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+            if (is2daVuelta) {
+              const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+            }
+          });
+        });
+
+        // 2. Programar Fecha 6 Oficial únicamente en 1ra Vuelta
+        officialJornada6Data.forEach((item) => {
+          let matchFound = null;
+
+          fixturesMap.forEach((meta) => {
+            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            if (!catMatch) return;
+
+            meta.data.forEach((m) => {
+              const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              if (is2daVuelta) return;
+
+              // Caso especial MÁXIMA Spencer vs Ventanas SC
+              if (normalizeTeamText(item.cat).includes("MAXIMA") && (matchTeamFlex(item.local, "SPENCER") || matchTeamFlex(item.visitor, "SPENCER"))) {
+                if (m.local === "DESCANSA" || m.visitor === "DESCANSA" || m.isRest) {
+                  const otherTeam = m.local === "DESCANSA" ? m.visitor : m.local;
+                  if (matchTeamFlex(otherTeam, "VENTANAS")) {
+                    m.local = "VENTANAS SC";
+                    m.visitor = "SPENCER";
+                    m.isRest = false;
+                    m.tag = "1ra Vuelta (Fecha 4)";
+                    m.etiqueta = "1ra Vuelta (Fecha 4)";
+                    matchFound = m;
+                    return;
+                  }
+                }
+              }
+
+              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+
+              const locMatch = matchTeamFlex(m.local, item.local);
+              const visMatch = matchTeamFlex(m.visitor, item.visitor);
+              const locInverted = matchTeamFlex(m.local, item.visitor);
+              const visInverted = matchTeamFlex(m.visitor, item.local);
+
+              if ((locMatch && visMatch) || (locInverted && visInverted)) {
+                matchFound = m;
+              }
+            });
+          });
+
+          if (matchFound) {
+            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+              const temp = matchFound.local;
+              matchFound.local = matchFound.visitor;
+              matchFound.visitor = temp;
+            }
+            matchFound.jornada = 6;
+            matchFound.fechaRealAsignadaText = item.day;
+            matchFound.horaRealAsignada = item.time;
+            matchFound.camerinoLocal = item.camL;
+            matchFound.camerinoVisitor = item.camV;
+            matchFound.vocalAsignado = item.vocal;
+            matchFound.veedorAsignado = item.veedor;
+            delete matchFound.isDiferido;
+            delete matchFound.diferido;
+            if (matchFound.status === "DIFERIDO") delete matchFound.status;
+            appliedCount++;
+          }
+        });
+
+        // 3. Reubicar cualquier otro partido de 1ra Vuelta que haya quedado en Jornada 6 y no sea oficial
+        fixturesMap.forEach((meta) => {
+          const cat = meta.category;
+          let totalEtapasCat = 0;
+          meta.data.forEach((m) => {
+            const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            if (j > totalEtapasCat) totalEtapasCat = j;
+          });
+
+          meta.data.forEach((m) => {
+            if (m.jornada === 6 && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA") {
+              const isOfficialJ6 = officialJornada6Data.some((item) => {
+                const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(cat);
+                const locMatch = matchTeamFlex(m.local, item.local) && matchTeamFlex(m.visitor, item.visitor);
+                const locInverted = matchTeamFlex(m.local, item.visitor) && matchTeamFlex(m.visitor, item.local);
+                return catMatch && (locMatch || locInverted);
+              });
+
+              if (!isOfficialJ6) {
+                const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+                m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+              }
+            }
+          });
+        });
+
+        renderMatches();
+
+        Swal.fire({
+          title: "¡6ta Fecha Oficial Programada!",
+          html: `
+            <div class="text-start small">
+              <p class="mb-2 text-white">✅ Se cargó la programación oficial para los <strong>${appliedCount} partidos</strong> de Sábado 07 y Domingo 08 de Noviembre 2026 con horarios, camerinos (C1-C4), vocales y veedores exactos.</p>
+              <p class="mb-0 text-success fw-bold">👉 Recuerda presionar el botón <strong>'Guardar'</strong> para oficializar los cambios en la base de datos.</p>
+            </div>
+          `,
+          icon: "success",
+          confirmButtonColor: "#2ecc71",
+          background: "#121212",
+          color: "#ffffff",
+        });
+      }
+
       function openProgramacionModal() {
         if (!currentJornada) {
           return Swal.fire("Aviso", "Selecciona una jornada primero.", "info");
@@ -2149,6 +2294,11 @@
 
         if (currentJornada === 5) {
           aplicarProgramacionOficialFecha5();
+          return;
+        }
+
+        if (currentJornada === 6) {
+          aplicarProgramacionOficialFecha6();
           return;
         }
 
@@ -2871,6 +3021,11 @@
                   ${currentJornada === 5 ? `
                     <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha5()" title="Cargar días, horas, mesas y camerinos oficiales de la 5ta Fecha">
                       <i class="fas fa-file-invoice me-1"></i> Cargar 5ta Fecha Oficial
+                    </button>
+                  ` : ''}
+                  ${currentJornada === 6 ? `
+                    <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha6()" title="Cargar días, horas, mesas y camerinos oficiales de la 6ta Fecha">
+                      <i class="fas fa-file-invoice me-1"></i> Cargar 6ta Fecha Oficial
                     </button>
                   ` : ''}
                   <button class="btn btn-outline-success rounded-pill px-3 btn-sm fw-bold shadow-sm" onclick="exportarTodoElFixtureExcel()" title="Descargar todo el fixture oficial de todas las fechas">
