@@ -5110,23 +5110,39 @@
           try {
             const teamName = team === 'local' ? match.local : match.visitor;
 
-            // Find Team ID first
+            // Find Team ID first, matching category if multiple exist
             const teamSnap = await db.collection("teams").where("name", "==", teamName).where("championshipId", "==", campId).get();
             if (!teamSnap.empty) {
-              const teamId = teamSnap.docs[0].id;
+              let teamDoc = teamSnap.docs[0];
+              if (teamSnap.docs.length > 1 && match._cat) {
+                const normMCat = match._cat.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+                const matched = teamSnap.docs.find(d => {
+                  const dCat = (d.data().category || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+                  return dCat === normMCat;
+                });
+                if (matched) teamDoc = matched;
+              }
+              const teamId = teamDoc.id;
 
-              // 1. Team Sanctions (Multas a la barra, no veedor, etc)
+              // 1. Team Sanctions: Fetch ALL active sanctions for this team (multas and cards)
               const teamSancSnap = await db.collection("sanciones")
                 .where("teamId", "==", teamId)
                 .where("estado", "==", "activa")
                 .get();
 
+              const teamSanctions = [];
               teamSancSnap.forEach(sDoc => {
-                const s = sDoc.data();
-                // Omitir si es tarjeta individual de jugador (se procesa abajo en Player Sanctions)
-                if (s.tipo === "amarilla" || s.tipo === "roja" || s.jugadorId) {
-                  return;
-                }
+                teamSanctions.push({ id: sDoc.id, ...sDoc.data() });
+              });
+
+              // Also load players map for any missing dorsales
+              const playersSnap = await db.collection("players").where("teamId", "==", teamId).get();
+              const playersMap = {};
+              playersSnap.forEach(pDoc => { playersMap[pDoc.id] = pDoc.data(); });
+
+              // Multas (administrative sanctions)
+              const multas = teamSanctions.filter(s => s.tipo !== "amarilla" && s.tipo !== "roja");
+              multas.forEach(s => {
                 let cleanTipo = s.tipo || "Multa";
                 if (cleanTipo === "no_veedor") cleanTipo = "No Asistencia de Veedor";
                 else if (cleanTipo === "amarilla_banca") cleanTipo = "Tarjeta Amarilla (Banca)";
@@ -5142,55 +5158,37 @@
                   desc += ` (${s.cuota} de ${s.totalCuotas})`;
                 }
 
-                window.addMultaRow(team, desc, s.valor, sDoc.id);
+                window.addMultaRow(team, desc, s.valor, s.id);
               });
 
-              // 2. Player Sanctions (Cards)
-              const playersSnap = await db.collection("players").where("teamId", "==", teamId).get();
-              const playersMap = {};
-              playersSnap.forEach(pDoc => { playersMap[pDoc.id] = pDoc.data(); });
+              // Player Sanctions (Yellow & Red Cards)
+              const yellows = teamSanctions.filter(s => s.tipo === "amarilla");
+              const reds = teamSanctions.filter(s => s.tipo === "roja");
 
-              const playerIds = Object.keys(playersMap);
-              if (playerIds.length > 0) {
-                // Firestore doesn't support 'in' with more than 10 items, but for sanctions it's usually manageable
-                // or we can fetch by chunks. For now, let's assume we can fetch all and filter in JS if needed,
-                // but it's better to query by playerIds in chunks of 10.
-                let allPlayerSanc = [];
-                for (let i = 0; i < playerIds.length; i += 10) {
-                  const chunk = playerIds.slice(i, i + 10);
-                  const sSnap = await db.collection("sanciones")
-                    .where("jugadorId", "in", chunk)
-                    .where("estado", "==", "activa")
-                    .get();
-                  sSnap.forEach(doc => allPlayerSanc.push({ id: doc.id, ...doc.data() }));
-                }
+              if (yellows.length > 0) {
+                document.getElementById(`inv_ta_count_${team}`).value = yellows.length;
+                updateCardInputs(team, 'ta');
+                const inputs = document.querySelectorAll(`#ta_players_${team} input`);
+                yellows.forEach((s, idx) => {
+                  if (inputs[idx]) {
+                    const dorsal = s.numeroJugador || (s.jugadorId ? playersMap[s.jugadorId]?.numeroJugador : "") || "";
+                    inputs[idx].value = dorsal;
+                    inputs[idx].setAttribute('data-sanction-id', s.id);
+                  }
+                });
+              }
 
-                const yellows = allPlayerSanc.filter(s => s.tipo === "amarilla");
-                const reds = allPlayerSanc.filter(s => s.tipo === "roja");
-
-                if (yellows.length > 0) {
-                  document.getElementById(`inv_ta_count_${team}`).value = yellows.length;
-                  updateCardInputs(team, 'ta');
-                  const inputs = document.querySelectorAll(`#ta_players_${team} input`);
-                  yellows.forEach((s, idx) => {
-                    if (inputs[idx]) {
-                      inputs[idx].value = playersMap[s.jugadorId]?.numeroJugador || "";
-                      inputs[idx].setAttribute('data-sanction-id', s.id);
-                    }
-                  });
-                }
-
-                if (reds.length > 0) {
-                  document.getElementById(`inv_tr_count_${team}`).value = reds.length;
-                  updateCardInputs(team, 'tr');
-                  const inputs = document.querySelectorAll(`#tr_players_${team} input`);
-                  reds.forEach((s, idx) => {
-                    if (inputs[idx]) {
-                      inputs[idx].value = playersMap[s.jugadorId]?.numeroJugador || "";
-                      inputs[idx].setAttribute('data-sanction-id', s.id);
-                    }
-                  });
-                }
+              if (reds.length > 0) {
+                document.getElementById(`inv_tr_count_${team}`).value = reds.length;
+                updateCardInputs(team, 'tr');
+                const inputs = document.querySelectorAll(`#tr_players_${team} input`);
+                reds.forEach((s, idx) => {
+                  if (inputs[idx]) {
+                    const dorsal = s.numeroJugador || (s.jugadorId ? playersMap[s.jugadorId]?.numeroJugador : "") || "";
+                    inputs[idx].value = dorsal;
+                    inputs[idx].setAttribute('data-sanction-id', s.id);
+                  }
+                });
               }
             }
           } catch (err) {

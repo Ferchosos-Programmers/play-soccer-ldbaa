@@ -1548,15 +1548,20 @@
           const matchSanctions = activeSanctions.filter((s) => {
             const sJornada = parseInt(s.jornada) || 1;
             if (sJornada !== jornada) return false;
-            if (s.matchId && m.matchId && s.matchId === m.matchId) return true;
-            if (s.teamId && (s.teamId === localId || s.teamId === visitorId))
-              return true;
-            if (
-              s.teamName &&
-              (s.teamName === m.local || s.teamName === m.visitor)
-            )
-              return true;
-            return false;
+            if (s.matchId && m.matchId) {
+              if (s.matchId !== m.matchId) return false;
+              return (s.teamName && (s.teamName === m.local || s.teamName.trim() === (m.local || '').trim() || s.teamName === m.visitor || s.teamName.trim() === (m.visitor || '').trim())) ||
+                     (s.teamId && (s.teamId === localId || s.teamId === visitorId));
+            }
+            const isLocal = (s.teamName && (s.teamName === m.local || s.teamName.trim() === (m.local || '').trim())) || (s.teamId && localId && s.teamId === localId);
+            const isVisitor = (s.teamName && (s.teamName === m.visitor || s.teamName.trim() === (m.visitor || '').trim())) || (s.teamId && visitorId && s.teamId === visitorId);
+            if (!isLocal && !isVisitor) return false;
+            if (s.categoria && m._cat) {
+              const normSCat = String(s.categoria).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+              const normMCat = String(m._cat).normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+              if (normSCat !== normMCat) return false;
+            }
+            return true;
           });
 
           const isSanctioned = !!(
@@ -1741,10 +1746,12 @@
             const s = sDoc.data();
             const sJornada = parseInt(s.jornada) || 1;
             if (sJornada === lastMatchJornada) {
-              if (
-                (s.matchId && match.matchId && s.matchId === match.matchId) ||
-                s.teamName === match.local ||
-                s.teamName === match.visitor
+              if (s.matchId && match.matchId) {
+                if (s.matchId === match.matchId) isSanctioned = true;
+              } else if (
+                (s.teamName === match.local || s.teamName?.trim() === (match.local || '').trim() ||
+                 s.teamName === match.visitor || s.teamName?.trim() === (match.visitor || '').trim()) &&
+                (!s.categoria || !match._cat || s.categoria === match._cat)
               ) {
                 isSanctioned = true;
               }
@@ -3691,42 +3698,70 @@
             const visitorId = teamNameToIdMap[m.visitor];
             const scoreInfo = getMatchScore(m);
 
+            const normLocal = (m.local || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+            const normVisitor = (m.visitor || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+            const normMCat = (m._cat || "").toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+
+            const isLocalTeam = (s) => {
+              if (s.teamName && (s.teamName === m.local || s.teamName.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase() === normLocal)) return true;
+              if (s.teamId && localId && s.teamId === localId) return true;
+              return false;
+            };
+
+            const isVisitorTeam = (s) => {
+              if (s.teamName && (s.teamName === m.visitor || s.teamName.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase() === normVisitor)) return true;
+              if (s.teamId && visitorId && s.teamId === visitorId) return true;
+              return false;
+            };
+
             // Filtrar sanciones de Local
             const localSanctions = activeSanctions.filter((s) => {
-              const isMatch = s.matchId && m.matchId && s.matchId === m.matchId;
-              const isTeamName = s.teamName && s.teamName === m.local;
-              const isTeamId = s.teamId && localId && s.teamId === localId;
-              if (isMatch) {
-                if (isTeamName || isTeamId) return true;
-                const inLocal =
+              if (s.matchId && m.matchId) {
+                if (s.matchId !== m.matchId) return false;
+                if (isLocalTeam(s)) return true;
+                const inLocal = (s.nombreJugador || s.jugadorId) && (
                   (m.playersLocal || []).some(
-                    (p) => p.name === s.nombreJugador || p.id === s.jugadorId,
+                    (p) => (p.name && s.nombreJugador && p.name.trim() === s.nombreJugador.trim()) ||
+                           (p.id && s.jugadorId && p.id === s.jugadorId),
                   ) ||
                   (m.changesLocal || []).some(
-                    (c) => c.name === s.nombreJugador || c.id === s.jugadorId,
-                  );
+                    (c) => (c.name && s.nombreJugador && c.name.trim() === s.nombreJugador.trim()) ||
+                           (c.id && s.jugadorId && c.id === s.jugadorId),
+                  )
+                );
                 return inLocal;
               }
-              return isTeamName || isTeamId;
+              if (!isLocalTeam(s)) return false;
+              if (s.categoria && m._cat) {
+                const normSCat = s.categoria.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+                if (normSCat !== normMCat) return false;
+              }
+              return true;
             });
 
             // Filtrar sanciones de Visitante
             const visitorSanctions = activeSanctions.filter((s) => {
-              const isMatch = s.matchId && m.matchId && s.matchId === m.matchId;
-              const isTeamName = s.teamName && s.teamName === m.visitor;
-              const isTeamId = s.teamId && visitorId && s.teamId === visitorId;
-              if (isMatch) {
-                if (isTeamName || isTeamId) return true;
-                const inVisitor =
+              if (s.matchId && m.matchId) {
+                if (s.matchId !== m.matchId) return false;
+                if (isVisitorTeam(s)) return true;
+                const inVisitor = (s.nombreJugador || s.jugadorId) && (
                   (m.playersVisitor || []).some(
-                    (p) => p.name === s.nombreJugador || p.id === s.jugadorId,
+                    (p) => (p.name && s.nombreJugador && p.name.trim() === s.nombreJugador.trim()) ||
+                           (p.id && s.jugadorId && p.id === s.jugadorId),
                   ) ||
                   (m.changesVisitor || []).some(
-                    (c) => c.name === s.nombreJugador || c.id === s.jugadorId,
-                  );
+                    (c) => (c.name && s.nombreJugador && c.name.trim() === s.nombreJugador.trim()) ||
+                           (c.id && s.jugadorId && c.id === s.jugadorId),
+                  )
+                );
                 return inVisitor;
               }
-              return isTeamName || isTeamId;
+              if (!isVisitorTeam(s)) return false;
+              if (s.categoria && m._cat) {
+                const normSCat = s.categoria.toString().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+                if (normSCat !== normMCat) return false;
+              }
+              return true;
             });
 
             // Procesar y enriquecer sanciones locales
@@ -3782,10 +3817,12 @@
 
             // Acumular en consolidado de equipos
             const addToConsolidado = (teamName, cat, sanctions, subtotal) => {
-              if (!consolidadoEquipos[teamName]) {
-                consolidadoEquipos[teamName] = {
-                  teamName,
-                  category: cat || m._cat || "---",
+              const category = cat || m._cat || "---";
+              const key = `${(teamName || "").trim().toUpperCase()}__${category.trim().toUpperCase()}`;
+              if (!consolidadoEquipos[key]) {
+                consolidadoEquipos[key] = {
+                  teamName: (teamName || "").trim(),
+                  category: category,
                   amarillas: 0,
                   rojas: 0,
                   multas: 0,
@@ -3794,12 +3831,12 @@
               }
               sanctions.forEach((s) => {
                 if (s.tipo === "amarilla")
-                  consolidadoEquipos[teamName].amarillas++;
+                  consolidadoEquipos[key].amarillas++;
                 else if (s.tipo === "roja")
-                  consolidadoEquipos[teamName].rojas++;
-                else consolidadoEquipos[teamName].multas++;
+                  consolidadoEquipos[key].rojas++;
+                else consolidadoEquipos[key].multas++;
               });
-              consolidadoEquipos[teamName].total += subtotal;
+              consolidadoEquipos[key].total += subtotal;
             };
 
             addToConsolidado(m.local, m._cat, processedLocal, subtotalLocal);
