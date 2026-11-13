@@ -347,6 +347,9 @@
                   <span class="badge bg-danger rounded-pill px-3 py-2 fw-bold d-none" id="badgeMarcadoresModificados"><i class="fas fa-exclamation-circle me-1"></i>Cambios sin guardar: 0</span>
                 </div>
                 <div class="d-flex flex-wrap gap-2">
+                  <button class="btn btn-outline-info btn-sm rounded-pill px-3 py-2 fw-bold" onclick="configurarGoogleDriveModal()" title="Configurar respaldo de actas en Google Drive por jornada">
+                    <i class="fab fa-google-drive me-1.5 text-info"></i> Respaldo Google Drive
+                  </button>
                   <button class="btn btn-outline-info btn-sm rounded-pill px-3 py-2 fw-bold" onclick="openStandingsPreviewModal()">
                     <i class="fas fa-trophy me-1.5 text-warning"></i> Ver Tabla de Posiciones
                   </button>
@@ -2367,6 +2370,142 @@
         } catch (err) {
           console.error("Error al guardar marcador desde vocalías:", err);
           Swal.fire("Error", "No se pudo actualizar el marcador: " + (err.message || err), "error");
+        }
+      }
+
+      // ==========================================
+      // CONFIGURACIÓN DE RESPALDO EN GOOGLE DRIVE
+      // ==========================================
+      async function configurarGoogleDriveModal() {
+        let curUrl = localStorage.getItem("ldbaa_drive_webhook_url") || "";
+        try {
+          if (typeof db !== "undefined" && db) {
+            const snap = await db.collection("settings").doc("drive_backup").get();
+            if (snap.exists && snap.data() && snap.data().webhookUrl) {
+              curUrl = snap.data().webhookUrl.trim();
+              localStorage.setItem("ldbaa_drive_webhook_url", curUrl);
+            }
+          }
+        } catch (e) {
+          console.warn("Error leyendo settings/drive_backup:", e);
+        }
+
+        const { value: formValues } = await Swal.fire({
+          title: "☁️ Respaldo en Google Drive",
+          html: `
+            <div class="text-start" style="font-size:0.85rem; color:#eee;">
+              <p class="mb-2">
+                Guarda automáticamente la imagen oficial de cada acta en carpetas por <strong>Jornada</strong> (ej. <code>Jornada 7</code>) dentro de tu <strong>Google Drive</strong>.
+              </p>
+              <div class="p-2.5 rounded bg-black bg-opacity-40 border border-info border-opacity-30 mb-3">
+                <div class="fw-bold text-info mb-1"><i class="fas fa-info-circle me-1"></i>¿Cómo obtener la URL de Google Drive?</div>
+                <ol class="ps-3 mb-1 text-white-50 small">
+                  <li>Abre <a href="https://script.google.com" target="_blank" class="text-info fw-bold">script.google.com</a> con tu cuenta Google.</li>
+                  <li>Pega el código del archivo <code>google-apps-script-drive-backup.js</code>.</li>
+                  <li>Haz clic en <strong>Implementar -> Nueva implementación -> Aplicación web</strong>.</li>
+                  <li>En <em>"Quién tiene acceso"</em> elige: <strong>"Cualquier persona" (Anyone)</strong>.</li>
+                  <li>Copia la URL que termina en <code>/exec</code> y pégala aquí abajo.</li>
+                </ol>
+              </div>
+              <div class="mb-3">
+                <label class="form-label fw-bold text-white mb-1">URL de Aplicación Web (Apps Script / Webhook):</label>
+                <input id="swalDriveWebhookUrlAdmin" class="form-control bg-dark text-white border-secondary" placeholder="https://script.google.com/macros/s/AKfycb.../exec" value="${curUrl}">
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge ${curUrl ? 'bg-success' : 'bg-secondary'} px-2.5 py-1" id="swalDriveStatusAdmin">
+                  ${curUrl ? '✓ URL Configurada' : 'Sin configurar'}
+                </span>
+                <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="probarConexionDriveAdmin()">
+                  <i class="fas fa-plug me-1"></i> Probar Conexión
+                </button>
+              </div>
+            </div>
+          `,
+          showCancelButton: true,
+          confirmButtonColor: "#2ecc71",
+          cancelButtonColor: "#6c757d",
+          confirmButtonText: "Guardar Configuración",
+          cancelButtonText: "Cancelar",
+          background: "#121212",
+          color: "#ffffff",
+          preConfirm: () => {
+            const val = document.getElementById("swalDriveWebhookUrlAdmin")?.value?.trim() || "";
+            return val;
+          }
+        });
+
+        if (formValues !== undefined) {
+          const clean = (formValues || "").trim();
+          if (clean) {
+            localStorage.setItem("ldbaa_drive_webhook_url", clean);
+          } else {
+            localStorage.removeItem("ldbaa_drive_webhook_url");
+          }
+
+          try {
+            await db.collection("settings").doc("drive_backup").set({
+              webhookUrl: clean,
+              updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+
+            Swal.fire({
+              title: "Configuración Guardada",
+              text: clean ? "El respaldo en Google Drive se ha sincronizado para toda la liga." : "Se ha desactivado el respaldo de Google Drive.",
+              icon: "success",
+              confirmButtonColor: "#2ecc71"
+            });
+          } catch (err) {
+            console.error("Error guardando settings:", err);
+            Swal.fire("Error", "No se pudo guardar la configuración: " + err.message, "error");
+          }
+        }
+      }
+
+      async function probarConexionDriveAdmin() {
+        const input = document.getElementById("swalDriveWebhookUrlAdmin");
+        const url = input?.value?.trim();
+        if (!url || !url.startsWith("http")) {
+          return Swal.showValidationMessage("Por favor ingresa una URL válida que empiece con https://");
+        }
+
+        const btn = document.querySelector(".swal2-container button[onclick*='probarConexionDriveAdmin']");
+        const originalText = btn ? btn.innerHTML : "";
+        if (btn) { btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Probando...'; btn.disabled = true; }
+
+        try {
+          const res = await fetch(url, { method: "GET" });
+          const json = await res.json();
+          if (json && (json.status === "ok" || json.message)) {
+            Swal.fire({
+              title: "¡Conexión Exitosa!",
+              html: `
+                <div class="text-center">
+                  <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                  <p class="text-white">Tu script de Google Drive está activo y listo para recibir fotos de actas por jornada.</p>
+                  <p class="text-white-50 small mb-0">${json.message || ''}</p>
+                </div>
+              `,
+              icon: "success",
+              confirmButtonColor: "#2ecc71"
+            });
+          } else {
+            throw new Error("Respuesta no esperada del script.");
+          }
+        } catch (e) {
+          Swal.fire({
+            title: "Aviso de Conexión",
+            html: `
+              <div class="text-center">
+                <i class="fas fa-exclamation-triangle text-warning fa-3x mb-3"></i>
+                <p class="text-white">No se pudo verificar la respuesta: <strong>${e.message || e}</strong></p>
+                <p class="text-white-50 small mb-0">Asegúrate de haber configurado el acceso como <strong>"Cualquier persona" (Anyone)</strong> al implementar la aplicación web en Apps Script.</p>
+              </div>
+            `,
+            icon: "warning",
+            confirmButtonColor: "#f39c12"
+          });
+        } finally {
+          if (btn) { btn.innerHTML = originalText; btn.disabled = false; }
         }
       }
 
