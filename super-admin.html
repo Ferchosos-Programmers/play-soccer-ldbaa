@@ -1545,13 +1545,16 @@
             statusBadge = '<span class="badge bg-success bg-opacity-25 text-success border border-success border-opacity-50 px-2.5 py-1 rounded-pill"><i class="fas fa-check-circle me-1"></i>Finalizado (Vocalía Oficial)</span>';
           }
 
+          const hasPenalty = !!m.pointsPenalty;
+          const penaltyBadge = hasPenalty ? `<span class="badge bg-danger text-white border border-danger border-opacity-75 px-2.5 py-1 rounded-pill fw-bold"><i class="fas fa-gavel me-1"></i>Pérdida de Puntos</span>` : '';
+
           const catColor = (m._cat || '').toUpperCase().includes('MAX') ? 'warning' : ((m._cat || '').toUpperCase().includes('PRIM') ? 'info' : 'danger');
           const fechaText = m._fechaText || "Jornada";
           const matchHora = m.horaRealAsignada || m.hora || "--:--";
           const matchFecha = m.fechaRealAsignadaText || m.fechaReal || m.dia || "";
 
           return `
-            <div class="match-card-admin p-3.5 p-md-4 ${isModified ? 'is-modified' : ''}" id="card_${uniqueKey}">
+            <div class="match-card-admin p-3.5 p-md-4 ${isModified ? 'is-modified' : ''} ${hasPenalty ? 'border-danger' : ''}" id="card_${uniqueKey}">
               <!-- Barra Superior del Partido -->
               <div class="d-flex flex-wrap justify-content-between align-items-center pb-2 mb-3 border-bottom border-white border-opacity-10 gap-2">
                 <div class="d-flex align-items-center gap-2">
@@ -1565,9 +1568,30 @@
                 </div>
                 <div class="d-flex align-items-center gap-2">
                   ${isModified ? '<span class="badge bg-warning text-dark fw-bold animate__animated animate__pulse animate__infinite"><i class="fas fa-pencil-alt me-1"></i>Modificado</span>' : ''}
+                  ${penaltyBadge}
                   ${statusBadge}
                 </div>
               </div>
+
+              <!-- Banner de Sanción / Pérdida de Puntos si existe -->
+              ${hasPenalty ? `
+                <div class="alert alert-danger bg-danger bg-opacity-15 border border-danger border-opacity-50 text-white p-2.5 mb-3 rounded-3 shadow-sm">
+                  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                      <i class="fas fa-gavel text-danger fs-6"></i>
+                      <strong class="text-danger text-uppercase">PÉRDIDA DE PUNTOS:</strong>
+                      <span class="badge bg-danger text-white px-2.5 py-1 fw-bold">${m.pointsPenalty.penalizedTeamName}</span>
+                      <span class="text-white-50 small">(${m.pointsPenalty.awardPointsToRival ? 'Rival suma 3 pts' : 'Ambos con 0 pts'} &bull; Goles en cancha respetados)</span>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline-danger py-0.5 px-2.5 rounded-pill small fw-bold" onclick="removePointsPenalty('${uniqueKey}')" title="Quitar sanción y restaurar puntos normales">
+                      <i class="fas fa-times me-1"></i> Quitar Sanción
+                    </button>
+                  </div>
+                  <div class="mt-1.5 ps-1 text-white-50 small">
+                    <strong class="text-warning">Motivo en Vocalía:</strong> <span class="text-white">${m.pointsPenalty.reason}</span>
+                  </div>
+                </div>
+              ` : ''}
 
               <!-- Fila Principal: Equipos, Marcador y Botones W.O. -->
               <div class="row align-items-center g-3 text-center text-md-start">
@@ -1623,7 +1647,11 @@
                 <div class="small text-white-50">
                   ${m._isManual ? '<i class="fas fa-info-circle text-info me-1"></i>Marcador manual guardado.' : (m._isFin ? '<i class="fas fa-check-circle text-success me-1"></i>Partido concluido con acta oficial.' : '<i class="far fa-circle text-white-50 me-1"></i>Partido por jugar. Ingrese marcador y haga clic en Guardar.')}
                 </div>
-                <div class="d-flex gap-2">
+                <div class="d-flex gap-2 flex-wrap align-items-center">
+                  <!-- Botón de Pérdida de Puntos -->
+                  <button type="button" class="btn ${hasPenalty ? 'btn-danger' : 'btn-outline-danger'} btn-sm rounded-pill px-3 fw-bold shadow-sm" onclick="openPointsPenaltyModal('${uniqueKey}')" title="Hacer perder los puntos a un club conservando los goles anotados">
+                    <i class="fas fa-gavel me-1.5"></i> ${hasPenalty ? 'Editar Sanción Puntos' : 'Pérdida de Puntos'}
+                  </button>
                   ${(m._isFin || m._isManual) ? `
                     <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-bold" onclick="resetMatchDirectScore('${uniqueKey}')" title="Restablecer partido a Por Jugar">
                       <i class="fas fa-undo me-1"></i> Restablecer a Por Jugar
@@ -1985,6 +2013,249 @@
         }
       }
 
+      async function openPointsPenaltyModal(uniqueKey) {
+        const matchObj = adminScoreMatches.find(m => m._uniqueKey === uniqueKey);
+        if (!matchObj) return;
+
+        const currentPenalty = matchObj.pointsPenalty || null;
+        const localTeam = matchObj.local;
+        const visitorTeam = matchObj.visitor;
+        const inLoc = document.getElementById('in_loc_' + uniqueKey);
+        const inVis = document.getElementById('in_vis_' + uniqueKey);
+        const currentScoreL = inLoc ? (parseInt(inLoc.value, 10) || 0) : (matchObj._scoreL ?? 0);
+        const currentScoreV = inVis ? (parseInt(inVis.value, 10) || 0) : (matchObj._scoreV ?? 0);
+
+        const { value: formValues } = await Swal.fire({
+          title: `<div class="d-flex align-items-center justify-content-center gap-2 text-danger"><i class="fas fa-gavel"></i> Sanción: Pérdida de Puntos</div>`,
+          html: `
+            <div class="text-start small" style="color: #e0e0e0;">
+              <p class="mb-2 text-white-50">
+                Aplica la sanción de <strong>pérdida de puntos</strong> al club infractor. Se <strong>mantendrán intactos los goles</strong> anotados en el partido (${currentScoreL} - ${currentScoreV}) para la tabla de posiciones (GF / GC / DG) y el motivo quedará registrado en el acta de la <strong>vocalía oficial</strong>.
+              </p>
+
+              <div class="alert alert-dark border border-secondary border-opacity-50 py-2.5 px-3 mb-3 rounded text-center">
+                <span class="fw-bold text-white fs-6">${localTeam}</span>
+                <span class="badge bg-dark border border-warning text-warning px-3 py-1.5 fs-6 mx-2 font-monospace">${currentScoreL} - ${currentScoreV}</span>
+                <span class="fw-bold text-white fs-6">${visitorTeam}</span>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label text-warning fw-bold mb-1">
+                  <i class="fas fa-user-times me-1"></i> 1. Club sancionado con pérdida de puntos: *
+                </label>
+                <select id="swalPenalizedTeam" class="form-select bg-dark text-white border-secondary">
+                  <option value="local" ${currentPenalty?.penalizedTeam === 'local' ? 'selected' : ''}>Local: ${localTeam} (Pierde los puntos)</option>
+                  <option value="visitor" ${currentPenalty?.penalizedTeam === 'visitor' ? 'selected' : ''}>Visitante: ${visitorTeam} (Pierde los puntos)</option>
+                  <option value="both" ${currentPenalty?.penalizedTeam === 'both' ? 'selected' : ''}>Ambos clubes (${localTeam} y ${visitorTeam} pierden puntos)</option>
+                  ${currentPenalty ? '<option value="none" style="color:#e74c3c;">-- Quitar sanción (Restaurar puntos normales) --</option>' : ''}
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label text-warning fw-bold mb-1">
+                  <i class="fas fa-trophy me-1"></i> 2. Adjudicación de puntos al rival:
+                </label>
+                <select id="swalAwardRival" class="form-select bg-dark text-white border-secondary">
+                  <option value="yes" ${currentPenalty?.awardPointsToRival !== false ? 'selected' : ''}>
+                    Otorgar los 3 puntos de victoria al rival (Estándar en Ligas Barriales)
+                  </option>
+                  <option value="no" ${currentPenalty?.awardPointsToRival === false ? 'selected' : ''}>
+                    No otorgar puntos al rival (ambos quedan con 0 puntos)
+                  </option>
+                </select>
+              </div>
+
+              <div class="mb-2">
+                <label class="form-label text-warning fw-bold mb-1">
+                  <i class="fas fa-clipboard-list me-1"></i> 3. Motivo de la pérdida de puntos (Visible en Vocalía Oficial): *
+                </label>
+                <textarea id="swalPenaltyReason" class="form-control bg-dark text-white border-secondary" rows="3" placeholder="Ej: No presentación de carnets de cancha, alineación indebida de jugador sancionado, sanción según Art. 124...">${currentPenalty?.reason || ''}</textarea>
+                <div class="text-white-50 mt-1" style="font-size:0.75rem;">
+                  <i class="fas fa-info-circle text-info me-1"></i> Este motivo quedará registrado de forma oficial y visible en la vocalía y en el reporte del encuentro.
+                </div>
+              </div>
+            </div>
+          `,
+          showCancelButton: true,
+          confirmButtonText: '<i class="fas fa-save me-1"></i> Guardar Sanción',
+          cancelButtonText: 'Cancelar',
+          confirmButtonColor: '#e74c3c',
+          cancelButtonColor: '#6c757d',
+          background: '#121212',
+          color: '#ffffff',
+          focusConfirm: false,
+          preConfirm: () => {
+            const penalizedTeam = document.getElementById('swalPenalizedTeam').value;
+            const awardRival = document.getElementById('swalAwardRival').value === 'yes';
+            const reason = document.getElementById('swalPenaltyReason').value.trim();
+
+            if (penalizedTeam !== 'none' && !reason) {
+              Swal.showValidationMessage('Debes ingresar el motivo de la pérdida de puntos para la vocalía oficial.');
+              return false;
+            }
+
+            return { penalizedTeam, awardRival, reason };
+          }
+        });
+
+        if (!formValues) return;
+
+        if (formValues.penalizedTeam === 'none') {
+          return removePointsPenalty(uniqueKey);
+        }
+
+        const penalizedName = formValues.penalizedTeam === 'local' 
+          ? localTeam 
+          : (formValues.penalizedTeam === 'visitor' ? visitorTeam : `${localTeam} y ${visitorTeam}`);
+
+        const penaltyObj = {
+          penalizedTeam: formValues.penalizedTeam,
+          penalizedTeamName: penalizedName,
+          awardPointsToRival: formValues.awardRival,
+          reason: formValues.reason,
+          appliedAt: new Date().toISOString()
+        };
+
+        Swal.fire({
+          title: "Aplicando sanción...",
+          html: `Guardando pérdida de puntos para <strong>${penalizedName}</strong> y actualizando tabla de posiciones...`,
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const docRef = db.collection("fixtures").doc(matchObj._docId);
+          const docSnap = await docRef.get();
+          if (!docSnap.exists) throw new Error("Documento de fixture no encontrado");
+
+          const fData = docSnap.data();
+          let matchFound = false;
+
+          const updatedMatches = (fData.data || []).map((m, idx) => {
+            const isTarget = (matchObj.matchId && m.matchId && m.matchId === matchObj.matchId && m.matchId !== "undefined") ||
+                             (idx === matchObj._idx) ||
+                             (!matchFound && m.local === matchObj.local && m.visitor === matchObj.visitor);
+
+            if (isTarget && !matchFound) {
+              matchFound = true;
+              return {
+                ...m,
+                matchId: m.matchId || matchObj.matchId || `${matchObj._docId}_${idx}`,
+                isFinalized: true,
+                scoreLocal: currentScoreL,
+                scoreVisitor: currentScoreV,
+                pointsPenalty: penaltyObj,
+                liveStatus: {
+                  ...(m.liveStatus || {}),
+                  isLive: false,
+                  period: "Finalizado",
+                  minute: "Final",
+                  scoreLocal: currentScoreL,
+                  scoreVisitor: currentScoreV,
+                  lastUpdate: new Date().toISOString()
+                },
+                lastUpdated: new Date()
+              };
+            }
+            return m;
+          });
+
+          await docRef.update({
+            data: updatedMatches,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          Swal.fire({
+            icon: "success",
+            title: "¡Pérdida de Puntos Aplicada!",
+            html: `
+              <div class="text-start">
+                <p>La sanción ha sido registrada con éxito:</p>
+                <div class="alert alert-danger py-2 mb-2">
+                  <div class="fw-bold"><i class="fas fa-gavel me-1"></i> Sancionado: ${penalizedName}</div>
+                  <div class="small mt-1"><strong>Motivo:</strong> ${penaltyObj.reason}</div>
+                </div>
+                <ul class="small text-white-50 mb-0 ps-3">
+                  <li>Goles en cancha respetados: <strong>${currentScoreL} - ${currentScoreV}</strong> (GF y GC conservados).</li>
+                  <li>${penaltyObj.awardPointsToRival ? 'El equipo rival suma los 3 puntos en la Tabla de Posiciones.' : 'Ningún equipo suma puntos por este partido.'}</li>
+                  <li>El motivo ya es visible en el acta de la <strong>Vocalía Oficial</strong>.</li>
+                </ul>
+              </div>
+            `,
+            confirmButtonColor: "#2ecc71"
+          });
+
+          await loadAdminMarcadores();
+
+        } catch (err) {
+          console.error("Error al aplicar pérdida de puntos:", err);
+          Swal.fire("Error", "No se pudo aplicar la sanción: " + (err.message || err), "error");
+        }
+      }
+
+      async function removePointsPenalty(uniqueKey) {
+        const matchObj = adminScoreMatches.find(m => m._uniqueKey === uniqueKey);
+        if (!matchObj) return;
+
+        const confirmResult = await Swal.fire({
+          title: "¿Quitar sanción de puntos?",
+          html: `
+            <p>Se removerá la sanción de pérdida de puntos entre <strong>${matchObj.local} y ${matchObj.visitor}</strong>.</p>
+            <p class="small text-white-50 mb-0">Los puntos volverán a calcularse de manera normal según los goles anotados en cancha.</p>
+          `,
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonColor: "#2ecc71",
+          cancelButtonColor: "#6c757d",
+          confirmButtonText: "Sí, quitar sanción",
+          cancelButtonText: "Cancelar"
+        });
+
+        if (!confirmResult.isConfirmed) return;
+
+        Swal.fire({
+          title: "Removiendo sanción...",
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const docRef = db.collection("fixtures").doc(matchObj._docId);
+          const docSnap = await docRef.get();
+          if (!docSnap.exists) throw new Error("Documento de fixture no encontrado");
+
+          const fData = docSnap.data();
+          let matchFound = false;
+
+          const updatedMatches = (fData.data || []).map((m, idx) => {
+            const isTarget = (matchObj.matchId && m.matchId && m.matchId === matchObj.matchId && m.matchId !== "undefined") ||
+                             (idx === matchObj._idx) ||
+                             (!matchFound && m.local === matchObj.local && m.visitor === matchObj.visitor);
+
+            if (isTarget && !matchFound) {
+              matchFound = true;
+              const matchCopy = { ...m };
+              delete matchCopy.pointsPenalty;
+              matchCopy.lastUpdated = new Date();
+              return matchCopy;
+            }
+            return m;
+          });
+
+          await docRef.update({
+            data: updatedMatches,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+
+          Swal.fire("Sanción Removida", "Los puntos han sido restaurados según el resultado en cancha.", "success");
+          await loadAdminMarcadores();
+
+        } catch (err) {
+          console.error("Error al remover sanción:", err);
+          Swal.fire("Error", "No se pudo remover la sanción: " + (err.message || err), "error");
+        }
+      }
+
       async function openDirectScoreModal(docId, matchId, matchIdx, localName, visitorName, curScoreL, curScoreV) {
         const { value: formValues } = await Swal.fire({
           title: `Asignar / Editar Marcador`,
@@ -2192,7 +2463,7 @@
             if (!m) return false;
             const ls = m.liveStatus || {};
             if (ls.isLive === true) return false;
-            if (m.isFinalized === true || m.manualScore === true || m.isManualScore === true) return true;
+            if (m.isFinalized === true || m.manualScore === true || m.isManualScore === true || m.pointsPenalty) return true;
             if (ls.period === "Finalizado" || ls.minute === "Final") return true;
             if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.vocalName)) return true;
             if (m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName)) return true;
@@ -2220,6 +2491,7 @@
                     const goalsL = getGoals(m, 'local');
                     const goalsV = getGoals(m, 'visitor');
 
+                    // Los goles anotados en cancha se preservan siempre
                     teamsData[localKey].pj++;
                     teamsData[localKey].gf += goalsL;
                     teamsData[localKey].gc += goalsV;
@@ -2228,7 +2500,26 @@
                     teamsData[visitorKey].gf += goalsV;
                     teamsData[visitorKey].gc += goalsL;
 
-                    if (goalsL > goalsV) {
+                    // Resolución de puntos: Sanción disciplinaria o resultado en cancha
+                    if (m.pointsPenalty) {
+                      const pp = m.pointsPenalty;
+                      if (pp.penalizedTeam === 'local') {
+                        teamsData[localKey].pp++;
+                        if (pp.awardPointsToRival) {
+                          teamsData[visitorKey].pg++;
+                          teamsData[visitorKey].pts += 3;
+                        }
+                      } else if (pp.penalizedTeam === 'visitor') {
+                        teamsData[visitorKey].pp++;
+                        if (pp.awardPointsToRival) {
+                          teamsData[localKey].pg++;
+                          teamsData[localKey].pts += 3;
+                        }
+                      } else if (pp.penalizedTeam === 'both') {
+                        teamsData[localKey].pp++;
+                        teamsData[visitorKey].pp++;
+                      }
+                    } else if (goalsL > goalsV) {
                       teamsData[localKey].pg++;
                       teamsData[localKey].pts += 3;
                       teamsData[visitorKey].pp++;

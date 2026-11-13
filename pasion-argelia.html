@@ -586,7 +586,7 @@
       if (!m) return false;
       const ls = m.liveStatus || {};
       if (ls.isLive === true) return false;
-      if (m.isFinalized === true || m.manualScore === true || m.isManualScore === true) return true;
+      if (m.isFinalized === true || m.manualScore === true || m.isManualScore === true || m.pointsPenalty) return true;
       if (ls.period === "Finalizado" || ls.minute === "Final") return true;
       if (m.vocalReport && (m.vocalReport.vocalSignature || m.vocalReport.vocalName || m.vocalReport.capSignatureLocal || m.vocalReport.capSignatureVisitor)) return true;
       if (m.refereeReport && (m.refereeReport.judgeSignature || m.refereeReport.judgeName)) return true;
@@ -798,6 +798,29 @@
               <span class="badge bg-dark text-white-50 small mt-1">Visitante</span>
             </div>
           </div>
+
+          <!-- Aviso Oficial de Pérdida de Puntos -->
+          ${m.pointsPenalty ? `
+            <div class="mt-2.5 p-2.5 rounded-3 bg-danger bg-opacity-20 border border-danger border-opacity-60 text-start">
+              <div class="d-flex align-items-center justify-content-between flex-wrap gap-1">
+                <span class="text-danger fw-bold small text-uppercase" style="letter-spacing: 0.5px;">
+                  <i class="fas fa-balance-scale me-1"></i> Resolución Disciplinaria: Pérdida de Puntos
+                </span>
+                <span class="badge bg-danger text-white py-0.5 px-2 small">
+                  ${m.pointsPenalty.awardPointsToRival ? '3 Pts al Rival' : '0 Pts Ambos'}
+                </span>
+              </div>
+              <div class="text-white small mt-1">
+                <strong>Club Sancionado:</strong> <span class="text-warning fw-bold">${m.pointsPenalty.penalizedTeamName || (m.pointsPenalty.penalizedTeam === 'local' ? m.local : (m.pointsPenalty.penalizedTeam === 'visitor' ? m.visitor : 'Ambos'))}</span>
+              </div>
+              <div class="text-white-50 small mt-0.5" style="font-size: 0.8rem;">
+                <strong>Motivo:</strong> ${m.pointsPenalty.reason || 'Sin motivo especificado'}
+              </div>
+              <div class="text-info mt-1" style="font-size: 0.73rem;">
+                <i class="fas fa-info-circle me-1"></i><em>Los goles anotados en cancha (${scoreLocal} - ${scoreVisitor}) se mantienen válidos para la tabla general.</em>
+              </div>
+            </div>
+          ` : ''}
 
           <!-- Minuto a Minuto (Timeline de Incidencias) para partidos en vivo o con incidencias -->
           ${(isLive || events.length > 0) ? `
@@ -1114,7 +1137,26 @@
                   teamsData[visitorKey].gf += goalsVisitor;
                   teamsData[visitorKey].gc += goalsLocal;
 
-                  if (goalsLocal > goalsVisitor) {
+                  // Resolución de puntos: Sanción disciplinaria de pérdida de puntos o resultado en cancha
+                  if (m.pointsPenalty) {
+                    const pp = m.pointsPenalty;
+                    if (pp.penalizedTeam === 'local') {
+                      teamsData[localKey].pp++;
+                      if (pp.awardPointsToRival) {
+                        teamsData[visitorKey].pg++;
+                        teamsData[visitorKey].pts += 3;
+                      }
+                    } else if (pp.penalizedTeam === 'visitor') {
+                      teamsData[visitorKey].pp++;
+                      if (pp.awardPointsToRival) {
+                        teamsData[localKey].pg++;
+                        teamsData[localKey].pts += 3;
+                      }
+                    } else if (pp.penalizedTeam === 'both') {
+                      teamsData[localKey].pp++;
+                      teamsData[visitorKey].pp++;
+                    }
+                  } else if (goalsLocal > goalsVisitor) {
                     teamsData[localKey].pg++;
                     teamsData[localKey].pts += 3;
                     teamsData[visitorKey].pp++;

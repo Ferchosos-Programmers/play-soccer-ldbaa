@@ -1514,8 +1514,18 @@
                             <i class="far fa-clock me-1 text-primary-glow" style="font-size:1rem"></i> ${horaDisplay}
                         </span>
                     </div>
-                    <div class="d-inline-flex flex-column align-items-center gap-2">
+                    <div class="d-inline-flex flex-column align-items-center gap-2 w-100">
                         ${isDiferido ? '<span class="badge bg-warning bg-opacity-25 text-warning border border-warning border-opacity-50 mb-1 fw-bold" style="font-size:0.55rem; letter-spacing:1px"><i class="fas fa-clock me-1"></i>DIFERIDO</span>' : (m.billingLocal || m.billingVisitor ? '<span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 mb-1" style="font-size:0.55rem">FACTURADO</span>' : "")}
+                        ${m.pointsPenalty ? `
+                          <div class="mt-1 p-1.5 rounded bg-danger bg-opacity-20 border border-danger border-opacity-50 text-start w-100" style="font-size:0.68rem;">
+                            <div class="d-flex align-items-center justify-content-between text-danger fw-bold">
+                              <span><i class="fas fa-balance-scale me-1"></i>PÉRDIDA DE PUNTOS:</span>
+                              <span class="badge bg-danger text-white py-0 px-1" style="font-size:0.55rem;">SANCIÓN</span>
+                            </div>
+                            <div class="text-white fw-bold mt-0.5">${m.pointsPenalty.penalizedTeamName || (m.pointsPenalty.penalizedTeam === 'local' ? m.local : (m.pointsPenalty.penalizedTeam === 'visitor' ? m.visitor : 'Ambos clubes'))}</div>
+                            <div class="text-white-50 mt-0.5 text-truncate" title="${(m.pointsPenalty.reason || '').replace(/"/g, '&quot;')}"><i class="fas fa-info-circle text-warning me-0.5"></i>${m.pointsPenalty.reason || 'Sin motivo'}</div>
+                          </div>
+                        ` : ''}
                         <div style="font-size:0.75rem; color:#f1c40f; line-height:1.1">
                             <span class="text-white-50" style="font-size:0.6rem; letter-spacing:1px; opacity:0.8">VOCAL:</span> ${vocalDisplay}
                         </div>
@@ -2246,6 +2256,43 @@
                     <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2 rounded-pill fw-bold" onclick="window.discardActaDraft()" style="font-size:0.68rem; white-space:nowrap;">
                         <i class="fas fa-trash-alt me-1"></i> Descartar
                     </button>
+                </div>`
+                    : ""
+                }
+
+                ${
+                  m.pointsPenalty
+                    ? `
+                <!-- RESOLUCIÓN DISCIPLINARIA OFICIAL: PÉRDIDA DE PUNTOS -->
+                <div class="alert alert-danger bg-danger bg-opacity-20 border-2 border-danger text-white py-3 px-3 mb-3 rounded-4 shadow animate__animated animate__fadeIn" style="font-size:0.85rem;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="fas fa-balance-scale text-danger fs-5"></i>
+                            <h6 class="mb-0 fw-bold text-danger text-uppercase" style="letter-spacing:1px;">Resolución Oficial: Sanción de Pérdida de Puntos</h6>
+                        </div>
+                        <span class="badge bg-danger text-white px-2.5 py-1 rounded-pill fw-bold">RESOLUCIÓN OFICIAL</span>
+                    </div>
+                    <div class="p-3 rounded-3 bg-black bg-opacity-50 border border-danger border-opacity-40">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-sm-7">
+                                <span class="text-white-50 small d-block">Club Sancionado:</span>
+                                <strong class="text-warning fs-6"><i class="fas fa-exclamation-triangle text-danger me-1"></i>${m.pointsPenalty.penalizedTeamName || (m.pointsPenalty.penalizedTeam === 'local' ? m.local : (m.pointsPenalty.penalizedTeam === 'visitor' ? m.visitor : 'Ambos Clubes'))}</strong>
+                            </div>
+                            <div class="col-sm-5 text-sm-end">
+                                <span class="text-white-50 small d-block">Efecto en Puntos:</span>
+                                <span class="badge bg-danger text-white px-2.5 py-1 fw-bold">${m.pointsPenalty.awardPointsToRival ? '3 Pts adjudicados al Rival' : '0 Pts para ambos'}</span>
+                            </div>
+                            <div class="col-12 mt-2 pt-2 border-top border-secondary border-opacity-25">
+                                <span class="text-white-50 small d-block mb-1"><i class="fas fa-file-alt text-warning me-1"></i><strong>Motivo de la Pérdida de Puntos:</strong></span>
+                                <div class="text-white p-2.5 rounded bg-black bg-opacity-60 border border-secondary border-opacity-30 fw-semibold" style="white-space: pre-wrap; font-size: 0.85rem; color: #f8d7da;">
+                                    ${m.pointsPenalty.reason || 'Sin motivo especificado'}
+                                </div>
+                            </div>
+                            <div class="col-12 text-white-50 mt-1" style="font-size:0.75rem;">
+                                <i class="fas fa-info-circle text-info me-1"></i><em>Reglamento LDBAA: Los goles realizados por el club en el encuentro se mantienen intactos en la tabla de posiciones y estadísticas.</em>
+                            </div>
+                        </div>
+                    </div>
                 </div>`
                     : ""
                 }
@@ -7434,6 +7481,7 @@
             vocalReport,
             refereeReport,
             vedorReport,
+            pointsPenalty: (window.currentMatchOpened && window.currentMatchOpened.pointsPenalty) || null,
             isFinalized: true,
             savedAt: new Date().toISOString()
           };
@@ -7586,6 +7634,7 @@
           vocalReport,
           refereeReport,
           vedorReport,
+          pointsPenalty: m.pointsPenalty || null,
           isFinalized: m.isFinalized || false,
           savedAt: new Date().toISOString()
         };
@@ -7717,6 +7766,29 @@
                 </div>
               </div>
             </div>
+
+            ${data.pointsPenalty ? `
+            <!-- RESOLUCIÓN DISCIPLINARIA DE PÉRDIDA DE PUNTOS -->
+            <div style="background: rgba(231, 76, 60, 0.12); border: 2px solid #e74c3c; border-radius: 12px; padding: 14px 18px; margin-bottom: 24px; box-shadow: 0 4px 15px rgba(231,76,60,0.2);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 13px; font-weight: 900; color: #e74c3c; letter-spacing: 1px; text-transform: uppercase;">
+                  ⚖️ RESOLUCIÓN OFICIAL: SANCIÓN DE PÉRDIDA DE PUNTOS
+                </span>
+                <span style="background: #e74c3c; color: #ffffff; font-size: 11px; font-weight: 800; padding: 3px 12px; border-radius: 20px; letter-spacing: 0.5px;">
+                  ${data.pointsPenalty.awardPointsToRival ? '3 PTS ADJUDICADOS AL RIVAL' : '0 PTS PARA AMBOS'}
+                </span>
+              </div>
+              <div style="font-size: 13px; color: #ffffff; margin-bottom: 6px;">
+                <strong>Club Sancionado:</strong> <span style="color: #f1c40f; font-weight: 800;">${data.pointsPenalty.penalizedTeamName || (data.pointsPenalty.penalizedTeam === 'local' ? data.local : (data.pointsPenalty.penalizedTeam === 'visitor' ? data.visitor : 'Ambos Clubes'))}</span>
+              </div>
+              <div style="font-size: 12px; color: #f8d7da; background: rgba(0,0,0,0.5); padding: 10px 14px; border-radius: 8px; border: 1px solid rgba(231,76,60,0.3); line-height: 1.5;">
+                <strong style="color: #ffffff;">Motivo de la Sanción:</strong> ${data.pointsPenalty.reason || 'Sin motivo especificado'}
+              </div>
+              <div style="font-size: 11px; color: #aaaaaa; margin-top: 8px; font-style: italic;">
+                * Conforme al reglamento oficial de la LDBAA, los goles anotados en cancha por ambos clubes se mantienen válidos e intactos en la tabla general de posiciones.
+              </div>
+            </div>
+            ` : ''}
 
             <!-- NÓMINAS: DOS COLUMNAS PARALELAS -->
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;">
