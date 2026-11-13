@@ -29,7 +29,10 @@
     <meta name="theme-color" content="#050505" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
     <meta name="apple-mobile-web-app-title" content="LDBAA" />
     <link rel="apple-touch-icon" href="img/logo.png" />
 
@@ -525,9 +528,13 @@
         color: #fff;
         vertical-align: middle;
       }
-      .table-elite td:first-child { border-radius: 12px 0 0 12px; }
-      .table-elite td:last-child { border-radius: 0 12px 12px 0; }
-      
+      .table-elite td:first-child {
+        border-radius: 12px 0 0 12px;
+      }
+      .table-elite td:last-child {
+        border-radius: 0 12px 12px 0;
+      }
+
       .input-elite-sm {
         background: rgba(0, 0, 0, 0.3);
         border: 1px solid rgba(255, 255, 255, 0.1);
@@ -545,73 +552,73 @@
         box-shadow: 0 0 10px var(--primary-glow);
       }
       .input-elite-score {
-          width: 50px;
-          text-align: center;
-          font-weight: 900;
-          color: var(--primary-color);
-          border-color: rgba(46, 204, 113, 0.3);
+        width: 50px;
+        text-align: center;
+        font-weight: 900;
+        color: var(--primary-color);
+        border-color: rgba(46, 204, 113, 0.3);
       }
       .team-name-elite-table {
-          font-size: 0.9rem;
-          font-weight: 700;
-          color: #fff;
-          letter-spacing: 0.5px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.5px;
       }
-      
+
       .btn-export-excel {
-          background: #27ae60;
-          color: white;
-          border: none;
-          padding: 10px 18px;
-          border-radius: 10px;
-          font-weight: 700;
-          font-size: 0.8rem;
-          transition: 0.3s;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
+        background: #27ae60;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
       }
       .btn-export-excel:hover {
-          background: #2ecc71;
-          box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
-          transform: translateY(-3px);
+        background: #2ecc71;
+        box-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+        transform: translateY(-3px);
       }
       .btn-export-image {
-          background: #2980b9;
-          color: white;
-          border: none;
-          padding: 10px 18px;
-          border-radius: 10px;
-          font-weight: 700;
-          font-size: 0.8rem;
-          transition: 0.3s;
-          display: inline-flex;
-          align-items: center;
-          gap: 8px;
+        background: #2980b9;
+        color: white;
+        border: none;
+        padding: 10px 18px;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 0.8rem;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
       }
       .btn-export-image:hover {
-          background: #3498db;
-          box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
-          transform: translateY(-3px);
+        background: #3498db;
+        box-shadow: 0 0 15px rgba(52, 152, 219, 0.4);
+        transform: translateY(-3px);
       }
       .btn-save-jornada-elite {
-          background: var(--primary-color);
-          color: black;
-          border: none;
-          padding: 10px 22px;
-          border-radius: 10px;
-          font-weight: 800;
-          font-size: 0.85rem;
-          transition: 0.3s;
-          display: inline-flex;
-          align-items: center;
-          gap: 10px;
-          text-transform: uppercase;
+        background: var(--primary-color);
+        color: black;
+        border: none;
+        padding: 10px 22px;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 0.85rem;
+        transition: 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-transform: uppercase;
       }
       .btn-save-jornada-elite:hover {
-          background: white;
-          box-shadow: 0 0 25px var(--primary-glow);
-          transform: scale(1.05);
+        background: white;
+        box-shadow: 0 0 25px var(--primary-glow);
+        transform: scale(1.05);
       }
 
       .badge-cat-maxima {
@@ -728,14 +735,28 @@
             </div>
           </div>
           <div class="col-md-5">
-            <div class="d-flex justify-content-md-end justify-content-center gap-2 flex-wrap">
-              <button class="btn btn-export-excel rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm" onclick="exportarTodoElFixtureExcel()" title="Descargar todo el fixture oficial en Excel con todas las fechas">
+            <div
+              class="d-flex justify-content-md-end justify-content-center gap-2 flex-wrap"
+            >
+              <button
+                class="btn btn-export-excel rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm"
+                onclick="exportarTodoElFixtureExcel()"
+                title="Descargar todo el fixture oficial en Excel con todas las fechas"
+              >
                 <i class="fas fa-file-excel me-1"></i> Descargar Todo el Fixture
               </button>
-              <button class="btn btn-outline-info rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm" onclick="openModalCalendarioMaestro()" title="Ver tabla de sincronización oficial">
+              <button
+                class="btn btn-outline-info rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm"
+                onclick="openModalCalendarioMaestro()"
+                title="Ver tabla de sincronización oficial"
+              >
                 <i class="fas fa-table me-1"></i> Calendario Maestro
               </button>
-              <button class="btn btn-outline-success rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm" onclick="reaplicarSincronizacionMaestra()" title="Re-sincronizar fechas cada 15 días">
+              <button
+                class="btn btn-outline-success rounded-pill px-3 py-2 btn-sm fw-bold shadow-sm"
+                onclick="reaplicarSincronizacionMaestra()"
+                title="Re-sincronizar fechas cada 15 días"
+              >
                 <i class="fas fa-sync-alt me-1"></i> Auto-Sincronizar
               </button>
             </div>
@@ -748,64 +769,123 @@
       </div>
 
       <!-- MODAL DE CALENDARIO MAESTRO DE SINCRONIZACIÓN LDBAA -->
-      <div class="modal fade" id="modalCalendarioMaestro" tabindex="-1" aria-labelledby="modalCalendarioMaestroLabel" aria-hidden="true">
+      <div
+        class="modal fade"
+        id="modalCalendarioMaestro"
+        tabindex="-1"
+        aria-labelledby="modalCalendarioMaestroLabel"
+        aria-hidden="true"
+      >
         <div class="modal-dialog modal-dialog-centered modal-xl">
-          <div class="modal-content glass-panel" style="background: rgba(10, 16, 24, 0.98); border: 1px solid rgba(52, 152, 219, 0.4); border-radius: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.95); padding: 25px;">
-            <div class="modal-header border-0 pb-3 d-flex justify-content-between align-items-center">
+          <div
+            class="modal-content glass-panel"
+            style="
+              background: rgba(10, 16, 24, 0.98);
+              border: 1px solid rgba(52, 152, 219, 0.4);
+              border-radius: 28px;
+              box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95);
+              padding: 25px;
+            "
+          >
+            <div
+              class="modal-header border-0 pb-3 d-flex justify-content-between align-items-center"
+            >
               <div>
-                <h4 class="modal-title text-white fw-900 mb-1" id="modalCalendarioMaestroLabel">
-                  📋 Calendario Maestro de <span class="text-primary-glow">Sincronización LDBAA</span>
+                <h4
+                  class="modal-title text-white fw-900 mb-1"
+                  id="modalCalendarioMaestroLabel"
+                >
+                  📋 Calendario Maestro de
+                  <span class="text-primary-glow">Sincronización LDBAA</span>
                 </h4>
-                <p class="text-white-50 small mb-0">Planificación oficial de encuentros por semana para igualar la finalización de todas las categorías.</p>
+                <p class="text-white-50 small mb-0">
+                  Planificación oficial de encuentros por semana para igualar la
+                  finalización de todas las categorías.
+                </p>
               </div>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
             </div>
 
             <div class="modal-body py-2">
               <!-- Primera Vuelta -->
               <div class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="text-warning fw-bold mb-0 text-uppercase"><i class="fas fa-flag-checkered me-2"></i>1. Fechas de Encuentros - Primera Vuelta (13 Semanas)</h6>
-                  <span class="badge bg-warning text-dark fw-bold">02/10/2026 - 08/01/2027</span>
+                <div
+                  class="d-flex justify-content-between align-items-center mb-2"
+                >
+                  <h6 class="text-warning fw-bold mb-0 text-uppercase">
+                    <i class="fas fa-flag-checkered me-2"></i>1. Fechas de
+                    Encuentros - Primera Vuelta (13 Semanas)
+                  </h6>
+                  <span class="badge bg-warning text-dark fw-bold"
+                    >02/10/2026 - 08/01/2027</span
+                  >
                 </div>
-                <div class="table-responsive rounded-4 border border-secondary border-opacity-25">
-                  <table class="table table-dark table-sm text-center mb-0 align-middle" style="font-size: 0.78rem;">
+                <div
+                  class="table-responsive rounded-4 border border-secondary border-opacity-25"
+                >
+                  <table
+                    class="table table-dark table-sm text-center mb-0 align-middle"
+                    style="font-size: 0.78rem"
+                  >
                     <thead>
                       <tr class="bg-secondary bg-opacity-25 text-white-50">
                         <th>N° EQUIPOS</th>
                         <th>CATEGORÍA</th>
-                        <th>2/10<br><small>J1</small></th>
-                        <th>9/10<br><small>J2</small></th>
-                        <th>16/10<br><small>J3</small></th>
-                        <th>23/10<br><small>J4</small></th>
-                        <th>30/10<br><small>J5</small></th>
-                        <th>6/11<br><small>J6</small></th>
-                        <th>13/11<br><small>J7</small></th>
-                        <th>20/11<br><small>J8</small></th>
-                        <th>27/11<br><small>J9</small></th>
-                        <th>4/12<br><small>J10</small></th>
-                        <th>11/12<br><small>J11</small></th>
-                        <th>18/12<br><small>J12</small></th>
-                        <th class="table-warning text-dark fw-bold">8/1/27<br><small>J13 ⭐</small></th>
+                        <th>2/10<br /><small>J1</small></th>
+                        <th>9/10<br /><small>J2</small></th>
+                        <th>16/10<br /><small>J3</small></th>
+                        <th>23/10<br /><small>J4</small></th>
+                        <th>30/10<br /><small>J5</small></th>
+                        <th>6/11<br /><small>J6</small></th>
+                        <th>13/11<br /><small>J7</small></th>
+                        <th>20/11<br /><small>J8</small></th>
+                        <th>27/11<br /><small>J9</small></th>
+                        <th>4/12<br /><small>J10</small></th>
+                        <th>11/12<br /><small>J11</small></th>
+                        <th>18/12<br /><small>J12</small></th>
+                        <th class="table-warning text-dark fw-bold">
+                          8/1/27<br /><small>J13 ⭐</small>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
                         <td class="fw-bold text-danger">8</td>
                         <td class="fw-bold text-danger text-start">FEMENINO</td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td class="table-warning"><span class="badge bg-danger text-white fw-bold">X (Fin)</span></td>
+                        <td class="table-warning">
+                          <span class="badge bg-danger text-white fw-bold"
+                            >X (Fin)</span
+                          >
+                        </td>
                       </tr>
                       <tr>
                         <td class="fw-bold text-info">14</td>
@@ -822,24 +902,46 @@
                         <td><span class="badge bg-info text-dark">X</span></td>
                         <td><span class="badge bg-info text-dark">X</span></td>
                         <td><span class="badge bg-info text-dark">X</span></td>
-                        <td class="table-warning"><span class="badge bg-info text-dark fw-bold">X (Fin)</span></td>
+                        <td class="table-warning">
+                          <span class="badge bg-info text-dark fw-bold"
+                            >X (Fin)</span
+                          >
+                        </td>
                       </tr>
                       <tr>
                         <td class="fw-bold text-success">9</td>
                         <td class="fw-bold text-success text-start">MÁXIMA</td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
-                        <td class="table-warning"><span class="badge bg-success text-dark fw-bold">X (Fin)</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
+                        <td class="table-warning">
+                          <span class="badge bg-success text-dark fw-bold"
+                            >X (Fin)</span
+                          >
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -848,27 +950,41 @@
 
               <!-- Segunda Vuelta -->
               <div class="mb-2">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h6 class="text-primary-glow fw-bold mb-0 text-uppercase"><i class="fas fa-trophy me-2"></i>2. Fechas de Encuentros - Segunda Vuelta (11 Semanas)</h6>
-                  <span class="badge bg-primary text-white fw-bold">15/01/2027 - 02/04/2027</span>
+                <div
+                  class="d-flex justify-content-between align-items-center mb-2"
+                >
+                  <h6 class="text-primary-glow fw-bold mb-0 text-uppercase">
+                    <i class="fas fa-trophy me-2"></i>2. Fechas de Encuentros -
+                    Segunda Vuelta (11 Semanas)
+                  </h6>
+                  <span class="badge bg-primary text-white fw-bold"
+                    >15/01/2027 - 02/04/2027</span
+                  >
                 </div>
-                <div class="table-responsive rounded-4 border border-secondary border-opacity-25">
-                  <table class="table table-dark table-sm text-center mb-0 align-middle" style="font-size: 0.78rem;">
+                <div
+                  class="table-responsive rounded-4 border border-secondary border-opacity-25"
+                >
+                  <table
+                    class="table table-dark table-sm text-center mb-0 align-middle"
+                    style="font-size: 0.78rem"
+                  >
                     <thead>
                       <tr class="bg-secondary bg-opacity-25 text-white-50">
                         <th>N° EQUIPOS</th>
                         <th>CATEGORÍA</th>
-                        <th>15/1<br><small>J14</small></th>
-                        <th>22/1<br><small>J15</small></th>
-                        <th>29/1<br><small>J16</small></th>
-                        <th>5/2<br><small>J17</small></th>
-                        <th>12/2<br><small>J18</small></th>
-                        <th>19/2<br><small>J19</small></th>
-                        <th>26/2<br><small>J20</small></th>
-                        <th>5/3<br><small>J21</small></th>
-                        <th>12/3<br><small>J22</small></th>
-                        <th>19/3<br><small>J23</small></th>
-                        <th class="table-success text-dark fw-bold">2/4/27<br><small>J24 ⭐</small></th>
+                        <th>15/1<br /><small>J14</small></th>
+                        <th>22/1<br /><small>J15</small></th>
+                        <th>29/1<br /><small>J16</small></th>
+                        <th>5/2<br /><small>J17</small></th>
+                        <th>12/2<br /><small>J18</small></th>
+                        <th>19/2<br /><small>J19</small></th>
+                        <th>26/2<br /><small>J20</small></th>
+                        <th>5/3<br /><small>J21</small></th>
+                        <th>12/3<br /><small>J22</small></th>
+                        <th>19/3<br /><small>J23</small></th>
+                        <th class="table-success text-dark fw-bold">
+                          2/4/27<br /><small>J24 ⭐</small>
+                        </th>
                       </tr>
                     </thead>
                     <tbody>
@@ -876,16 +992,30 @@
                         <td class="fw-bold text-danger">8</td>
                         <td class="fw-bold text-danger text-start">FEMENINO</td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-danger text-white">X</span></td>
-                        <td class="table-success"><span class="badge bg-danger text-white fw-bold">X (Fin)</span></td>
+                        <td>
+                          <span class="badge bg-danger text-white">X</span>
+                        </td>
+                        <td class="table-success">
+                          <span class="badge bg-danger text-white fw-bold"
+                            >X (Fin)</span
+                          >
+                        </td>
                       </tr>
                       <tr>
                         <td class="fw-bold text-info">12</td>
@@ -900,22 +1030,40 @@
                         <td><span class="badge bg-info text-dark">X</span></td>
                         <td><span class="badge bg-info text-dark">X</span></td>
                         <td><span class="badge bg-info text-dark">X</span></td>
-                        <td class="table-success"><span class="badge bg-info text-dark fw-bold">X (Fin)</span></td>
+                        <td class="table-success">
+                          <span class="badge bg-info text-dark fw-bold"
+                            >X (Fin)</span
+                          >
+                        </td>
                       </tr>
                       <tr>
                         <td class="fw-bold text-success">11</td>
                         <td class="fw-bold text-success text-start">MÁXIMA</td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td><span class="badge bg-success text-dark">X</span></td>
+                        <td>
+                          <span class="badge bg-success text-dark">X</span>
+                        </td>
                         <td><span class="text-white-50">-</span></td>
-                        <td class="table-success"><span class="badge bg-success text-dark fw-bold">X (Fin)</span></td>
+                        <td class="table-success">
+                          <span class="badge bg-success text-dark fw-bold"
+                            >X (Fin)</span
+                          >
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -923,14 +1071,37 @@
               </div>
             </div>
 
-            <div class="modal-footer border-0 pt-2 d-flex justify-content-between flex-wrap gap-2">
-              <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill text-white fw-bold" data-bs-dismiss="modal">Cerrar</button>
+            <div
+              class="modal-footer border-0 pt-2 d-flex justify-content-between flex-wrap gap-2"
+            >
+              <button
+                type="button"
+                class="btn btn-outline-secondary px-4 py-2 rounded-pill text-white fw-bold"
+                data-bs-dismiss="modal"
+              >
+                Cerrar
+              </button>
               <div class="d-flex gap-2 flex-wrap">
-                <button type="button" class="btn btn-outline-success px-4 py-2 rounded-pill fw-bold" onclick="exportarTodoElFixtureExcel()">
-                  <i class="fas fa-file-excel me-2"></i> Descargar Todo el Fixture
+                <button
+                  type="button"
+                  class="btn btn-outline-success px-4 py-2 rounded-pill fw-bold"
+                  onclick="exportarTodoElFixtureExcel()"
+                >
+                  <i class="fas fa-file-excel me-2"></i> Descargar Todo el
+                  Fixture
                 </button>
-                <button type="button" class="btn btn-success px-4 py-2 rounded-pill fw-bold" onclick="reaplicarSincronizacionMaestra(); bootstrap.Modal.getInstance(document.getElementById('modalCalendarioMaestro')).hide();">
-                  <i class="fas fa-check-double me-2"></i> Aplicar Este Calendario
+                <button
+                  type="button"
+                  class="btn btn-success px-4 py-2 rounded-pill fw-bold"
+                  onclick="
+                    reaplicarSincronizacionMaestra();
+                    bootstrap.Modal.getInstance(
+                      document.getElementById('modalCalendarioMaestro'),
+                    ).hide();
+                  "
+                >
+                  <i class="fas fa-check-double me-2"></i> Aplicar Este
+                  Calendario
                 </button>
               </div>
             </div>
@@ -939,83 +1110,261 @@
       </div>
 
       <!-- MODAL DE CONFIGURACIÓN DE PROGRAMACIÓN DE HORARIOS Y DÍAS -->
-      <div class="modal fade" id="modalConfigProgramacion" tabindex="-1" aria-labelledby="modalConfigProgramacionLabel" aria-hidden="true">
+      <div
+        class="modal fade"
+        id="modalConfigProgramacion"
+        tabindex="-1"
+        aria-labelledby="modalConfigProgramacionLabel"
+        aria-hidden="true"
+      >
         <div class="modal-dialog modal-dialog-centered modal-xl">
-          <div class="modal-content glass-panel" style="background: rgba(12, 18, 26, 0.98); border: 1px solid rgba(46, 204, 113, 0.35); border-radius: 28px; box-shadow: 0 25px 60px rgba(0,0,0,0.95); padding: 20px;">
-            <div class="modal-header border-0 pb-2 d-flex justify-content-between align-items-start">
+          <div
+            class="modal-content glass-panel"
+            style="
+              background: rgba(12, 18, 26, 0.98);
+              border: 1px solid rgba(46, 204, 113, 0.35);
+              border-radius: 28px;
+              box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95);
+              padding: 20px;
+            "
+          >
+            <div
+              class="modal-header border-0 pb-2 d-flex justify-content-between align-items-start"
+            >
               <div>
                 <div class="d-flex align-items-center gap-2">
                   <span class="fs-4">⚡</span>
-                  <h4 class="modal-title text-white fw-900 mb-0" id="modalConfigProgramacionLabel" style="letter-spacing: -0.5px;">
-                    Configurar <span class="text-primary-glow">Programación de Partidos</span>
+                  <h4
+                    class="modal-title text-white fw-900 mb-0"
+                    id="modalConfigProgramacionLabel"
+                    style="letter-spacing: -0.5px"
+                  >
+                    Configurar
+                    <span class="text-primary-glow"
+                      >Programación de Partidos</span
+                    >
                   </h4>
-                  <span id="badgeJornadaProgramar" class="badge bg-success text-dark fw-bold ms-2 px-3 py-2" style="font-size: 0.8rem; border-radius: 10px;">JORNADA</span>
+                  <span
+                    id="badgeJornadaProgramar"
+                    class="badge bg-success text-dark fw-bold ms-2 px-3 py-2"
+                    style="font-size: 0.8rem; border-radius: 10px"
+                    >JORNADA</span
+                  >
                 </div>
-                <p class="text-white-50 small mt-1 mb-0">Define horarios generales, asigna horarios preferenciales específicos o marca partidos como "No Programados" por oficio.</p>
+                <p class="text-white-50 small mt-1 mb-0">
+                  Define horarios generales, asigna horarios preferenciales
+                  específicos o marca partidos como "No Programados" por oficio.
+                </p>
               </div>
-              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              <button
+                type="button"
+                class="btn-close btn-close-white"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
             </div>
 
             <div class="modal-body py-2">
               <!-- Navegación de Pestañas -->
-              <div class="d-flex gap-2 mb-3 p-1 rounded-4" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08);">
-                <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold text-white active" id="btnTabGeneral" onclick="switchProgTab('general')" style="flex: 1; transition: all 0.3s ease; background: var(--primary-color); color: #000 !important;">
+              <div
+                class="d-flex gap-2 mb-3 p-1 rounded-4"
+                style="
+                  background: rgba(0, 0, 0, 0.4);
+                  border: 1px solid rgba(255, 255, 255, 0.08);
+                "
+              >
+                <button
+                  type="button"
+                  class="btn btn-sm rounded-pill px-4 py-2 fw-bold text-white active"
+                  id="btnTabGeneral"
+                  onclick="switchProgTab('general')"
+                  style="
+                    flex: 1;
+                    transition: all 0.3s ease;
+                    background: var(--primary-color);
+                    color: #000 !important;
+                  "
+                >
                   <i class="fas fa-clock me-2"></i> 1. Días y Horarios Generales
                 </button>
-                <button type="button" class="btn btn-sm rounded-pill px-4 py-2 fw-bold text-white-50" id="btnTabEspeciales" onclick="switchProgTab('especiales')" style="flex: 1; transition: all 0.3s ease; background: transparent;">
-                  <i class="fas fa-star text-warning me-2"></i> 2. Horarios Preferenciales & Oficios
-                  <span class="badge bg-warning text-dark ms-2" id="badgeEspecialesCount" style="font-size: 0.72rem; border-radius: 6px;">0</span>
+                <button
+                  type="button"
+                  class="btn btn-sm rounded-pill px-4 py-2 fw-bold text-white-50"
+                  id="btnTabEspeciales"
+                  onclick="switchProgTab('especiales')"
+                  style="
+                    flex: 1;
+                    transition: all 0.3s ease;
+                    background: transparent;
+                  "
+                >
+                  <i class="fas fa-star text-warning me-2"></i> 2. Horarios
+                  Preferenciales & Oficios
+                  <span
+                    class="badge bg-warning text-dark ms-2"
+                    id="badgeEspecialesCount"
+                    style="font-size: 0.72rem; border-radius: 6px"
+                    >0</span
+                  >
                 </button>
               </div>
 
               <!-- PESTAÑA 1: DÍAS Y HORARIOS GENERALES -->
               <div id="tabGeneralContent">
                 <!-- Duración de Partido -->
-                <div class="p-3 mb-3 rounded-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
-                  <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div
+                  class="p-3 mb-3 rounded-4"
+                  style="
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                  "
+                >
+                  <div
+                    class="d-flex flex-wrap justify-content-between align-items-center gap-3"
+                  >
                     <div>
-                      <label class="text-white fw-bold d-flex align-items-center gap-2 mb-1" style="font-size: 0.9rem;">
-                        <i class="fas fa-stopwatch text-primary-glow"></i> Duración por Partido (Minutos)
+                      <label
+                        class="text-white fw-bold d-flex align-items-center gap-2 mb-1"
+                        style="font-size: 0.9rem"
+                      >
+                        <i class="fas fa-stopwatch text-primary-glow"></i>
+                        Duración por Partido (Minutos)
                       </label>
-                      <small class="text-white-50">Tiempo de juego + descanso / rotación entre partidos.</small>
+                      <small class="text-white-50"
+                        >Tiempo de juego + descanso / rotación entre
+                        partidos.</small
+                      >
                     </div>
                     <div class="d-flex align-items-center gap-2">
-                      <input type="number" id="progDurationMinutes" class="input-elite-sm text-center fw-bold fs-6" style="width: 90px; height: 40px; border-color: rgba(46, 204, 113, 0.5); color: #2ecc71;" value="100" min="40" max="180" step="5" oninput="recalcularCapacidadProgramacion()">
+                      <input
+                        type="number"
+                        id="progDurationMinutes"
+                        class="input-elite-sm text-center fw-bold fs-6"
+                        style="
+                          width: 90px;
+                          height: 40px;
+                          border-color: rgba(46, 204, 113, 0.5);
+                          color: #2ecc71;
+                        "
+                        value="100"
+                        min="40"
+                        max="180"
+                        step="5"
+                        oninput="recalcularCapacidadProgramacion()"
+                      />
                       <div class="btn-group btn-group-sm">
-                        <button type="button" class="btn btn-outline-secondary text-white btn-sm" onclick="setProgDuration(80)">80m</button>
-                        <button type="button" class="btn btn-outline-secondary text-white btn-sm" onclick="setProgDuration(90)">90m</button>
-                        <button type="button" class="btn btn-outline-secondary text-white btn-sm active" onclick="setProgDuration(100)">100m</button>
-                        <button type="button" class="btn btn-outline-secondary text-white btn-sm" onclick="setProgDuration(110)">110m</button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary text-white btn-sm"
+                          onclick="setProgDuration(80)"
+                        >
+                          80m
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary text-white btn-sm"
+                          onclick="setProgDuration(90)"
+                        >
+                          90m
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary text-white btn-sm active"
+                          onclick="setProgDuration(100)"
+                        >
+                          100m
+                        </button>
+                        <button
+                          type="button"
+                          class="btn btn-outline-secondary text-white btn-sm"
+                          onclick="setProgDuration(110)"
+                        >
+                          110m
+                        </button>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Días y Horarios -->
-                <h6 class="text-white text-uppercase fw-800 mb-2" style="font-size: 0.78rem; letter-spacing: 1.5px;">
-                  <i class="fas fa-calendar-days text-primary-glow me-2"></i> Días de Juego y Rangos de Horario
+                <h6
+                  class="text-white text-uppercase fw-800 mb-2"
+                  style="font-size: 0.78rem; letter-spacing: 1.5px"
+                >
+                  <i class="fas fa-calendar-days text-primary-glow me-2"></i>
+                  Días de Juego y Rangos de Horario
                 </h6>
 
                 <div class="d-flex flex-column gap-2" id="progDaysContainer">
                   <!-- Viernes -->
-                  <div class="p-3 rounded-4 day-config-card" id="card_day_Viernes" style="background: rgba(46, 204, 113, 0.04); border: 1px solid rgba(46, 204, 113, 0.4); transition: all 0.3s ease;">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                      <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
-                        <input class="form-check-input" type="checkbox" role="switch" id="check_day_Viernes" checked onchange="toggleDiaProgramacion('Viernes')" style="width: 2.4em; height: 1.2em; cursor: pointer;">
-                        <label class="form-check-label text-white fw-bold fs-6 ms-2" for="check_day_Viernes" style="cursor: pointer;">
+                  <div
+                    class="p-3 rounded-4 day-config-card"
+                    id="card_day_Viernes"
+                    style="
+                      background: rgba(46, 204, 113, 0.04);
+                      border: 1px solid rgba(46, 204, 113, 0.4);
+                      transition: all 0.3s ease;
+                    "
+                  >
+                    <div
+                      class="d-flex flex-wrap justify-content-between align-items-center gap-3"
+                    >
+                      <div
+                        class="form-check form-switch d-flex align-items-center gap-2 mb-0"
+                      >
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          id="check_day_Viernes"
+                          checked
+                          onchange="toggleDiaProgramacion('Viernes')"
+                          style="width: 2.4em; height: 1.2em; cursor: pointer"
+                        />
+                        <label
+                          class="form-check-label text-white fw-bold fs-6 ms-2"
+                          for="check_day_Viernes"
+                          style="cursor: pointer"
+                        >
                           🌙 VIERNES (Nocturno)
                         </label>
                       </div>
-                      <div class="d-flex align-items-center gap-2 flex-wrap" id="controls_day_Viernes">
+                      <div
+                        class="d-flex align-items-center gap-2 flex-wrap"
+                        id="controls_day_Viernes"
+                      >
                         <div class="d-flex align-items-center gap-1">
                           <span class="text-white-50 small">Inicio:</span>
-                          <input type="time" id="start_day_Viernes" value="18:20" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                          <input
+                            type="time"
+                            id="start_day_Viernes"
+                            value="18:20"
+                            class="input-elite-sm text-center"
+                            onchange="recalcularCapacidadProgramacion()"
+                            style="width: 110px"
+                          />
                         </div>
                         <div class="d-flex align-items-center gap-1">
                           <span class="text-white-50 small">Fin:</span>
-                          <input type="time" id="end_day_Viernes" value="22:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                          <input
+                            type="time"
+                            id="end_day_Viernes"
+                            value="22:00"
+                            class="input-elite-sm text-center"
+                            onchange="recalcularCapacidadProgramacion()"
+                            style="width: 110px"
+                          />
                         </div>
-                        <span id="slots_badge_Viernes" class="badge rounded-pill px-3 py-2" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; font-size: 0.75rem;">
+                        <span
+                          id="slots_badge_Viernes"
+                          class="badge rounded-pill px-3 py-2"
+                          style="
+                            background: rgba(46, 204, 113, 0.15);
+                            border: 1px solid rgba(46, 204, 113, 0.4);
+                            color: #2ecc71;
+                            font-size: 0.75rem;
+                          "
+                        >
                           2 cupos
                         </span>
                       </div>
@@ -1023,24 +1372,74 @@
                   </div>
 
                   <!-- Sábado -->
-                  <div class="p-3 rounded-4 day-config-card" id="card_day_Sabado" style="background: rgba(46, 204, 113, 0.04); border: 1px solid rgba(46, 204, 113, 0.4); transition: all 0.3s ease;">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                      <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
-                        <input class="form-check-input" type="checkbox" role="switch" id="check_day_Sabado" checked onchange="toggleDiaProgramacion('Sabado')" style="width: 2.4em; height: 1.2em; cursor: pointer;">
-                        <label class="form-check-label text-white fw-bold fs-6 ms-2" for="check_day_Sabado" style="cursor: pointer;">
+                  <div
+                    class="p-3 rounded-4 day-config-card"
+                    id="card_day_Sabado"
+                    style="
+                      background: rgba(46, 204, 113, 0.04);
+                      border: 1px solid rgba(46, 204, 113, 0.4);
+                      transition: all 0.3s ease;
+                    "
+                  >
+                    <div
+                      class="d-flex flex-wrap justify-content-between align-items-center gap-3"
+                    >
+                      <div
+                        class="form-check form-switch d-flex align-items-center gap-2 mb-0"
+                      >
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          id="check_day_Sabado"
+                          checked
+                          onchange="toggleDiaProgramacion('Sabado')"
+                          style="width: 2.4em; height: 1.2em; cursor: pointer"
+                        />
+                        <label
+                          class="form-check-label text-white fw-bold fs-6 ms-2"
+                          for="check_day_Sabado"
+                          style="cursor: pointer"
+                        >
                           ☀️ SÁBADO
                         </label>
                       </div>
-                      <div class="d-flex align-items-center gap-2 flex-wrap" id="controls_day_Sabado">
+                      <div
+                        class="d-flex align-items-center gap-2 flex-wrap"
+                        id="controls_day_Sabado"
+                      >
                         <div class="d-flex align-items-center gap-1">
                           <span class="text-white-50 small">Inicio:</span>
-                          <input type="time" id="start_day_Sabado" value="08:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                          <input
+                            type="time"
+                            id="start_day_Sabado"
+                            value="08:00"
+                            class="input-elite-sm text-center"
+                            onchange="recalcularCapacidadProgramacion()"
+                            style="width: 110px"
+                          />
                         </div>
                         <div class="d-flex align-items-center gap-1">
                           <span class="text-white-50 small">Fin:</span>
-                          <input type="time" id="end_day_Sabado" value="21:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                          <input
+                            type="time"
+                            id="end_day_Sabado"
+                            value="21:00"
+                            class="input-elite-sm text-center"
+                            onchange="recalcularCapacidadProgramacion()"
+                            style="width: 110px"
+                          />
                         </div>
-                        <span id="slots_badge_Sabado" class="badge rounded-pill px-3 py-2" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; font-size: 0.75rem;">
+                        <span
+                          id="slots_badge_Sabado"
+                          class="badge rounded-pill px-3 py-2"
+                          style="
+                            background: rgba(46, 204, 113, 0.15);
+                            border: 1px solid rgba(46, 204, 113, 0.4);
+                            color: #2ecc71;
+                            font-size: 0.75rem;
+                          "
+                        >
                           7 cupos
                         </span>
                       </div>
@@ -1048,24 +1447,74 @@
                   </div>
 
                   <!-- Domingo -->
-                  <div class="p-3 rounded-4 day-config-card" id="card_day_Domingo" style="background: rgba(46, 204, 113, 0.04); border: 1px solid rgba(46, 204, 113, 0.4); transition: all 0.3s ease;">
-                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
-                      <div class="form-check form-switch d-flex align-items-center gap-2 mb-0">
-                        <input class="form-check-input" type="checkbox" role="switch" id="check_day_Domingo" checked onchange="toggleDiaProgramacion('Domingo')" style="width: 2.4em; height: 1.2em; cursor: pointer;">
-                        <label class="form-check-label text-white fw-bold fs-6 ms-2" for="check_day_Domingo" style="cursor: pointer;">
+                  <div
+                    class="p-3 rounded-4 day-config-card"
+                    id="card_day_Domingo"
+                    style="
+                      background: rgba(46, 204, 113, 0.04);
+                      border: 1px solid rgba(46, 204, 113, 0.4);
+                      transition: all 0.3s ease;
+                    "
+                  >
+                    <div
+                      class="d-flex flex-wrap justify-content-between align-items-center gap-3"
+                    >
+                      <div
+                        class="form-check form-switch d-flex align-items-center gap-2 mb-0"
+                      >
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          role="switch"
+                          id="check_day_Domingo"
+                          checked
+                          onchange="toggleDiaProgramacion('Domingo')"
+                          style="width: 2.4em; height: 1.2em; cursor: pointer"
+                        />
+                        <label
+                          class="form-check-label text-white fw-bold fs-6 ms-2"
+                          for="check_day_Domingo"
+                          style="cursor: pointer"
+                        >
                           🏆 DOMINGO
                         </label>
                       </div>
-                      <div class="d-flex align-items-center gap-2 flex-wrap" id="controls_day_Domingo">
+                      <div
+                        class="d-flex align-items-center gap-2 flex-wrap"
+                        id="controls_day_Domingo"
+                      >
                         <div class="d-flex align-items-center gap-1">
                           <span class="text-white-50 small">Inicio:</span>
-                          <input type="time" id="start_day_Domingo" value="08:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                          <input
+                            type="time"
+                            id="start_day_Domingo"
+                            value="08:00"
+                            class="input-elite-sm text-center"
+                            onchange="recalcularCapacidadProgramacion()"
+                            style="width: 110px"
+                          />
                         </div>
                         <div class="d-flex align-items-center gap-1">
                           <span class="text-white-50 small">Fin:</span>
-                          <input type="time" id="end_day_Domingo" value="19:00" class="input-elite-sm text-center" onchange="recalcularCapacidadProgramacion()" style="width: 110px;">
+                          <input
+                            type="time"
+                            id="end_day_Domingo"
+                            value="19:00"
+                            class="input-elite-sm text-center"
+                            onchange="recalcularCapacidadProgramacion()"
+                            style="width: 110px"
+                          />
                         </div>
-                        <span id="slots_badge_Domingo" class="badge rounded-pill px-3 py-2" style="background: rgba(46, 204, 113, 0.15); border: 1px solid rgba(46, 204, 113, 0.4); color: #2ecc71; font-size: 0.75rem;">
+                        <span
+                          id="slots_badge_Domingo"
+                          class="badge rounded-pill px-3 py-2"
+                          style="
+                            background: rgba(46, 204, 113, 0.15);
+                            border: 1px solid rgba(46, 204, 113, 0.4);
+                            color: #2ecc71;
+                            font-size: 0.75rem;
+                          "
+                        >
                           6 cupos
                         </span>
                       </div>
@@ -1077,67 +1526,172 @@
               <!-- PESTAÑA 2: HORARIOS PREFERENCIALES Y OFICIOS -->
               <div id="tabEspecialesContent" class="d-none">
                 <!-- Filtros y Búsqueda -->
-                <div class="p-3 mb-2 rounded-4" style="background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);">
+                <div
+                  class="p-3 mb-2 rounded-4"
+                  style="
+                    background: rgba(255, 255, 255, 0.03);
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                  "
+                >
                   <div class="row g-2 align-items-center">
                     <div class="col-md-5">
                       <div class="input-group input-group-sm">
-                        <span class="input-group-text bg-dark border-secondary text-white-50"><i class="fas fa-search"></i></span>
-                        <input type="text" id="filtroPartidosEspeciales" placeholder="Buscar equipo..." class="input-elite-sm form-control" oninput="filtrarPartidosEspeciales()">
+                        <span
+                          class="input-group-text bg-dark border-secondary text-white-50"
+                          ><i class="fas fa-search"></i
+                        ></span>
+                        <input
+                          type="text"
+                          id="filtroPartidosEspeciales"
+                          placeholder="Buscar equipo..."
+                          class="input-elite-sm form-control"
+                          oninput="filtrarPartidosEspeciales()"
+                        />
                       </div>
                     </div>
-                    <div class="col-md-7 d-flex justify-content-md-end gap-1 flex-wrap" id="filtrosCategoriaEspeciales">
-                      <button type="button" class="btn btn-outline-secondary text-white btn-sm active px-3" onclick="filtrarCategoriaEspeciales('TODAS', this)">Todas</button>
-                      <button type="button" class="btn btn-outline-secondary text-white btn-sm px-3" onclick="filtrarCategoriaEspeciales('MÁXIMA', this)">Máxima</button>
-                      <button type="button" class="btn btn-outline-secondary text-white btn-sm px-3" onclick="filtrarCategoriaEspeciales('PRIMERA', this)">Primera</button>
-                      <button type="button" class="btn btn-outline-secondary text-white btn-sm px-3" onclick="filtrarCategoriaEspeciales('FEMENINO', this)">Femenino</button>
+                    <div
+                      class="col-md-7 d-flex justify-content-md-end gap-1 flex-wrap"
+                      id="filtrosCategoriaEspeciales"
+                    >
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary text-white btn-sm active px-3"
+                        onclick="filtrarCategoriaEspeciales('TODAS', this)"
+                      >
+                        Todas
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary text-white btn-sm px-3"
+                        onclick="filtrarCategoriaEspeciales('MÁXIMA', this)"
+                      >
+                        Máxima
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary text-white btn-sm px-3"
+                        onclick="filtrarCategoriaEspeciales('PRIMERA', this)"
+                      >
+                        Primera
+                      </button>
+                      <button
+                        type="button"
+                        class="btn btn-outline-secondary text-white btn-sm px-3"
+                        onclick="filtrarCategoriaEspeciales('FEMENINO', this)"
+                      >
+                        Femenino
+                      </button>
                     </div>
                   </div>
                 </div>
 
                 <!-- Lista de Partidos Especiales -->
-                <div id="listaPartidosEspeciales" style="max-height: 320px; overflow-y: auto; padding-right: 4px;" class="d-flex flex-column gap-2 custom-scrollbar">
+                <div
+                  id="listaPartidosEspeciales"
+                  style="
+                    max-height: 320px;
+                    overflow-y: auto;
+                    padding-right: 4px;
+                  "
+                  class="d-flex flex-column gap-2 custom-scrollbar"
+                >
                   <!-- Se genera dinámicamente con renderListaPartidosEspeciales() -->
                 </div>
               </div>
 
               <!-- Resumen de Capacidad vs Partidos -->
-              <div class="mt-3 p-3 rounded-4" id="progSummaryBox" style="background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.08);">
-                <div class="row align-items-center g-2 text-center text-md-start">
+              <div
+                class="mt-3 p-3 rounded-4"
+                id="progSummaryBox"
+                style="
+                  background: rgba(0, 0, 0, 0.5);
+                  border: 1px solid rgba(255, 255, 255, 0.08);
+                "
+              >
+                <div
+                  class="row align-items-center g-2 text-center text-md-start"
+                >
                   <div class="col-md-7">
-                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 flex-wrap">
+                    <div
+                      class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 flex-wrap"
+                    >
                       <div>
                         <div class="text-white-50 small">Total Partidos</div>
-                        <div class="text-white fw-900 fs-5" id="progTotalMatchesCount">0</div>
+                        <div
+                          class="text-white fw-900 fs-5"
+                          id="progTotalMatchesCount"
+                        >
+                          0
+                        </div>
                       </div>
-                      <div class="vr bg-secondary opacity-25 d-none d-md-block" style="height: 30px;"></div>
+                      <div
+                        class="vr bg-secondary opacity-25 d-none d-md-block"
+                        style="height: 30px"
+                      ></div>
                       <div>
                         <div class="text-warning small">⭐ Preferenciales</div>
-                        <div class="text-warning fw-900 fs-5" id="progTotalPrefCount">0</div>
+                        <div
+                          class="text-warning fw-900 fs-5"
+                          id="progTotalPrefCount"
+                        >
+                          0
+                        </div>
                       </div>
-                      <div class="vr bg-secondary opacity-25 d-none d-md-block" style="height: 30px;"></div>
+                      <div
+                        class="vr bg-secondary opacity-25 d-none d-md-block"
+                        style="height: 30px"
+                      ></div>
                       <div>
                         <div class="text-danger small">🚫 Por Oficio</div>
-                        <div class="text-danger fw-900 fs-5" id="progTotalNoProgCount">0</div>
+                        <div
+                          class="text-danger fw-900 fs-5"
+                          id="progTotalNoProgCount"
+                        >
+                          0
+                        </div>
                       </div>
-                      <div class="vr bg-secondary opacity-25 d-none d-md-block" style="height: 30px;"></div>
+                      <div
+                        class="vr bg-secondary opacity-25 d-none d-md-block"
+                        style="height: 30px"
+                      ></div>
                       <div>
-                        <div class="text-primary-glow small">🎲 Automáticos</div>
-                        <div class="text-primary-glow fw-900 fs-5" id="progTotalAutoCount">0</div>
+                        <div class="text-primary-glow small">
+                          🎲 Automáticos
+                        </div>
+                        <div
+                          class="text-primary-glow fw-900 fs-5"
+                          id="progTotalAutoCount"
+                        >
+                          0
+                        </div>
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-5 text-center text-md-end" id="progStatusMessage">
+                  <div
+                    class="col-md-5 text-center text-md-end"
+                    id="progStatusMessage"
+                  >
                     <!-- Estado dinámico -->
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="modal-footer border-0 pt-1 d-flex justify-content-between">
-              <button type="button" class="btn btn-outline-secondary px-4 py-2 rounded-pill text-white fw-bold" data-bs-dismiss="modal">
+            <div
+              class="modal-footer border-0 pt-1 d-flex justify-content-between"
+            >
+              <button
+                type="button"
+                class="btn btn-outline-secondary px-4 py-2 rounded-pill text-white fw-bold"
+                data-bs-dismiss="modal"
+              >
                 Cancelar
               </button>
-              <button type="button" class="btn-schedule-premium d-flex align-items-center gap-2 px-4 py-2" onclick="ejecutarProgramacionPersonalizada()">
+              <button
+                type="button"
+                class="btn-schedule-premium d-flex align-items-center gap-2 px-4 py-2"
+                onclick="ejecutarProgramacionPersonalizada()"
+              >
                 <i class="fas fa-bolt"></i>
                 <span>Programar Jornada</span>
               </button>
@@ -1155,7 +1709,6 @@
         </div>
       </div>
     </div>
-
 
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.9.1/firebase-firestore.js"></script>
@@ -1253,12 +1806,29 @@
       };
 
       function computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat) {
-        const normCat = (cat || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+        const normCat = (cat || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toUpperCase()
+          .trim();
         const etiqueta = (m.etiqueta || m.tag || "").toUpperCase();
-        
+
         // Determinar Fase / Vuelta
-        const is1raVuelta = etiqueta.includes("1RA") || etiqueta.includes("1ERA") || (!etiqueta.includes("2DA") && !etiqueta.includes("LIGUILLA") && !etiqueta.includes("SEMI") && !etiqueta.includes("FINAL") && etapaNum <= 13);
-        const is2daVuelta = etiqueta.includes("2DA") || (!is1raVuelta && !etiqueta.includes("LIGUILLA") && !etiqueta.includes("SEMI") && !etiqueta.includes("FINAL") && etapaNum <= 26);
+        const is1raVuelta =
+          etiqueta.includes("1RA") ||
+          etiqueta.includes("1ERA") ||
+          (!etiqueta.includes("2DA") &&
+            !etiqueta.includes("LIGUILLA") &&
+            !etiqueta.includes("SEMI") &&
+            !etiqueta.includes("FINAL") &&
+            etapaNum <= 13);
+        const is2daVuelta =
+          etiqueta.includes("2DA") ||
+          (!is1raVuelta &&
+            !etiqueta.includes("LIGUILLA") &&
+            !etiqueta.includes("SEMI") &&
+            !etiqueta.includes("FINAL") &&
+            etapaNum <= 26);
         const isLiguilla = etiqueta.includes("LIGUILLA");
         const isSemi = etiqueta.includes("SEMI");
         const isFinal = etiqueta.includes("FINAL");
@@ -1275,7 +1845,7 @@
             let offset = 13;
             if (normCat.includes("MAXIMA")) offset = 9;
             else if (normCat === "FEMENINO") offset = 9;
-            fechaRelativa = etapaNum > offset ? (etapaNum - offset) : etapaNum;
+            fechaRelativa = etapaNum > offset ? etapaNum - offset : etapaNum;
           }
         }
 
@@ -1287,16 +1857,25 @@
           } else if (normCat === "FEMENINO") {
             // FEMENINO juega en semanas impares (J1, J3, J5, J7, J9, J11, J13)
             const mapFem1 = [1, 3, 5, 7, 9, 11, 13, 13, 13];
-            const idx = Math.min(mapFem1.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
+            const idx = Math.min(
+              mapFem1.length - 1,
+              Math.max(0, (fechaRelativa || etapaNum) - 1),
+            );
             return mapFem1[idx];
           } else if (normCat.includes("MAXIMA")) {
             // MÁXIMA jugó Fecha 1 en J1 (inaugural), Fecha 2 en J2 (oficial), y luego alterna en semanas pares (J4, J6, J8, J10, J12) y remata en J13
             const mapMax1 = [1, 2, 4, 6, 8, 10, 12, 13, 13];
-            const idx = Math.min(mapMax1.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
+            const idx = Math.min(
+              mapMax1.length - 1,
+              Math.max(0, (fechaRelativa || etapaNum) - 1),
+            );
             return mapMax1[idx];
           } else {
             const mapGeneric = [1, 3, 5, 7, 9, 11, 13];
-            const idx = Math.min(mapGeneric.length - 1, Math.max(0, (fechaRelativa || etapaNum) - 1));
+            const idx = Math.min(
+              mapGeneric.length - 1,
+              Math.max(0, (fechaRelativa || etapaNum) - 1),
+            );
             return mapGeneric[idx];
           }
         } else if (is2daVuelta) {
@@ -1308,12 +1887,18 @@
           } else if (normCat.includes("MAXIMA")) {
             // MÁXIMA juega en semanas pares de 2da vuelta (J14, J16, J18, J20, J22, J24)
             const mapMax2 = [14, 16, 18, 20, 22, 24];
-            const idx = Math.min(mapMax2.length - 1, Math.max(0, (fechaRelativa || 1) - 1));
+            const idx = Math.min(
+              mapMax2.length - 1,
+              Math.max(0, (fechaRelativa || 1) - 1),
+            );
             return mapMax2[idx];
           } else if (normCat === "FEMENINO") {
             // FEMENINO juega en semanas impares de 2da vuelta (J15, J17, J19, J21, J23, J24)
             const mapFem2 = [15, 17, 19, 21, 23, 24, 24, 24, 24];
-            const idx = Math.min(mapFem2.length - 1, Math.max(0, (fechaRelativa || 1) - 1));
+            const idx = Math.min(
+              mapFem2.length - 1,
+              Math.max(0, (fechaRelativa || 1) - 1),
+            );
             return mapFem2[idx];
           } else {
             const r = Math.min(11, Math.max(1, fechaRelativa || 1));
@@ -1333,23 +1918,35 @@
       }
 
       function getCategoryBadge(cat) {
-        const norm = (cat || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-        if (norm.includes("MAXIMA")) return `<span class="badge-cat-maxima">MÁXIMA</span>`;
-        if (norm === "PRIMERA") return `<span class="badge-cat-primera">PRIMERA</span>`;
-        if (norm === "FEMENINO") return `<span class="badge-cat-femenino">FEMENINO</span>`;
+        const norm = (cat || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toUpperCase();
+        if (norm.includes("MAXIMA"))
+          return `<span class="badge-cat-maxima">MÁXIMA</span>`;
+        if (norm === "PRIMERA")
+          return `<span class="badge-cat-primera">PRIMERA</span>`;
+        if (norm === "FEMENINO")
+          return `<span class="badge-cat-femenino">FEMENINO</span>`;
         return `<span class="badge bg-secondary">${cat}</span>`;
       }
 
       function openModalCalendarioMaestro() {
-        const modal = new bootstrap.Modal(document.getElementById("modalCalendarioMaestro"));
+        const modal = new bootstrap.Modal(
+          document.getElementById("modalCalendarioMaestro"),
+        );
         modal.show();
       }
 
       function reaplicarSincronizacionMaestra() {
         if (!fixturesMap || fixturesMap.size === 0) {
-          return Swal.fire("Aviso", "No hay fixtures cargados para sincronizar.", "info");
+          return Swal.fire(
+            "Aviso",
+            "No hay fixtures cargados para sincronizar.",
+            "info",
+          );
         }
-        
+
         fixturesMap.forEach((meta) => {
           const cat = meta.category;
           let totalEtapasCat = 0;
@@ -1360,7 +1957,12 @@
 
           meta.data.forEach((m) => {
             const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-            m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+            m.jornada = computeSynchronizedJornada(
+              cat,
+              m,
+              etapaNum,
+              totalEtapasCat,
+            );
           });
         });
 
@@ -1371,7 +1973,7 @@
           icon: "success",
           confirmButtonColor: "#2ecc71",
           background: "#121212",
-          color: "#ffffff"
+          color: "#ffffff",
         });
       }
 
@@ -1421,7 +2023,12 @@
 
             fix.data.forEach((m) => {
               const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+              m.jornada = computeSynchronizedJornada(
+                cat,
+                m,
+                etapaNum,
+                totalEtapasCat,
+              );
             });
 
             fixturesMap.set(fix.id, {
@@ -1453,11 +2060,20 @@
           let jornadaCatMatches = {};
 
           fixturesMap.forEach((meta) => {
-            const catNorm = (meta.category || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+            const catNorm = (meta.category || "")
+              .normalize("NFD")
+              .replace(/[\u0300-\u036f]/g, "")
+              .toUpperCase();
             meta.data.forEach((x) => {
               if (x.jornada > maxJ) maxJ = x.jornada;
-              if (!jornadaMatchesCount[x.jornada]) jornadaMatchesCount[x.jornada] = 0;
-              if (!jornadaCatMatches[x.jornada]) jornadaCatMatches[x.jornada] = { MAXIMA: 0, PRIMERA: 0, FEMENINO: 0 };
+              if (!jornadaMatchesCount[x.jornada])
+                jornadaMatchesCount[x.jornada] = 0;
+              if (!jornadaCatMatches[x.jornada])
+                jornadaCatMatches[x.jornada] = {
+                  MAXIMA: 0,
+                  PRIMERA: 0,
+                  FEMENINO: 0,
+                };
 
               if (
                 !x.isRest &&
@@ -1465,9 +2081,12 @@
                 x.visitor !== "DESCANSA"
               ) {
                 jornadaMatchesCount[x.jornada]++;
-                if (catNorm.includes("MAXIMA")) jornadaCatMatches[x.jornada].MAXIMA++;
-                else if (catNorm === "PRIMERA") jornadaCatMatches[x.jornada].PRIMERA++;
-                else if (catNorm === "FEMENINO") jornadaCatMatches[x.jornada].FEMENINO++;
+                if (catNorm.includes("MAXIMA"))
+                  jornadaCatMatches[x.jornada].MAXIMA++;
+                else if (catNorm === "PRIMERA")
+                  jornadaCatMatches[x.jornada].PRIMERA++;
+                else if (catNorm === "FEMENINO")
+                  jornadaCatMatches[x.jornada].FEMENINO++;
               }
             });
           });
@@ -1475,10 +2094,15 @@
           grid.innerHTML = "";
           for (let j = 1; j <= maxJ; j++) {
             const count = jornadaMatchesCount[j] || 0;
-            const catCounts = jornadaCatMatches[j] || { MAXIMA: 0, PRIMERA: 0, FEMENINO: 0 };
-            const calInfo = CALENDARIO_OFICIAL[j] || { 
-              date: `Semana ${j}`, 
-              vuelta: j <= 13 ? "1ra Vuelta" : (j <= 24 ? "2da Vuelta" : "Fase Final") 
+            const catCounts = jornadaCatMatches[j] || {
+              MAXIMA: 0,
+              PRIMERA: 0,
+              FEMENINO: 0,
+            };
+            const calInfo = CALENDARIO_OFICIAL[j] || {
+              date: `Semana ${j}`,
+              vuelta:
+                j <= 13 ? "1ra Vuelta" : j <= 24 ? "2da Vuelta" : "Fase Final",
             };
             const isFinVuelta = calInfo.vuelta.includes("Fin");
 
@@ -1487,7 +2111,7 @@
               `
                 <div class="jornada-card" onclick="selectJornada(${j})">
                   <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span class="badge ${isFinVuelta ? 'bg-warning text-dark fw-bold' : 'bg-dark border border-secondary text-white-50'}" style="font-size: 0.68rem; border-radius: 6px;">
+                    <span class="badge ${isFinVuelta ? "bg-warning text-dark fw-bold" : "bg-dark border border-secondary text-white-50"}" style="font-size: 0.68rem; border-radius: 6px;">
                       ${calInfo.vuelta}
                     </span>
                     <span class="badge bg-dark-glass text-light border border-secondary" style="font-size: 0.72rem; border-radius: 6px;">
@@ -1498,9 +2122,9 @@
                   <h5 class="fw-bold mb-2">Jornada ${j}</h5>
                   
                   <div class="d-flex justify-content-center gap-1 flex-wrap mb-2">
-                    ${catCounts.MAXIMA > 0 ? `<span class="badge" style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); font-size: 0.65rem;">MÁX: ${catCounts.MAXIMA}</span>` : ''}
-                    ${catCounts.PRIMERA > 0 ? `<span class="badge" style="background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); font-size: 0.65rem;">PRI: ${catCounts.PRIMERA}</span>` : ''}
-                    ${catCounts.FEMENINO > 0 ? `<span class="badge" style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); font-size: 0.65rem;">FEM: ${catCounts.FEMENINO}</span>` : ''}
+                    ${catCounts.MAXIMA > 0 ? `<span class="badge" style="background: rgba(46, 204, 113, 0.15); color: #2ecc71; border: 1px solid rgba(46, 204, 113, 0.3); font-size: 0.65rem;">MÁX: ${catCounts.MAXIMA}</span>` : ""}
+                    ${catCounts.PRIMERA > 0 ? `<span class="badge" style="background: rgba(52, 152, 219, 0.15); color: #3498db; border: 1px solid rgba(52, 152, 219, 0.3); font-size: 0.65rem;">PRI: ${catCounts.PRIMERA}</span>` : ""}
+                    ${catCounts.FEMENINO > 0 ? `<span class="badge" style="background: rgba(231, 76, 60, 0.15); color: #e74c3c; border: 1px solid rgba(231, 76, 60, 0.3); font-size: 0.65rem;">FEM: ${catCounts.FEMENINO}</span>` : ""}
                   </div>
 
                   <span class="match-count">${count} encuentros</span>
@@ -1587,7 +2211,10 @@
 
       function saveProgConfig(config) {
         try {
-          localStorage.setItem("ldbaa_custom_prog_config", JSON.stringify(config));
+          localStorage.setItem(
+            "ldbaa_custom_prog_config",
+            JSON.stringify(config),
+          );
         } catch (e) {
           console.error(e);
         }
@@ -1635,114 +2262,867 @@
       }
 
       function normalizeTeamText(s) {
-        return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+        return (s || "")
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .toUpperCase()
+          .trim();
       }
 
       function matchTeamFlex(dbTeam, target) {
         const nDb = normalizeTeamText(dbTeam).replace(/PALMERAS/g, "PALMEIRAS");
-        const nTarget = normalizeTeamText(target).replace(/PALMERAS/g, "PALMEIRAS");
+        const nTarget = normalizeTeamText(target).replace(
+          /PALMERAS/g,
+          "PALMEIRAS",
+        );
         if (nDb === nTarget) return true;
-        const cleanDb = nDb.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|S\.D\.|SD)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
-        const cleanTarget = nTarget.replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|S\.D\.|SD)\b/g, "").replace(/[^A-Z0-9]/g, "").trim();
+        const cleanDb = nDb
+          .replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|S\.D\.|SD)\b/g, "")
+          .replace(/[^A-Z0-9]/g, "")
+          .trim();
+        const cleanTarget = nTarget
+          .replace(/\b(FC|SC|C\.D\.|CD|CLUB|DEPORTIVO|S\.D\.|SD)\b/g, "")
+          .replace(/[^A-Z0-9]/g, "")
+          .trim();
         if (cleanDb === cleanTarget) return true;
-        if (cleanDb.includes(cleanTarget) || cleanTarget.includes(cleanDb)) return true;
+        if (cleanDb.includes(cleanTarget) || cleanTarget.includes(cleanDb))
+          return true;
         return false;
       }
 
       const officialJornada1Data = [
         // VIERNES 02-10-2026
-        { cat: "FEMENINO", local: "PALMEIRAS", visitor: "DEP SPENCER", day: "Viernes", time: "18:20", camL: "1", camV: "3", vocal: "AC LATINOS", veedor: "DINAMO FC" },
-        { cat: "PRIMERA", local: "AC LATINOS", visitor: "DINAMO", day: "Viernes", time: "20:00", camL: "2", camV: "4", vocal: "PALMEIRAS", veedor: "DEP SPENCER" },
+        {
+          cat: "FEMENINO",
+          local: "PALMEIRAS",
+          visitor: "DEP SPENCER",
+          day: "Viernes",
+          time: "18:20",
+          camL: "1",
+          camV: "3",
+          vocal: "AC LATINOS",
+          veedor: "DINAMO FC",
+        },
+        {
+          cat: "PRIMERA",
+          local: "AC LATINOS",
+          visitor: "DINAMO",
+          day: "Viernes",
+          time: "20:00",
+          camL: "2",
+          camV: "4",
+          vocal: "PALMEIRAS",
+          veedor: "DEP SPENCER",
+        },
 
         // SÁBADO 03-10-2026
-        { cat: "FEMENINO", local: "VENTANAS", visitor: "PORTOVIEJO", day: "Sábado", time: "08:00", camL: "1", camV: "3", vocal: "ALMAGUER", veedor: "3 DE JULIO" },
-        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "ALMAGUER", day: "Sábado", time: "09:40", camL: "2", camV: "4", vocal: "PORTOVIEJO", veedor: "VENTANAS" },
-        { cat: "FEMENINO", local: "ALIANZA JUVENIL", visitor: "AC LATINOS", day: "Sábado", time: "11:20", camL: "1", camV: "3", vocal: "RIVER PLATE", veedor: "NAPOLES" },
-        { cat: "PRIMERA", local: "NAPOLES", visitor: "RIVER PLATE", day: "Sábado", time: "13:00", camL: "2", camV: "4", vocal: "AC LATINOS", veedor: "ALIANZA JUVENIL" },
-        { cat: "MÁXIMA", local: "INDEPENDIENTE", visitor: "GALAXY", day: "Sábado", time: "14:40", camL: "1", camV: "3", vocal: "FLUMINENSE", veedor: "" },
-        { cat: "MÁXIMA", local: "FLUMINENSE", visitor: "PORTOVIEJO", day: "Sábado", time: "16:20", camL: "2", camV: "4", vocal: "INDEPENDIENTE", veedor: "" },
-        { cat: "PRIMERA", local: "AMAZONAS", visitor: "CHELSEA", day: "Sábado", time: "18:00", camL: "1", camV: "3", vocal: "SPENCER", veedor: "MANCHESTER" },
-        { cat: "FEMENINO", local: "SPENCER", visitor: "MANCHESTER", day: "Sábado", time: "19:40", camL: "2", camV: "4", vocal: "AMAZONAS", veedor: "CHELSEA" },
+        {
+          cat: "FEMENINO",
+          local: "VENTANAS",
+          visitor: "PORTOVIEJO",
+          day: "Sábado",
+          time: "08:00",
+          camL: "1",
+          camV: "3",
+          vocal: "ALMAGUER",
+          veedor: "3 DE JULIO",
+        },
+        {
+          cat: "PRIMERA",
+          local: "3 DE JULIO",
+          visitor: "ALMAGUER",
+          day: "Sábado",
+          time: "09:40",
+          camL: "2",
+          camV: "4",
+          vocal: "PORTOVIEJO",
+          veedor: "VENTANAS",
+        },
+        {
+          cat: "FEMENINO",
+          local: "ALIANZA JUVENIL",
+          visitor: "AC LATINOS",
+          day: "Sábado",
+          time: "11:20",
+          camL: "1",
+          camV: "3",
+          vocal: "RIVER PLATE",
+          veedor: "NAPOLES",
+        },
+        {
+          cat: "PRIMERA",
+          local: "NAPOLES",
+          visitor: "RIVER PLATE",
+          day: "Sábado",
+          time: "13:00",
+          camL: "2",
+          camV: "4",
+          vocal: "AC LATINOS",
+          veedor: "ALIANZA JUVENIL",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "INDEPENDIENTE",
+          visitor: "GALAXY",
+          day: "Sábado",
+          time: "14:40",
+          camL: "1",
+          camV: "3",
+          vocal: "FLUMINENSE",
+          veedor: "",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "FLUMINENSE",
+          visitor: "PORTOVIEJO",
+          day: "Sábado",
+          time: "16:20",
+          camL: "2",
+          camV: "4",
+          vocal: "INDEPENDIENTE",
+          veedor: "",
+        },
+        {
+          cat: "PRIMERA",
+          local: "AMAZONAS",
+          visitor: "CHELSEA",
+          day: "Sábado",
+          time: "18:00",
+          camL: "1",
+          camV: "3",
+          vocal: "SPENCER",
+          veedor: "MANCHESTER",
+        },
+        {
+          cat: "FEMENINO",
+          local: "SPENCER",
+          visitor: "MANCHESTER",
+          day: "Sábado",
+          time: "19:40",
+          camL: "2",
+          camV: "4",
+          vocal: "AMAZONAS",
+          veedor: "CHELSEA",
+        },
 
         // DOMINGO 04-10-2026
-        { cat: "PRIMERA", local: "LOS PRIMOS", visitor: "INTER", day: "Domingo", time: "08:00", camL: "1", camV: "3", vocal: "LAKERS", veedor: "MARSELLA FC" },
-        { cat: "PRIMERA", local: "LAKERS", visitor: "MARSELLA FC", day: "Domingo", time: "09:40", camL: "2", camV: "4", vocal: "INTER", veedor: "LOS PRIMOS" },
-        { cat: "MÁXIMA", local: "ESTUDIANTES", visitor: "VENTANAS", day: "Domingo", time: "13:40", camL: "2", camV: "4", vocal: "PALMEIRAS", veedor: "ARGENTINA" },
-        { cat: "MÁXIMA", local: "SOLO PANAS", visitor: "ALIANZA JUVENIL", day: "Domingo", time: "15:20", camL: "1", camV: "3", vocal: "ESTUDIANTES", veedor: "VENTANAS" },
-        { cat: "PRIMERA", local: "ARGENTINA", visitor: "PALMEIRAS", day: "Domingo", time: "17:00", camL: "2", camV: "4", vocal: "SOLO PANAS", veedor: "ALIANZA JUVENIL" }
+        {
+          cat: "PRIMERA",
+          local: "LOS PRIMOS",
+          visitor: "INTER",
+          day: "Domingo",
+          time: "08:00",
+          camL: "1",
+          camV: "3",
+          vocal: "LAKERS",
+          veedor: "MARSELLA FC",
+        },
+        {
+          cat: "PRIMERA",
+          local: "LAKERS",
+          visitor: "MARSELLA FC",
+          day: "Domingo",
+          time: "09:40",
+          camL: "2",
+          camV: "4",
+          vocal: "INTER",
+          veedor: "LOS PRIMOS",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "ESTUDIANTES",
+          visitor: "VENTANAS",
+          day: "Domingo",
+          time: "13:40",
+          camL: "2",
+          camV: "4",
+          vocal: "PALMEIRAS",
+          veedor: "ARGENTINA",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "SOLO PANAS",
+          visitor: "ALIANZA JUVENIL",
+          day: "Domingo",
+          time: "15:20",
+          camL: "1",
+          camV: "3",
+          vocal: "ESTUDIANTES",
+          veedor: "VENTANAS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "ARGENTINA",
+          visitor: "PALMEIRAS",
+          day: "Domingo",
+          time: "17:00",
+          camL: "2",
+          camV: "4",
+          vocal: "SOLO PANAS",
+          veedor: "ALIANZA JUVENIL",
+        },
       ];
 
       const officialJornada2Data = [
         // SÁBADO 10-10-2026
-        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "CHELSEA", day: "Sábado", time: "09:40", camL: "2", camV: "4", vocal: "ALMAGUER", veedor: "AC LATINOS" },
-        { cat: "PRIMERA", local: "ALMAGUER", visitor: "AC LATINOS", day: "Sábado", time: "11:20", camL: "1", camV: "3", vocal: "3 DE JULIO", veedor: "CHELSEA" },
-        { cat: "PRIMERA", local: "LAKERS", visitor: "SD ARGENTINA", day: "Sábado", time: "13:00", camL: "2", camV: "4", vocal: "MANCHESTER", veedor: "SOLO PANAS" },
-        { cat: "MÁXIMA", local: "SOLO PANAS", visitor: "MANCHESTER", day: "Sábado", time: "14:40", camL: "1", camV: "3", vocal: "SD ARGENTINA", veedor: "LAKERS" },
-        { cat: "MÁXIMA", local: "FLUMINENSE", visitor: "ALIANZA JUVENIL", day: "Sábado", time: "16:20", camL: "2", camV: "4", vocal: "PALMEIRAS", veedor: "LOS PRIMOS" },
-        { cat: "PRIMERA", local: "LOS PRIMOS", visitor: "PALMEIRAS", day: "Sábado", time: "18:00", camL: "1", camV: "3", vocal: "ALIANZA JUVENIL", veedor: "FLUMINENSE" },
+        {
+          cat: "PRIMERA",
+          local: "3 DE JULIO",
+          visitor: "CHELSEA",
+          day: "Sábado",
+          time: "09:40",
+          camL: "2",
+          camV: "4",
+          vocal: "ALMAGUER",
+          veedor: "AC LATINOS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "ALMAGUER",
+          visitor: "AC LATINOS",
+          day: "Sábado",
+          time: "11:20",
+          camL: "1",
+          camV: "3",
+          vocal: "3 DE JULIO",
+          veedor: "CHELSEA",
+        },
+        {
+          cat: "PRIMERA",
+          local: "LAKERS",
+          visitor: "SD ARGENTINA",
+          day: "Sábado",
+          time: "13:00",
+          camL: "2",
+          camV: "4",
+          vocal: "MANCHESTER",
+          veedor: "SOLO PANAS",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "SOLO PANAS",
+          visitor: "MANCHESTER",
+          day: "Sábado",
+          time: "14:40",
+          camL: "1",
+          camV: "3",
+          vocal: "SD ARGENTINA",
+          veedor: "LAKERS",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "FLUMINENSE",
+          visitor: "ALIANZA JUVENIL",
+          day: "Sábado",
+          time: "16:20",
+          camL: "2",
+          camV: "4",
+          vocal: "PALMEIRAS",
+          veedor: "LOS PRIMOS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "LOS PRIMOS",
+          visitor: "PALMEIRAS",
+          day: "Sábado",
+          time: "18:00",
+          camL: "1",
+          camV: "3",
+          vocal: "ALIANZA JUVENIL",
+          veedor: "FLUMINENSE",
+        },
 
         // DOMINGO 11-10-2026
-        { cat: "MÁXIMA", local: "GALAXY", visitor: "VENTANAS SC", day: "Domingo", time: "09:40", camL: "2", camV: "4", vocal: "AMAZONAS FC", veedor: "MARSELLA FC" },
-        { cat: "PRIMERA", local: "AMAZONAS FC", visitor: "MARSELLA FC", day: "Domingo", time: "11:20", camL: "1", camV: "3", vocal: "GALAXY", veedor: "VENTANAS SC" },
-        { cat: "PRIMERA", local: "CD NAPOLES", visitor: "INTER", day: "Domingo", time: "13:00", camL: "2", camV: "4", vocal: "RIVER PLATE", veedor: "DINAMO" },
-        { cat: "MÁXIMA", local: "PORTOVIEJO", visitor: "INDEPENDIENTE", day: "Domingo", time: "14:40", camL: "1", camV: "3", vocal: "INTER", veedor: "CD NAPOLES" },
-        { cat: "PRIMERA", local: "DINAMO", visitor: "RIVER PLATE", day: "Domingo", time: "16:20", camL: "2", camV: "4", vocal: "INDEPENDIENTE", veedor: "PORTOVIEJO" }
+        {
+          cat: "MÁXIMA",
+          local: "GALAXY",
+          visitor: "VENTANAS SC",
+          day: "Domingo",
+          time: "09:40",
+          camL: "2",
+          camV: "4",
+          vocal: "AMAZONAS FC",
+          veedor: "MARSELLA FC",
+        },
+        {
+          cat: "PRIMERA",
+          local: "AMAZONAS FC",
+          visitor: "MARSELLA FC",
+          day: "Domingo",
+          time: "11:20",
+          camL: "1",
+          camV: "3",
+          vocal: "GALAXY",
+          veedor: "VENTANAS SC",
+        },
+        {
+          cat: "PRIMERA",
+          local: "CD NAPOLES",
+          visitor: "INTER",
+          day: "Domingo",
+          time: "13:00",
+          camL: "2",
+          camV: "4",
+          vocal: "RIVER PLATE",
+          veedor: "DINAMO",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "PORTOVIEJO",
+          visitor: "INDEPENDIENTE",
+          day: "Domingo",
+          time: "14:40",
+          camL: "1",
+          camV: "3",
+          vocal: "INTER",
+          veedor: "CD NAPOLES",
+        },
+        {
+          cat: "PRIMERA",
+          local: "DINAMO",
+          visitor: "RIVER PLATE",
+          day: "Domingo",
+          time: "16:20",
+          camL: "2",
+          camV: "4",
+          vocal: "INDEPENDIENTE",
+          veedor: "PORTOVIEJO",
+        },
       ];
 
       const officialJornada4Data = [
         // SÁBADO 24-10-2026
-        { cat: "PRIMERA", local: "AMAZONAS FC", visitor: "LOS PRIMOS", day: "Sábado", time: "09:40", camL: "3", camV: "1", vocal: "INDEPENDIENTE", veedor: "VENTANAS SC" },
-        { cat: "MÁXIMA", local: "INDEPENDIENTE", visitor: "VENTANAS SC", day: "Sábado", time: "11:20", camL: "4", camV: "2", vocal: "AMAZONAS FC", veedor: "LOS PRIMOS" },
-        { cat: "PRIMERA", local: "DINAMO", visitor: "PALMEIRAS", day: "Sábado", time: "13:00", camL: "3", camV: "1", vocal: "AC LATINOS", veedor: "CHELSEA" },
-        { cat: "PRIMERA", local: "AC LATINOS", visitor: "CHELSEA", day: "Sábado", time: "14:40", camL: "4", camV: "2", vocal: "PALMEIRAS", veedor: "DINAMO" },
-        { cat: "MÁXIMA", local: "FLUMINENSE", visitor: "MANCHESTER", day: "Sábado", time: "16:20", camL: "1", camV: "3", vocal: "ALMAGUER", veedor: "MARSELLA FC" },
-        { cat: "PRIMERA", local: "ALMAGUER", visitor: "MARSELLA FC", day: "Sábado", time: "18:00", camL: "4", camV: "2", vocal: "FLUMINENSE", veedor: "MANCHESTER" },
+        {
+          cat: "PRIMERA",
+          local: "AMAZONAS FC",
+          visitor: "LOS PRIMOS",
+          day: "Sábado",
+          time: "09:40",
+          camL: "3",
+          camV: "1",
+          vocal: "INDEPENDIENTE",
+          veedor: "VENTANAS SC",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "INDEPENDIENTE",
+          visitor: "VENTANAS SC",
+          day: "Sábado",
+          time: "11:20",
+          camL: "4",
+          camV: "2",
+          vocal: "AMAZONAS FC",
+          veedor: "LOS PRIMOS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "DINAMO",
+          visitor: "PALMEIRAS",
+          day: "Sábado",
+          time: "13:00",
+          camL: "3",
+          camV: "1",
+          vocal: "AC LATINOS",
+          veedor: "CHELSEA",
+        },
+        {
+          cat: "PRIMERA",
+          local: "AC LATINOS",
+          visitor: "CHELSEA",
+          day: "Sábado",
+          time: "14:40",
+          camL: "4",
+          camV: "2",
+          vocal: "PALMEIRAS",
+          veedor: "DINAMO",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "FLUMINENSE",
+          visitor: "MANCHESTER",
+          day: "Sábado",
+          time: "16:20",
+          camL: "1",
+          camV: "3",
+          vocal: "ALMAGUER",
+          veedor: "MARSELLA FC",
+        },
+        {
+          cat: "PRIMERA",
+          local: "ALMAGUER",
+          visitor: "MARSELLA FC",
+          day: "Sábado",
+          time: "18:00",
+          camL: "4",
+          camV: "2",
+          vocal: "FLUMINENSE",
+          veedor: "MANCHESTER",
+        },
 
         // DOMINGO 25-10-2026
-        { cat: "PRIMERA", local: "RIVER PLATE", visitor: "INTER", day: "Domingo", time: "08:00", camL: "1", camV: "3", vocal: "ESTUDIANTES", veedor: "SOLO PANAS" },
-        { cat: "MÁXIMA", local: "ESTUDIANTES", visitor: "SOLO PANAS", day: "Domingo", time: "09:40", camL: "4", camV: "2", vocal: "RIVER PLATE", veedor: "INTER" },
-        { cat: "MÁXIMA", local: "PORTOVIEJO FC", visitor: "ALIANZA JUVENIL", day: "Domingo", time: "11:20", camL: "1", camV: "3", vocal: "CD NAPOLES", veedor: "LAKERS" },
-        { cat: "PRIMERA", local: "CD NAPOLES", visitor: "LAKERS", day: "Domingo", time: "13:00", camL: "2", camV: "4", vocal: "PORTOVIEJO FC", veedor: "ALIANZA JUVENIL" },
-        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "SD ARGENTINA", day: "Domingo", time: "14:40", camL: "1", camV: "3", vocal: "SPENCER", veedor: "GALAXY" },
-        { cat: "MÁXIMA", local: "CD SPENCER", visitor: "GALAXY", day: "Domingo", time: "16:20", camL: "2", camV: "4", vocal: "3 DE JULIO", veedor: "SD ARGENTINA" }
+        {
+          cat: "PRIMERA",
+          local: "RIVER PLATE",
+          visitor: "INTER",
+          day: "Domingo",
+          time: "08:00",
+          camL: "1",
+          camV: "3",
+          vocal: "ESTUDIANTES",
+          veedor: "SOLO PANAS",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "ESTUDIANTES",
+          visitor: "SOLO PANAS",
+          day: "Domingo",
+          time: "09:40",
+          camL: "4",
+          camV: "2",
+          vocal: "RIVER PLATE",
+          veedor: "INTER",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "PORTOVIEJO FC",
+          visitor: "ALIANZA JUVENIL",
+          day: "Domingo",
+          time: "11:20",
+          camL: "1",
+          camV: "3",
+          vocal: "CD NAPOLES",
+          veedor: "LAKERS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "CD NAPOLES",
+          visitor: "LAKERS",
+          day: "Domingo",
+          time: "13:00",
+          camL: "2",
+          camV: "4",
+          vocal: "PORTOVIEJO FC",
+          veedor: "ALIANZA JUVENIL",
+        },
+        {
+          cat: "PRIMERA",
+          local: "3 DE JULIO",
+          visitor: "SD ARGENTINA",
+          day: "Domingo",
+          time: "14:40",
+          camL: "1",
+          camV: "3",
+          vocal: "SPENCER",
+          veedor: "GALAXY",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "CD SPENCER",
+          visitor: "GALAXY",
+          day: "Domingo",
+          time: "16:20",
+          camL: "2",
+          camV: "4",
+          vocal: "3 DE JULIO",
+          veedor: "SD ARGENTINA",
+        },
       ];
 
       const officialJornada5Data = [
         // SÁBADO 31-10-2026
-        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "LOS PRIMOS", day: "Sábado", time: "09:40", camL: "3", camV: "1", vocal: "ALIANZA JUVENIL", veedor: "CD SPENCER" },
-        { cat: "FEMENINO", local: "ALIANZA JUVENIL", visitor: "CD SPENCER", day: "Sábado", time: "11:20", camL: "2", camV: "4", vocal: "3 DE JULIO", veedor: "LOS PRIMOS" },
-        { cat: "PRIMERA", local: "AC LATINOS", visitor: "INTER", day: "Sábado", time: "13:00", camL: "3", camV: "1", vocal: "CD NAPOLES", veedor: "AMAZONAS FC" },
-        { cat: "PRIMERA", local: "CD NAPOLES", visitor: "AMAZONAS FC", day: "Sábado", time: "14:40", camL: "4", camV: "2", vocal: "AC LATINOS", veedor: "INTER" },
-        { cat: "MÁXIMA", local: "SPENCER", visitor: "MANCHESTER", day: "Sábado", time: "16:20", camL: "1", camV: "3", vocal: "ALMAGUER", veedor: "SD ARGENTINA" },
-        { cat: "PRIMERA", local: "ALMAGUER", visitor: "SD ARGENTINA", day: "Sábado", time: "18:00", camL: "2", camV: "4", vocal: "MANCHESTER", veedor: "SPENCER" },
+        {
+          cat: "PRIMERA",
+          local: "3 DE JULIO",
+          visitor: "LOS PRIMOS",
+          day: "Sábado",
+          time: "09:40",
+          camL: "3",
+          camV: "1",
+          vocal: "ALIANZA JUVENIL",
+          veedor: "CD SPENCER",
+        },
+        {
+          cat: "FEMENINO",
+          local: "ALIANZA JUVENIL",
+          visitor: "CD SPENCER",
+          day: "Sábado",
+          time: "11:20",
+          camL: "2",
+          camV: "4",
+          vocal: "3 DE JULIO",
+          veedor: "LOS PRIMOS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "AC LATINOS",
+          visitor: "INTER",
+          day: "Sábado",
+          time: "13:00",
+          camL: "3",
+          camV: "1",
+          vocal: "CD NAPOLES",
+          veedor: "AMAZONAS FC",
+        },
+        {
+          cat: "PRIMERA",
+          local: "CD NAPOLES",
+          visitor: "AMAZONAS FC",
+          day: "Sábado",
+          time: "14:40",
+          camL: "4",
+          camV: "2",
+          vocal: "AC LATINOS",
+          veedor: "INTER",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "SPENCER",
+          visitor: "MANCHESTER",
+          day: "Sábado",
+          time: "16:20",
+          camL: "1",
+          camV: "3",
+          vocal: "ALMAGUER",
+          veedor: "SD ARGENTINA",
+        },
+        {
+          cat: "PRIMERA",
+          local: "ALMAGUER",
+          visitor: "SD ARGENTINA",
+          day: "Sábado",
+          time: "18:00",
+          camL: "2",
+          camV: "4",
+          vocal: "MANCHESTER",
+          veedor: "SPENCER",
+        },
 
         // DOMINGO 01-11-2026
-        { cat: "FEMENINO", local: "PALMEIRAS", visitor: "AC LATINOS", day: "Domingo", time: "08:00", camL: "3", camV: "1", vocal: "VENTANAS SC", veedor: "CHELSEA" },
-        { cat: "PRIMERA", local: "CHELSEA", visitor: "MARSELLA FC", day: "Domingo", time: "09:40", camL: "2", camV: "4", vocal: "PALMEIRAS", veedor: "AC LATINOS" },
-        { cat: "FEMENINO", local: "VENTANAS SC", visitor: "CHELSEA", day: "Domingo", time: "11:20", camL: "3", camV: "1", vocal: "MARSELLA FC", veedor: "CHELSEA" },
-        { cat: "FEMENINO", local: "PORTOVIEJO FC", visitor: "MANCHESTER", day: "Domingo", time: "13:00", camL: "2", camV: "4", vocal: "RIVER PLATE", veedor: "PALMEIRAS" },
-        { cat: "PRIMERA", local: "RIVER PLATE", visitor: "PALMEIRAS", day: "Domingo", time: "14:40", camL: "3", camV: "1", vocal: "PORTOVIEJO FC", veedor: "MANCHESTER" },
+        {
+          cat: "FEMENINO",
+          local: "PALMEIRAS",
+          visitor: "AC LATINOS",
+          day: "Domingo",
+          time: "08:00",
+          camL: "3",
+          camV: "1",
+          vocal: "VENTANAS SC",
+          veedor: "CHELSEA",
+        },
+        {
+          cat: "PRIMERA",
+          local: "CHELSEA",
+          visitor: "MARSELLA FC",
+          day: "Domingo",
+          time: "09:40",
+          camL: "2",
+          camV: "4",
+          vocal: "PALMEIRAS",
+          veedor: "AC LATINOS",
+        },
+        {
+          cat: "FEMENINO",
+          local: "VENTANAS SC",
+          visitor: "CHELSEA",
+          day: "Domingo",
+          time: "11:20",
+          camL: "3",
+          camV: "1",
+          vocal: "MARSELLA FC",
+          veedor: "CHELSEA",
+        },
+        {
+          cat: "FEMENINO",
+          local: "PORTOVIEJO FC",
+          visitor: "MANCHESTER",
+          day: "Domingo",
+          time: "13:00",
+          camL: "2",
+          camV: "4",
+          vocal: "RIVER PLATE",
+          veedor: "PALMEIRAS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "RIVER PLATE",
+          visitor: "PALMEIRAS",
+          day: "Domingo",
+          time: "14:40",
+          camL: "3",
+          camV: "1",
+          vocal: "PORTOVIEJO FC",
+          veedor: "MANCHESTER",
+        },
 
         // DIFERIDO (PRIMERA)
-        { cat: "PRIMERA", local: "DINAMO", visitor: "LAKERS", day: "No Programado", time: "", camL: "", camV: "", vocal: "", veedor: "", isDiferido: true, diferido: true, status: "DIFERIDO" }
+        {
+          cat: "PRIMERA",
+          local: "DINAMO",
+          visitor: "LAKERS",
+          day: "No Programado",
+          time: "",
+          camL: "",
+          camV: "",
+          vocal: "",
+          veedor: "",
+          isDiferido: true,
+          diferido: true,
+          status: "DIFERIDO",
+        },
       ];
 
       const officialJornada6Data = [
         // SÁBADO 07-11-2026
-        { cat: "MÁXIMA", local: "GALAXY", visitor: "SOLO PANAS", day: "Sábado", time: "09:40", camL: "1", camV: "3", vocal: "ALMAGUER", veedor: "LOS PRIMOS" },
-        { cat: "PRIMERA", local: "ALMAGUER", visitor: "LOS PRIMOS", day: "Sábado", time: "11:20", camL: "2", camV: "4", vocal: "GALAXY", veedor: "SOLO PANAS" },
-        { cat: "PRIMERA", local: "DINAMO", visitor: "AMAZONAS FC", day: "Sábado", time: "13:00", camL: "3", camV: "1", vocal: "RIVER PLATE", veedor: "LAKERS" },
-        { cat: "PRIMERA", local: "RIVER PLATE", visitor: "LAKERS", day: "Sábado", time: "14:40", camL: "4", camV: "2", vocal: "DINAMO", veedor: "AMAZONAS FC" },
-        { cat: "MÁXIMA", local: "FLUMINENSE", visitor: "ESTUDIANTES", day: "Sábado", time: "16:20", camL: "3", camV: "1", vocal: "CHELSEA", veedor: "SD ARGENTINA" },
-        { cat: "PRIMERA", local: "CHELSEA", visitor: "SD ARGENTINA", day: "Sábado", time: "18:00", camL: "2", camV: "4", vocal: "FLUMINENSE", veedor: "ESTUDIANTES" },
+        {
+          cat: "MÁXIMA",
+          local: "GALAXY",
+          visitor: "SOLO PANAS",
+          day: "Sábado",
+          time: "09:40",
+          camL: "1",
+          camV: "3",
+          vocal: "ALMAGUER",
+          veedor: "LOS PRIMOS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "ALMAGUER",
+          visitor: "LOS PRIMOS",
+          day: "Sábado",
+          time: "11:20",
+          camL: "2",
+          camV: "4",
+          vocal: "GALAXY",
+          veedor: "SOLO PANAS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "DINAMO",
+          visitor: "AMAZONAS FC",
+          day: "Sábado",
+          time: "13:00",
+          camL: "3",
+          camV: "1",
+          vocal: "RIVER PLATE",
+          veedor: "LAKERS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "RIVER PLATE",
+          visitor: "LAKERS",
+          day: "Sábado",
+          time: "14:40",
+          camL: "4",
+          camV: "2",
+          vocal: "DINAMO",
+          veedor: "AMAZONAS FC",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "FLUMINENSE",
+          visitor: "ESTUDIANTES",
+          day: "Sábado",
+          time: "16:20",
+          camL: "3",
+          camV: "1",
+          vocal: "CHELSEA",
+          veedor: "SD ARGENTINA",
+        },
+        {
+          cat: "PRIMERA",
+          local: "CHELSEA",
+          visitor: "SD ARGENTINA",
+          day: "Sábado",
+          time: "18:00",
+          camL: "2",
+          camV: "4",
+          vocal: "FLUMINENSE",
+          veedor: "ESTUDIANTES",
+        },
 
         // DOMINGO 08-11-2026
-        { cat: "PRIMERA", local: "AC LATINOS", visitor: "MARSELLA FC", day: "Domingo", time: "08:00", camL: "1", camV: "3", vocal: "INTER", veedor: "PALMEIRAS" },
-        { cat: "PRIMERA", local: "INTER", visitor: "PALMEIRAS", day: "Domingo", time: "09:40", camL: "2", camV: "4", vocal: "AC LATINOS", veedor: "MARSELLA FC" },
-        { cat: "MÁXIMA", local: "PORTOVIEJO FC", visitor: "MANCHESTER", day: "Domingo", time: "11:20", camL: "1", camV: "3", vocal: "CD NAPOLES", veedor: "3 DE JULIO" },
-        { cat: "PRIMERA", local: "3 DE JULIO", visitor: "CD NAPOLES", day: "Domingo", time: "13:00", camL: "2", camV: "4", vocal: "PORTOVIEJO FC", veedor: "MANCHESTER" },
-        { cat: "MÁXIMA", local: "INDEPENDIENTE", visitor: "ALIANZA JUVENIL", day: "Domingo", time: "14:40", camL: "1", camV: "3", vocal: "SPENCER", veedor: "VENTANAS SC" },
-        { cat: "MÁXIMA", local: "VENTANAS SC", visitor: "SPENCER", day: "Domingo", time: "16:20", camL: "2", camV: "4", vocal: "INDEPENDIENTE", veedor: "ALIANZA JUVENIL" }
+        {
+          cat: "PRIMERA",
+          local: "AC LATINOS",
+          visitor: "MARSELLA FC",
+          day: "Domingo",
+          time: "08:00",
+          camL: "1",
+          camV: "3",
+          vocal: "INTER",
+          veedor: "PALMEIRAS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "INTER",
+          visitor: "PALMEIRAS",
+          day: "Domingo",
+          time: "09:40",
+          camL: "2",
+          camV: "4",
+          vocal: "AC LATINOS",
+          veedor: "MARSELLA FC",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "PORTOVIEJO FC",
+          visitor: "MANCHESTER",
+          day: "Domingo",
+          time: "11:20",
+          camL: "1",
+          camV: "3",
+          vocal: "CD NAPOLES",
+          veedor: "3 DE JULIO",
+        },
+        {
+          cat: "PRIMERA",
+          local: "3 DE JULIO",
+          visitor: "CD NAPOLES",
+          day: "Domingo",
+          time: "13:00",
+          camL: "2",
+          camV: "4",
+          vocal: "PORTOVIEJO FC",
+          veedor: "MANCHESTER",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "INDEPENDIENTE",
+          visitor: "ALIANZA JUVENIL",
+          day: "Domingo",
+          time: "14:40",
+          camL: "1",
+          camV: "3",
+          vocal: "SPENCER",
+          veedor: "VENTANAS SC",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "VENTANAS SC",
+          visitor: "SPENCER",
+          day: "Domingo",
+          time: "16:20",
+          camL: "2",
+          camV: "4",
+          vocal: "INDEPENDIENTE",
+          veedor: "ALIANZA JUVENIL",
+        },
+      ];
+
+      const officialJornada7Data = [
+        // SÁBADO 14-11-2026
+        {
+          cat: "PRIMERA",
+          local: "DINAMO",
+          visitor: "3 DE JULIO",
+          day: "Sábado",
+          time: "11:20",
+          camL: "2",
+          camV: "4",
+          vocal: "MANCHESTER",
+          veedor: "PALMEIRAS",
+        },
+        {
+          cat: "PRIMERA",
+          local: "ALMAGUER",
+          visitor: "CD NAPOLES",
+          day: "Sábado",
+          time: "13:00",
+          camL: "1",
+          camV: "3",
+          vocal: "3 DE JULIO",
+          veedor: "DINAMO",
+        },
+        {
+          cat: "FEMENINO",
+          local: "PALMEIRAS",
+          visitor: "MANCHESTER",
+          day: "Sábado",
+          time: "14:40",
+          camL: "2",
+          camV: "4",
+          vocal: "CD NAPOLES",
+          veedor: "ALMAGUER",
+        },
+        {
+          cat: "FEMENINO",
+          local: "DEP SPENCER",
+          visitor: "CD SPENCER",
+          day: "Sábado",
+          time: "16:20",
+          camL: "1",
+          camV: "3",
+          vocal: "LOS PRIMOS",
+          veedor: "CHELSEA",
+        },
+        {
+          cat: "PRIMERA",
+          local: "CHELSEA",
+          visitor: "LOS PRIMOS",
+          day: "Sábado",
+          time: "18:00",
+          camL: "4",
+          camV: "2",
+          vocal: "DEP SPENCER",
+          veedor: "CD SPENCER",
+        },
+
+        // DOMINGO 15-11-2026
+        {
+          cat: "PRIMERA",
+          local: "MARSELLA FC",
+          visitor: "SD ARGENTINA",
+          day: "Domingo",
+          time: "08:00",
+          camL: "3",
+          camV: "1",
+          vocal: "AMAZONAS FC",
+          veedor: "RIVER PLATE",
+        },
+        {
+          cat: "PRIMERA",
+          local: "AC LATINOS",
+          visitor: "PALMEIRAS",
+          day: "Domingo",
+          time: "09:40",
+          camL: "2",
+          camV: "4",
+          vocal: "MARSELLA FC",
+          veedor: "SD ARGENTINA",
+        },
+        {
+          cat: "PRIMERA",
+          local: "RIVER PLATE",
+          visitor: "AMAZONAS FC",
+          day: "Domingo",
+          time: "11:20",
+          camL: "3",
+          camV: "1",
+          vocal: "PALMEIRAS",
+          veedor: "AC LATINOS",
+        },
+        {
+          cat: "MÁXIMA",
+          local: "SPENCER",
+          visitor: "ESTUDIANTES",
+          day: "Domingo",
+          time: "13:00",
+          camL: "4",
+          camV: "2",
+          vocal: "LAKERS",
+          veedor: "INTER",
+        },
+        {
+          cat: "PRIMERA",
+          local: "INTER",
+          visitor: "LAKERS",
+          day: "Domingo",
+          time: "14:40",
+          camL: "3",
+          camV: "1",
+          vocal: "ESTUDIANTES",
+          veedor: "SPENCER",
+        },
       ];
 
       function aplicarProgramacionOficialFecha1() {
@@ -1759,10 +3139,20 @@
 
           meta.data.forEach((m) => {
             const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-            const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+            const is2daVuelta =
+              tag.includes("2DA") ||
+              tag.includes("REVANCHA") ||
+              tag.includes("LIGUILLA") ||
+              tag.includes("SEMI") ||
+              tag.includes("FINAL");
             if (is2daVuelta) {
               const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+              m.jornada = computeSynchronizedJornada(
+                cat,
+                m,
+                etapaNum,
+                totalEtapasCat,
+              );
             }
           });
         });
@@ -1772,13 +3162,24 @@
           let matchFound = null;
 
           fixturesMap.forEach((meta) => {
-            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            const catMatch =
+              normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
             if (!catMatch) return;
 
             meta.data.forEach((m) => {
-              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+              if (
+                m.isRest ||
+                m.local === "DESCANSA" ||
+                m.visitor === "DESCANSA"
+              )
+                return;
               const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              const is2daVuelta =
+                tag.includes("2DA") ||
+                tag.includes("REVANCHA") ||
+                tag.includes("LIGUILLA") ||
+                tag.includes("SEMI") ||
+                tag.includes("FINAL");
               if (is2daVuelta) return;
 
               const locMatch = matchTeamFlex(m.local, item.local);
@@ -1793,7 +3194,10 @@
           });
 
           if (matchFound) {
-            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+            if (
+              matchTeamFlex(matchFound.local, item.visitor) &&
+              matchTeamFlex(matchFound.visitor, item.local)
+            ) {
               const temp = matchFound.local;
               matchFound.local = matchFound.visitor;
               matchFound.visitor = temp;
@@ -1840,10 +3244,20 @@
 
           meta.data.forEach((m) => {
             const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-            const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+            const is2daVuelta =
+              tag.includes("2DA") ||
+              tag.includes("REVANCHA") ||
+              tag.includes("LIGUILLA") ||
+              tag.includes("SEMI") ||
+              tag.includes("FINAL");
             if (is2daVuelta) {
               const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+              m.jornada = computeSynchronizedJornada(
+                cat,
+                m,
+                etapaNum,
+                totalEtapasCat,
+              );
             }
           });
         });
@@ -1853,13 +3267,24 @@
           let matchFound = null;
 
           fixturesMap.forEach((meta) => {
-            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            const catMatch =
+              normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
             if (!catMatch) return;
 
             meta.data.forEach((m) => {
-              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+              if (
+                m.isRest ||
+                m.local === "DESCANSA" ||
+                m.visitor === "DESCANSA"
+              )
+                return;
               const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              const is2daVuelta =
+                tag.includes("2DA") ||
+                tag.includes("REVANCHA") ||
+                tag.includes("LIGUILLA") ||
+                tag.includes("SEMI") ||
+                tag.includes("FINAL");
               if (is2daVuelta) return; // Solo emparejar en 1ra Vuelta
 
               const locMatch = matchTeamFlex(m.local, item.local);
@@ -1875,7 +3300,10 @@
 
           if (matchFound) {
             // Ajustar orden Local / Visitante si estuviera invertido en el fixture general
-            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+            if (
+              matchTeamFlex(matchFound.local, item.visitor) &&
+              matchTeamFlex(matchFound.visitor, item.local)
+            ) {
               const temp = matchFound.local;
               matchFound.local = matchFound.visitor;
               matchFound.visitor = temp;
@@ -1901,17 +3329,32 @@
           });
 
           meta.data.forEach((m) => {
-            if (m.jornada === 2 && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA") {
+            if (
+              m.jornada === 2 &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA"
+            ) {
               const isOfficialJ2 = officialJornada2Data.some((item) => {
-                const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(cat);
-                const locMatch = matchTeamFlex(m.local, item.local) && matchTeamFlex(m.visitor, item.visitor);
-                const locInverted = matchTeamFlex(m.local, item.visitor) && matchTeamFlex(m.visitor, item.local);
+                const catMatch =
+                  normalizeTeamText(item.cat) === normalizeTeamText(cat);
+                const locMatch =
+                  matchTeamFlex(m.local, item.local) &&
+                  matchTeamFlex(m.visitor, item.visitor);
+                const locInverted =
+                  matchTeamFlex(m.local, item.visitor) &&
+                  matchTeamFlex(m.visitor, item.local);
                 return catMatch && (locMatch || locInverted);
               });
 
               if (!isOfficialJ2) {
                 const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-                m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+                m.jornada = computeSynchronizedJornada(
+                  cat,
+                  m,
+                  etapaNum,
+                  totalEtapasCat,
+                );
               }
             }
           });
@@ -1941,19 +3384,39 @@
           let matchFound = null;
 
           fixturesMap.forEach((meta) => {
-            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            const catMatch =
+              normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
             if (!catMatch) return;
 
             meta.data.forEach((m) => {
               const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              const is2daVuelta =
+                tag.includes("2DA") ||
+                tag.includes("REVANCHA") ||
+                tag.includes("LIGUILLA") ||
+                tag.includes("SEMI") ||
+                tag.includes("FINAL");
               if (is2daVuelta) return;
 
               // En caso de que en Máxima estuviera como descanso (GALAXY vs DESCANSA)
-              if (normalizeTeamText(item.cat).includes("MAXIMA") && (matchTeamFlex(item.local, "SPENCER") || matchTeamFlex(item.visitor, "SPENCER"))) {
-                if (m.local === "DESCANSA" || m.visitor === "DESCANSA" || m.isRest) {
-                  const otherTeam = m.local === "DESCANSA" ? m.visitor : m.local;
-                  if (matchTeamFlex(otherTeam, "GALAXY") && (m.jornada === 4 || tag.includes("3") || tag.includes("FECHA 3"))) {
+              if (
+                normalizeTeamText(item.cat).includes("MAXIMA") &&
+                (matchTeamFlex(item.local, "SPENCER") ||
+                  matchTeamFlex(item.visitor, "SPENCER"))
+              ) {
+                if (
+                  m.local === "DESCANSA" ||
+                  m.visitor === "DESCANSA" ||
+                  m.isRest
+                ) {
+                  const otherTeam =
+                    m.local === "DESCANSA" ? m.visitor : m.local;
+                  if (
+                    matchTeamFlex(otherTeam, "GALAXY") &&
+                    (m.jornada === 4 ||
+                      tag.includes("3") ||
+                      tag.includes("FECHA 3"))
+                  ) {
                     m.local = "CD SPENCER";
                     m.visitor = "GALAXY";
                     m.isRest = false;
@@ -1965,7 +3428,12 @@
                 }
               }
 
-              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+              if (
+                m.isRest ||
+                m.local === "DESCANSA" ||
+                m.visitor === "DESCANSA"
+              )
+                return;
 
               const locMatch = matchTeamFlex(m.local, item.local);
               const visMatch = matchTeamFlex(m.visitor, item.visitor);
@@ -1979,7 +3447,10 @@
           });
 
           if (matchFound) {
-            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+            if (
+              matchTeamFlex(matchFound.local, item.visitor) &&
+              matchTeamFlex(matchFound.visitor, item.local)
+            ) {
               const temp = matchFound.local;
               matchFound.local = matchFound.visitor;
               matchFound.visitor = temp;
@@ -2026,10 +3497,20 @@
 
           meta.data.forEach((m) => {
             const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-            const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+            const is2daVuelta =
+              tag.includes("2DA") ||
+              tag.includes("REVANCHA") ||
+              tag.includes("LIGUILLA") ||
+              tag.includes("SEMI") ||
+              tag.includes("FINAL");
             if (is2daVuelta) {
               const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+              m.jornada = computeSynchronizedJornada(
+                cat,
+                m,
+                etapaNum,
+                totalEtapasCat,
+              );
             }
           });
         });
@@ -2039,18 +3520,33 @@
           let matchFound = null;
 
           fixturesMap.forEach((meta) => {
-            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            const catMatch =
+              normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
             if (!catMatch) return;
 
             meta.data.forEach((m) => {
               const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              const is2daVuelta =
+                tag.includes("2DA") ||
+                tag.includes("REVANCHA") ||
+                tag.includes("LIGUILLA") ||
+                tag.includes("SEMI") ||
+                tag.includes("FINAL");
               if (is2daVuelta) return;
 
               // En caso de que en Máxima estuviera como descanso (MANCHESTER vs DESCANSA o CD SPENCER)
-              if (normalizeTeamText(item.cat).includes("MAXIMA") && (matchTeamFlex(item.local, "SPENCER") || matchTeamFlex(item.visitor, "SPENCER"))) {
-                if (m.local === "DESCANSA" || m.visitor === "DESCANSA" || m.isRest) {
-                  const otherTeam = m.local === "DESCANSA" ? m.visitor : m.local;
+              if (
+                normalizeTeamText(item.cat).includes("MAXIMA") &&
+                (matchTeamFlex(item.local, "SPENCER") ||
+                  matchTeamFlex(item.visitor, "SPENCER"))
+              ) {
+                if (
+                  m.local === "DESCANSA" ||
+                  m.visitor === "DESCANSA" ||
+                  m.isRest
+                ) {
+                  const otherTeam =
+                    m.local === "DESCANSA" ? m.visitor : m.local;
                   if (matchTeamFlex(otherTeam, "MANCHESTER")) {
                     m.local = "CD SPENCER";
                     m.visitor = "MANCHESTER";
@@ -2063,7 +3559,12 @@
                 }
               }
 
-              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+              if (
+                m.isRest ||
+                m.local === "DESCANSA" ||
+                m.visitor === "DESCANSA"
+              )
+                return;
 
               const locMatch = matchTeamFlex(m.local, item.local);
               const visMatch = matchTeamFlex(m.visitor, item.visitor);
@@ -2077,7 +3578,10 @@
           });
 
           if (matchFound) {
-            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+            if (
+              matchTeamFlex(matchFound.local, item.visitor) &&
+              matchTeamFlex(matchFound.visitor, item.local)
+            ) {
               const temp = matchFound.local;
               matchFound.local = matchFound.visitor;
               matchFound.visitor = temp;
@@ -2112,17 +3616,32 @@
           });
 
           meta.data.forEach((m) => {
-            if (m.jornada === 5 && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA") {
+            if (
+              m.jornada === 5 &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA"
+            ) {
               const isOfficialJ5 = officialJornada5Data.some((item) => {
-                const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(cat);
-                const locMatch = matchTeamFlex(m.local, item.local) && matchTeamFlex(m.visitor, item.visitor);
-                const locInverted = matchTeamFlex(m.local, item.visitor) && matchTeamFlex(m.visitor, item.local);
+                const catMatch =
+                  normalizeTeamText(item.cat) === normalizeTeamText(cat);
+                const locMatch =
+                  matchTeamFlex(m.local, item.local) &&
+                  matchTeamFlex(m.visitor, item.visitor);
+                const locInverted =
+                  matchTeamFlex(m.local, item.visitor) &&
+                  matchTeamFlex(m.visitor, item.local);
                 return catMatch && (locMatch || locInverted);
               });
 
               if (!isOfficialJ5) {
                 const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-                m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+                m.jornada = computeSynchronizedJornada(
+                  cat,
+                  m,
+                  etapaNum,
+                  totalEtapasCat,
+                );
               }
             }
           });
@@ -2159,10 +3678,20 @@
 
           meta.data.forEach((m) => {
             const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-            const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+            const is2daVuelta =
+              tag.includes("2DA") ||
+              tag.includes("REVANCHA") ||
+              tag.includes("LIGUILLA") ||
+              tag.includes("SEMI") ||
+              tag.includes("FINAL");
             if (is2daVuelta) {
               const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-              m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+              m.jornada = computeSynchronizedJornada(
+                cat,
+                m,
+                etapaNum,
+                totalEtapasCat,
+              );
             }
           });
         });
@@ -2172,18 +3701,33 @@
           let matchFound = null;
 
           fixturesMap.forEach((meta) => {
-            const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            const catMatch =
+              normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
             if (!catMatch) return;
 
             meta.data.forEach((m) => {
               const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
-              const is2daVuelta = tag.includes("2DA") || tag.includes("REVANCHA") || tag.includes("LIGUILLA") || tag.includes("SEMI") || tag.includes("FINAL");
+              const is2daVuelta =
+                tag.includes("2DA") ||
+                tag.includes("REVANCHA") ||
+                tag.includes("LIGUILLA") ||
+                tag.includes("SEMI") ||
+                tag.includes("FINAL");
               if (is2daVuelta) return;
 
               // Caso especial MÁXIMA Spencer vs Ventanas SC
-              if (normalizeTeamText(item.cat).includes("MAXIMA") && (matchTeamFlex(item.local, "SPENCER") || matchTeamFlex(item.visitor, "SPENCER"))) {
-                if (m.local === "DESCANSA" || m.visitor === "DESCANSA" || m.isRest) {
-                  const otherTeam = m.local === "DESCANSA" ? m.visitor : m.local;
+              if (
+                normalizeTeamText(item.cat).includes("MAXIMA") &&
+                (matchTeamFlex(item.local, "SPENCER") ||
+                  matchTeamFlex(item.visitor, "SPENCER"))
+              ) {
+                if (
+                  m.local === "DESCANSA" ||
+                  m.visitor === "DESCANSA" ||
+                  m.isRest
+                ) {
+                  const otherTeam =
+                    m.local === "DESCANSA" ? m.visitor : m.local;
                   if (matchTeamFlex(otherTeam, "VENTANAS")) {
                     m.local = "VENTANAS SC";
                     m.visitor = "SPENCER";
@@ -2196,7 +3740,12 @@
                 }
               }
 
-              if (m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA") return;
+              if (
+                m.isRest ||
+                m.local === "DESCANSA" ||
+                m.visitor === "DESCANSA"
+              )
+                return;
 
               const locMatch = matchTeamFlex(m.local, item.local);
               const visMatch = matchTeamFlex(m.visitor, item.visitor);
@@ -2210,7 +3759,10 @@
           });
 
           if (matchFound) {
-            if (matchTeamFlex(matchFound.local, item.visitor) && matchTeamFlex(matchFound.visitor, item.local)) {
+            if (
+              matchTeamFlex(matchFound.local, item.visitor) &&
+              matchTeamFlex(matchFound.visitor, item.local)
+            ) {
               const temp = matchFound.local;
               matchFound.local = matchFound.visitor;
               matchFound.visitor = temp;
@@ -2239,17 +3791,32 @@
           });
 
           meta.data.forEach((m) => {
-            if (m.jornada === 6 && !m.isRest && m.local !== "DESCANSA" && m.visitor !== "DESCANSA") {
+            if (
+              m.jornada === 6 &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA"
+            ) {
               const isOfficialJ6 = officialJornada6Data.some((item) => {
-                const catMatch = normalizeTeamText(item.cat) === normalizeTeamText(cat);
-                const locMatch = matchTeamFlex(m.local, item.local) && matchTeamFlex(m.visitor, item.visitor);
-                const locInverted = matchTeamFlex(m.local, item.visitor) && matchTeamFlex(m.visitor, item.local);
+                const catMatch =
+                  normalizeTeamText(item.cat) === normalizeTeamText(cat);
+                const locMatch =
+                  matchTeamFlex(m.local, item.local) &&
+                  matchTeamFlex(m.visitor, item.visitor);
+                const locInverted =
+                  matchTeamFlex(m.local, item.visitor) &&
+                  matchTeamFlex(m.visitor, item.local);
                 return catMatch && (locMatch || locInverted);
               });
 
               if (!isOfficialJ6) {
                 const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
-                m.jornada = computeSynchronizedJornada(cat, m, etapaNum, totalEtapasCat);
+                m.jornada = computeSynchronizedJornada(
+                  cat,
+                  m,
+                  etapaNum,
+                  totalEtapasCat,
+                );
               }
             }
           });
@@ -2262,6 +3829,210 @@
           html: `
             <div class="text-start small">
               <p class="mb-2 text-white">✅ Se cargó la programación oficial para los <strong>${appliedCount} partidos</strong> de Sábado 07 y Domingo 08 de Noviembre 2026 con horarios, camerinos (C1-C4), vocales y veedores exactos.</p>
+              <p class="mb-0 text-success fw-bold">👉 Recuerda presionar el botón <strong>'Guardar'</strong> para oficializar los cambios en la base de datos.</p>
+            </div>
+          `,
+          icon: "success",
+          confirmButtonColor: "#2ecc71",
+          background: "#121212",
+          color: "#ffffff",
+        });
+      }
+
+      function aplicarProgramacionOficialFecha7() {
+        let appliedCount = 0;
+
+        // 1. Limpiar partidos de 2da vuelta si tuvieran erróneamente jornada 7
+        fixturesMap.forEach((meta) => {
+          const cat = meta.category;
+          let totalEtapasCat = 0;
+          meta.data.forEach((m) => {
+            const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            if (j > totalEtapasCat) totalEtapasCat = j;
+          });
+
+          meta.data.forEach((m) => {
+            const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+            const is2daVuelta =
+              tag.includes("2DA") ||
+              tag.includes("REVANCHA") ||
+              tag.includes("LIGUILLA") ||
+              tag.includes("SEMI") ||
+              tag.includes("FINAL");
+            if (is2daVuelta) {
+              const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+              m.jornada = computeSynchronizedJornada(
+                cat,
+                m,
+                etapaNum,
+                totalEtapasCat,
+              );
+            }
+          });
+        });
+
+        // 2. Programar Fecha 7 Oficial únicamente en 1ra Vuelta
+        officialJornada7Data.forEach((item) => {
+          let matchFound = null;
+
+          fixturesMap.forEach((meta) => {
+            const catMatch =
+              normalizeTeamText(item.cat) === normalizeTeamText(meta.category);
+            if (!catMatch) return;
+
+            meta.data.forEach((m) => {
+              const tag = (m.tag || m.etiqueta || m.fecha || "").toUpperCase();
+              const is2daVuelta =
+                tag.includes("2DA") ||
+                tag.includes("REVANCHA") ||
+                tag.includes("LIGUILLA") ||
+                tag.includes("SEMI") ||
+                tag.includes("FINAL");
+              if (is2daVuelta) return;
+
+              // Caso especial MÁXIMA Spencer vs Estudiantes
+              if (
+                normalizeTeamText(item.cat).includes("MAXIMA") &&
+                (matchTeamFlex(item.local, "SPENCER") ||
+                  matchTeamFlex(item.visitor, "SPENCER"))
+              ) {
+                if (
+                  m.local === "DESCANSA" ||
+                  m.visitor === "DESCANSA" ||
+                  m.isRest
+                ) {
+                  const otherTeam =
+                    m.local === "DESCANSA" ? m.visitor : m.local;
+                  if (matchTeamFlex(otherTeam, "ESTUDIANTES")) {
+                    m.local = "SPENCER";
+                    m.visitor = "ESTUDIANTES";
+                    m.isRest = false;
+                    m.tag = "1ra Vuelta (Fecha 7)";
+                    m.etiqueta = "1ra Vuelta (Fecha 7)";
+                    matchFound = m;
+                    return;
+                  }
+                }
+              }
+
+              if (
+                m.isRest ||
+                m.local === "DESCANSA" ||
+                m.visitor === "DESCANSA"
+              )
+                return;
+
+              const locMatch = matchTeamFlex(m.local, item.local);
+              const visMatch = matchTeamFlex(m.visitor, item.visitor);
+              const locInverted = matchTeamFlex(m.local, item.visitor);
+              const visInverted = matchTeamFlex(m.visitor, item.local);
+
+              if ((locMatch && visMatch) || (locInverted && visInverted)) {
+                matchFound = m;
+              }
+            });
+          });
+
+          if (matchFound) {
+            if (
+              matchTeamFlex(matchFound.local, item.visitor) &&
+              matchTeamFlex(matchFound.visitor, item.local)
+            ) {
+              const temp = matchFound.local;
+              matchFound.local = matchFound.visitor;
+              matchFound.visitor = temp;
+            }
+            matchFound.jornada = 7;
+            matchFound.fechaRealAsignadaText = item.day;
+            matchFound.horaRealAsignada = item.time;
+            matchFound.camerinoLocal = item.camL;
+            matchFound.camerinoVisitor = item.camV;
+            matchFound.vocalAsignado = item.vocal;
+            matchFound.veedorAsignado = item.veedor;
+            delete matchFound.isDiferido;
+            delete matchFound.diferido;
+            if (matchFound.status === "DIFERIDO") delete matchFound.status;
+            appliedCount++;
+          }
+        });
+
+        // 3. Reubicar y limpiar cualquier partido sobrante en Jornada 7 que no sea oficial, y limpiar Jornada 8
+        fixturesMap.forEach((meta) => {
+          const cat = meta.category;
+          let totalEtapasCat = 0;
+          meta.data.forEach((m) => {
+            const j = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+            if (j > totalEtapasCat) totalEtapasCat = j;
+          });
+
+          meta.data.forEach((m) => {
+            if (
+              m.jornada === 7 &&
+              !m.isRest &&
+              m.local !== "DESCANSA" &&
+              m.visitor !== "DESCANSA"
+            ) {
+              const isOfficialJ7 = officialJornada7Data.some((item) => {
+                const catMatch =
+                  normalizeTeamText(item.cat) === normalizeTeamText(cat);
+                const locMatch =
+                  matchTeamFlex(m.local, item.local) &&
+                  matchTeamFlex(m.visitor, item.visitor);
+                const locInverted =
+                  matchTeamFlex(m.local, item.visitor) &&
+                  matchTeamFlex(m.visitor, item.local);
+                return catMatch && (locMatch || locInverted);
+              });
+
+              if (!isOfficialJ7) {
+                m.horaRealAsignada = "";
+                m.fechaRealAsignadaText = "";
+                m.camerinoLocal = "";
+                m.camerinoVisitor = "";
+                m.vocalAsignado = "";
+                m.veedorAsignado = "";
+                const etapaNum = parseInt(m.fecha?.replace(/\D/g, "")) || 1;
+                m.jornada = computeSynchronizedJornada(
+                  cat,
+                  m,
+                  etapaNum,
+                  totalEtapasCat,
+                );
+              }
+            }
+
+            // Asegurar que Spencer vs Manchester en MÁXIMA esté en J5 (donde se jugó)
+            if (
+              normalizeTeamText(cat).includes("MAXIMA") &&
+              (matchTeamFlex(m.local, "SPENCER") ||
+                matchTeamFlex(m.visitor, "SPENCER")) &&
+              (matchTeamFlex(m.local, "MANCHESTER") ||
+                matchTeamFlex(m.visitor, "MANCHESTER"))
+            ) {
+              if (m.jornada === 8) {
+                m.jornada = 5;
+              }
+            }
+
+            // Limpieza estricta de Jornada 8: ninguna debe quedar programada
+            if (m.jornada >= 8 && m.horaRealAsignada) {
+              m.horaRealAsignada = "";
+              m.fechaRealAsignadaText = "";
+              m.camerinoLocal = "";
+              m.camerinoVisitor = "";
+              m.vocalAsignado = "";
+              m.veedorAsignado = "";
+            }
+          });
+        });
+
+        renderMatches();
+
+        Swal.fire({
+          title: "¡7ma Fecha Oficial Programada!",
+          html: `
+            <div class="text-start small">
+              <p class="mb-2 text-white">✅ Se cargó la programación oficial para los <strong>${appliedCount} partidos</strong> de Sábado 14 y Domingo 15 de Noviembre 2026 con horarios, camerinos (C1-C4), vocales y veedores exactos.</p>
               <p class="mb-0 text-success fw-bold">👉 Recuerda presionar el botón <strong>'Guardar'</strong> para oficializar los cambios en la base de datos.</p>
             </div>
           `,
@@ -2302,6 +4073,11 @@
           return;
         }
 
+        if (currentJornada === 7) {
+          aplicarProgramacionOficialFecha7();
+          return;
+        }
+
         mostrarModalConfiguracionHorarios();
       }
 
@@ -2321,17 +4097,24 @@
         });
 
         if (totalMatches === 0) {
-          return Swal.fire("Aviso", `No hay partidos activos para la Jornada ${currentJornada}.`, "info");
+          return Swal.fire(
+            "Aviso",
+            `No hay partidos activos para la Jornada ${currentJornada}.`,
+            "info",
+          );
         }
 
-        document.getElementById("badgeJornadaProgramar").innerText = `JORNADA ${currentJornada}`;
-        document.getElementById("progTotalMatchesCount").innerText = totalMatches;
+        document.getElementById("badgeJornadaProgramar").innerText =
+          `JORNADA ${currentJornada}`;
+        document.getElementById("progTotalMatchesCount").innerText =
+          totalMatches;
 
         // Cargar configuración guardada
         const saved = loadSavedProgConfig();
         if (saved) {
           if (saved.duration) {
-            document.getElementById("progDurationMinutes").value = saved.duration;
+            document.getElementById("progDurationMinutes").value =
+              saved.duration;
             updateDurationButtons(saved.duration);
           }
           if (Array.isArray(saved.days)) {
@@ -2377,7 +4160,9 @@
       }
 
       function updateDurationButtons(mins) {
-        const buttons = document.querySelectorAll("#modalConfigProgramacion .btn-group button");
+        const buttons = document.querySelectorAll(
+          "#modalConfigProgramacion .btn-group button",
+        );
         buttons.forEach((btn) => {
           if (btn.innerText.includes(`${mins}m`)) {
             btn.classList.add("active", "btn-success");
@@ -2430,7 +4215,10 @@
 
         const slots = [];
         let current = startTotal;
-        while (current + durationMin <= endTotal || (slots.length === 0 && current < endTotal)) {
+        while (
+          current + durationMin <= endTotal ||
+          (slots.length === 0 && current < endTotal)
+        ) {
           const hh = String(Math.floor(current / 60)).padStart(2, "0");
           const mm = String(current % 60).padStart(2, "0");
           slots.push(`${hh}:${mm}`);
@@ -2466,37 +4254,46 @@
 
         allMatches.forEach((m) => {
           const mKey = getMatchKey(m._fixId, m.local, m.visitor, m.jornada);
-          
+
           if (!partidosEspecialesConfig[mKey]) {
             if (m.fechaRealAsignadaText === "No Programado") {
               partidosEspecialesConfig[mKey] = {
                 mode: "no_programar",
                 day: "Sábado",
                 time: "10:00",
-                motivo: m.observacionProgramacion || "Por oficio"
+                motivo: m.observacionProgramacion || "Por oficio",
               };
-            } else if (m.fechaRealAsignadaText && m.horaRealAsignada && m.fechaRealAsignadaText !== "Pendiente") {
+            } else if (
+              m.fechaRealAsignadaText &&
+              m.horaRealAsignada &&
+              m.fechaRealAsignadaText !== "Pendiente"
+            ) {
               partidosEspecialesConfig[mKey] = {
                 mode: "preferencial",
                 day: m.fechaRealAsignadaText,
                 time: m.horaRealAsignada,
-                motivo: m.observacionProgramacion || ""
+                motivo: m.observacionProgramacion || "",
               };
             } else {
               partidosEspecialesConfig[mKey] = {
                 mode: "auto",
                 day: "Sábado",
                 time: "10:00",
-                motivo: ""
+                motivo: "",
               };
             }
           }
 
           const cfg = partidosEspecialesConfig[mKey];
-          const modeClass = cfg.mode === "preferencial" ? "mode-preferencial" : (cfg.mode === "no_programar" ? "mode-no-prog" : "");
+          const modeClass =
+            cfg.mode === "preferencial"
+              ? "mode-preferencial"
+              : cfg.mode === "no_programar"
+                ? "mode-no-prog"
+                : "";
 
           const cardHtml = `
-            <div class="partido-especial-card ${modeClass}" id="card_spec_${mKey}" data-cat="${m._cat}" data-teams="${(m.local + ' ' + m.visitor).toLowerCase()}">
+            <div class="partido-especial-card ${modeClass}" id="card_spec_${mKey}" data-cat="${m._cat}" data-teams="${(m.local + " " + m.visitor).toLowerCase()}">
               <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-1">
                 <div class="d-flex align-items-center gap-2">
                   <span class="badge-category-mini">${m._cat}</span>
@@ -2569,7 +4366,12 @@
 
       function cambiarModoPartido(mKey, mode) {
         if (!partidosEspecialesConfig[mKey]) {
-          partidosEspecialesConfig[mKey] = { mode: "auto", day: "Sábado", time: "10:00", motivo: "" };
+          partidosEspecialesConfig[mKey] = {
+            mode: "auto",
+            day: "Sábado",
+            time: "10:00",
+            motivo: "",
+          };
         }
         partidosEspecialesConfig[mKey].mode = mode;
 
@@ -2582,7 +4384,10 @@
 
         const sub = document.getElementById(`subcontrols_${mKey}`);
         if (sub) {
-          sub.innerHTML = renderSubcontrolesEspeciales(mKey, partidosEspecialesConfig[mKey]);
+          sub.innerHTML = renderSubcontrolesEspeciales(
+            mKey,
+            partidosEspecialesConfig[mKey],
+          );
         }
 
         recalcularCapacidadProgramacion();
@@ -2594,7 +4399,9 @@
 
         const diaEl = document.getElementById(`pref_dia_${mKey}`);
         const horaEl = document.getElementById(`pref_hora_${mKey}`);
-        const motEl = document.getElementById(`pref_motivo_${mKey}`) || document.getElementById(`no_prog_motivo_${mKey}`);
+        const motEl =
+          document.getElementById(`pref_motivo_${mKey}`) ||
+          document.getElementById(`no_prog_motivo_${mKey}`);
 
         if (diaEl) cfg.day = diaEl.value;
         if (horaEl) cfg.time = horaEl.value;
@@ -2604,27 +4411,40 @@
       }
 
       function filtrarPartidosEspeciales() {
-        const query = (document.getElementById("filtroPartidosEspeciales")?.value || "").toLowerCase().trim();
+        const query = (
+          document.getElementById("filtroPartidosEspeciales")?.value || ""
+        )
+          .toLowerCase()
+          .trim();
         filtroEspecialTexto = query;
         aplicarFiltrosEspeciales();
       }
 
       function filtrarCategoriaEspeciales(cat, btn) {
         filtroEspecialCategoria = cat;
-        const buttons = document.querySelectorAll("#filtrosCategoriaEspeciales button");
+        const buttons = document.querySelectorAll(
+          "#filtrosCategoriaEspeciales button",
+        );
         buttons.forEach((b) => b.classList.remove("active"));
         if (btn) btn.classList.add("active");
         aplicarFiltrosEspeciales();
       }
 
       function aplicarFiltrosEspeciales() {
-        const cards = document.querySelectorAll("#listaPartidosEspeciales .partido-especial-card");
+        const cards = document.querySelectorAll(
+          "#listaPartidosEspeciales .partido-especial-card",
+        );
         cards.forEach((card) => {
           const cardCat = (card.getAttribute("data-cat") || "").toUpperCase();
-          const cardTeams = (card.getAttribute("data-teams") || "").toLowerCase();
+          const cardTeams = (
+            card.getAttribute("data-teams") || ""
+          ).toLowerCase();
 
-          const matchCat = filtroEspecialCategoria === "TODAS" || cardCat === filtroEspecialCategoria;
-          const matchText = !filtroEspecialTexto || cardTeams.includes(filtroEspecialTexto);
+          const matchCat =
+            filtroEspecialCategoria === "TODAS" ||
+            cardCat === filtroEspecialCategoria;
+          const matchText =
+            !filtroEspecialTexto || cardTeams.includes(filtroEspecialTexto);
 
           if (matchCat && matchText) {
             card.classList.remove("d-none");
@@ -2635,7 +4455,9 @@
       }
 
       function recalcularCapacidadProgramacion() {
-        const duration = parseInt(document.getElementById("progDurationMinutes")?.value, 10) || 100;
+        const duration =
+          parseInt(document.getElementById("progDurationMinutes")?.value, 10) ||
+          100;
         const dayKeys = ["Viernes", "Sabado", "Domingo"];
         let totalGeneralSlots = 0;
 
@@ -2645,15 +4467,32 @@
           const endInput = document.getElementById(`end_day_${dayId}`);
           const badge = document.getElementById(`slots_badge_${dayId}`);
 
-          if (check && check.checked && startInput && endInput && startInput.value && endInput.value) {
-            const slots = calcularSlotsPorDia(startInput.value, endInput.value, duration);
+          if (
+            check &&
+            check.checked &&
+            startInput &&
+            endInput &&
+            startInput.value &&
+            endInput.value
+          ) {
+            const slots = calcularSlotsPorDia(
+              startInput.value,
+              endInput.value,
+              duration,
+            );
             const count = slots.length;
             totalGeneralSlots += count;
             if (badge) {
               badge.innerText = `${count} ${count === 1 ? "cupo" : "cupos"}`;
-              badge.style.background = count > 0 ? "rgba(46, 204, 113, 0.15)" : "rgba(231, 76, 60, 0.15)";
+              badge.style.background =
+                count > 0
+                  ? "rgba(46, 204, 113, 0.15)"
+                  : "rgba(231, 76, 60, 0.15)";
               badge.style.color = count > 0 ? "#2ecc71" : "#e74c3c";
-              badge.style.borderColor = count > 0 ? "rgba(46, 204, 113, 0.4)" : "rgba(231, 76, 60, 0.4)";
+              badge.style.borderColor =
+                count > 0
+                  ? "rgba(46, 204, 113, 0.4)"
+                  : "rgba(231, 76, 60, 0.4)";
             }
           } else if (badge) {
             badge.innerText = "0 cupos";
@@ -2677,8 +4516,18 @@
               m.visitor !== "DESCANSA"
             ) {
               totalMatches++;
-              const mKey = getMatchKey(meta.category ? meta.category : "", m.local, m.visitor, m.jornada);
-              const entry = Object.entries(partidosEspecialesConfig).find(([k]) => k.includes(`_${m.local.trim().replace(/\s+/g, '_')}_${m.visitor.trim().replace(/\s+/g, '_')}_`));
+              const mKey = getMatchKey(
+                meta.category ? meta.category : "",
+                m.local,
+                m.visitor,
+                m.jornada,
+              );
+              const entry = Object.entries(partidosEspecialesConfig).find(
+                ([k]) =>
+                  k.includes(
+                    `_${m.local.trim().replace(/\s+/g, "_")}_${m.visitor.trim().replace(/\s+/g, "_")}_`,
+                  ),
+              );
               if (entry) {
                 if (entry[1].mode === "preferencial") prefCount++;
                 if (entry[1].mode === "no_programar") noProgCount++;
@@ -2693,13 +4542,16 @@
         const elTotalPref = document.getElementById("progTotalPrefCount");
         const elTotalNoProg = document.getElementById("progTotalNoProgCount");
         const elTotalAuto = document.getElementById("progTotalAutoCount");
-        const elBadgeEspeciales = document.getElementById("badgeEspecialesCount");
+        const elBadgeEspeciales = document.getElementById(
+          "badgeEspecialesCount",
+        );
 
         if (elTotalMatches) elTotalMatches.innerText = totalMatches;
         if (elTotalPref) elTotalPref.innerText = prefCount;
         if (elTotalNoProg) elTotalNoProg.innerText = noProgCount;
         if (elTotalAuto) elTotalAuto.innerText = autoCount;
-        if (elBadgeEspeciales) elBadgeEspeciales.innerText = prefCount + noProgCount;
+        if (elBadgeEspeciales)
+          elBadgeEspeciales.innerText = prefCount + noProgCount;
 
         const statusMsgElem = document.getElementById("progStatusMessage");
         if (statusMsgElem) {
@@ -2760,7 +4612,9 @@
           return Swal.fire("Aviso", "No hay partidos en esta jornada.", "info");
         }
 
-        const duration = parseInt(document.getElementById("progDurationMinutes")?.value, 10) || 100;
+        const duration =
+          parseInt(document.getElementById("progDurationMinutes")?.value, 10) ||
+          100;
         const daysConfig = [
           {
             id: "Viernes",
@@ -2799,12 +4653,14 @@
           if (cfg.mode === "no_programar") {
             m.fechaRealAsignadaText = "No Programado";
             m.horaRealAsignada = "";
-            m.observacionProgramacion = cfg.motivo || "No programado por petición / oficio";
+            m.observacionProgramacion =
+              cfg.motivo || "No programado por petición / oficio";
             noProgMatches.push(m);
           } else if (cfg.mode === "preferencial" && cfg.day && cfg.time) {
             m.fechaRealAsignadaText = cfg.day;
             m.horaRealAsignada = cfg.time;
-            m.observacionProgramacion = cfg.motivo || "Horario preferencial asignado";
+            m.observacionProgramacion =
+              cfg.motivo || "Horario preferencial asignado";
             prefMatches.push(m);
           } else {
             autoMatches.push(m);
@@ -2827,14 +4683,22 @@
 
         daysConfig.forEach((dayConf) => {
           if (dayConf.checked && dayConf.start && dayConf.end) {
-            const rawSlots = calcularSlotsPorDia(dayConf.start, dayConf.end, duration);
+            const rawSlots = calcularSlotsPorDia(
+              dayConf.start,
+              dayConf.end,
+              duration,
+            );
             if (rawSlots.length > 0) {
               activeDaysNames.push(dayConf.name);
-              const dayPrefMatches = prefMatches.filter((p) => p.fechaRealAsignadaText === dayConf.name);
+              const dayPrefMatches = prefMatches.filter(
+                (p) => p.fechaRealAsignadaText === dayConf.name,
+              );
 
               let slotsForThisDay = [...rawSlots];
               dayPrefMatches.forEach((pMatch) => {
-                const exactIdx = slotsForThisDay.indexOf(pMatch.horaRealAsignada);
+                const exactIdx = slotsForThisDay.indexOf(
+                  pMatch.horaRealAsignada,
+                );
                 if (exactIdx !== -1) {
                   slotsForThisDay.splice(exactIdx, 1);
                 } else if (slotsForThisDay.length > 0) {
@@ -2868,7 +4732,11 @@
 
         // 4. Asignar slots a los partidos automáticos
         let p = 0;
-        for (let s = 0; s < allAvailableSlots.length && p < autoMatches.length; s++) {
+        for (
+          let s = 0;
+          s < allAvailableSlots.length && p < autoMatches.length;
+          s++
+        ) {
           const slot = allAvailableSlots[s];
           autoMatches[p].fechaRealAsignadaText = slot.day;
           autoMatches[p].horaRealAsignada = slot.time;
@@ -2887,7 +4755,11 @@
         // 5. Asignación de Camerinos y Mesa (Vocal & Veedor) por día en orden cronológico
         Object.keys(dayBuckets).forEach((day) => {
           const matches = dayBuckets[day];
-          matches.sort((a, b) => (a.horaRealAsignada || "99:99").localeCompare(b.horaRealAsignada || "99:99"));
+          matches.sort((a, b) =>
+            (a.horaRealAsignada || "99:99").localeCompare(
+              b.horaRealAsignada || "99:99",
+            ),
+          );
 
           const count = matches.length;
 
@@ -2946,8 +4818,13 @@
 
         renderMatches();
 
-        const totalScheduled = prefMatches.length + Math.min(autoMatches.length, allAvailableSlots.length);
-        const unassignedCount = Math.max(0, autoMatches.length - allAvailableSlots.length);
+        const totalScheduled =
+          prefMatches.length +
+          Math.min(autoMatches.length, allAvailableSlots.length);
+        const unassignedCount = Math.max(
+          0,
+          autoMatches.length - allAvailableSlots.length,
+        );
 
         let msgHtml = `<div class="text-start small">`;
         msgHtml += `<p class="mb-1 text-white">✅ <strong>Partidos programados:</strong> ${totalScheduled} (${prefMatches.length} preferenciales + ${Math.min(autoMatches.length, allAvailableSlots.length)} por sorteo).</p>`;
@@ -2976,9 +4853,14 @@
       }
 
       function renderMatches() {
-        const calInfo = CALENDARIO_OFICIAL[currentJornada] || { 
-          date: `Semana ${currentJornada}`, 
-          vuelta: currentJornada <= 13 ? "1ra Vuelta" : (currentJornada <= 24 ? "2da Vuelta" : "Fase Final") 
+        const calInfo = CALENDARIO_OFICIAL[currentJornada] || {
+          date: `Semana ${currentJornada}`,
+          vuelta:
+            currentJornada <= 13
+              ? "1ra Vuelta"
+              : currentJornada <= 24
+                ? "2da Vuelta"
+                : "Fase Final",
         };
         const isFinVuelta = calInfo.vuelta.includes("Fin");
 
@@ -2993,7 +4875,7 @@
                   <div>
                     <div class="d-flex align-items-center gap-2 flex-wrap">
                       <h4 class="text-white mb-0 text-uppercase fw-900 text-primary-glow" style="letter-spacing:1.5px">JORNADA ${currentJornada}</h4>
-                      <span class="badge ${isFinVuelta ? 'bg-warning text-dark fw-bold' : 'bg-dark border border-secondary text-white-50'}" style="font-size: 0.75rem; border-radius: 6px;">
+                      <span class="badge ${isFinVuelta ? "bg-warning text-dark fw-bold" : "bg-dark border border-secondary text-white-50"}" style="font-size: 0.75rem; border-radius: 6px;">
                         ${calInfo.vuelta}
                       </span>
                       <span class="badge bg-dark-glass text-light border border-secondary" style="font-size: 0.78rem; border-radius: 6px;">
@@ -3003,31 +4885,60 @@
                   </div>
                 </div>
                 <div class="d-flex gap-2 flex-wrap align-items-center">
-                  ${currentJornada === 1 ? `
+                  ${
+                    currentJornada === 1
+                      ? `
                     <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha1()" title="Cargar días, horas, mesas y camerinos oficiales de la Fecha 1">
                       <i class="fas fa-file-invoice me-1"></i> Cargar Fecha 1 Oficial
                     </button>
-                  ` : ''}
-                  ${currentJornada === 2 ? `
+                  `
+                      : ""
+                  }
+                  ${
+                    currentJornada === 2
+                      ? `
                     <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha2()" title="Cargar días, horas, mesas y camerinos oficiales de la Fecha 2">
                       <i class="fas fa-file-invoice me-1"></i> Cargar Fecha 2 Oficial
                     </button>
-                  ` : ''}
-                  ${currentJornada === 4 ? `
+                  `
+                      : ""
+                  }
+                  ${
+                    currentJornada === 4
+                      ? `
                     <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha4()" title="Cargar días, horas, mesas y camerinos oficiales de la 4ta Fecha">
                       <i class="fas fa-file-invoice me-1"></i> Cargar 4ta Fecha Oficial
                     </button>
-                  ` : ''}
-                  ${currentJornada === 5 ? `
+                  `
+                      : ""
+                  }
+                  ${
+                    currentJornada === 5
+                      ? `
                     <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha5()" title="Cargar días, horas, mesas y camerinos oficiales de la 5ta Fecha">
                       <i class="fas fa-file-invoice me-1"></i> Cargar 5ta Fecha Oficial
                     </button>
-                  ` : ''}
-                  ${currentJornada === 6 ? `
+                  `
+                      : ""
+                  }
+                  ${
+                    currentJornada === 6
+                      ? `
                     <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha6()" title="Cargar días, horas, mesas y camerinos oficiales de la 6ta Fecha">
                       <i class="fas fa-file-invoice me-1"></i> Cargar 6ta Fecha Oficial
                     </button>
-                  ` : ''}
+                  `
+                      : ""
+                  }
+                  ${
+                    currentJornada === 7
+                      ? `
+                    <button class="btn btn-outline-info rounded-pill px-3 fw-bold btn-sm shadow-sm" onclick="aplicarProgramacionOficialFecha7()" title="Cargar días, horas, mesas y camerinos oficiales de la 7ma Fecha">
+                      <i class="fas fa-file-invoice me-1"></i> Cargar 7ma Fecha Oficial
+                    </button>
+                  `
+                      : ""
+                  }
                   <button class="btn btn-outline-success rounded-pill px-3 btn-sm fw-bold shadow-sm" onclick="exportarTodoElFixtureExcel()" title="Descargar todo el fixture oficial de todas las fechas">
                     <i class="fas fa-file-excel me-1"></i> Todo el Fixture
                   </button>
@@ -3069,7 +4980,14 @@
             });
         });
 
-        const dayRank = { Viernes: 1, Sábado: 2, Domingo: 3, "No Programado": 4, "": 5, undefined: 5 };
+        const dayRank = {
+          Viernes: 1,
+          Sábado: 2,
+          Domingo: 3,
+          "No Programado": 4,
+          "": 5,
+          undefined: 5,
+        };
         matches.sort((a, b) => {
           if (
             dayRank[a.fechaRealAsignadaText] !==
@@ -3109,14 +5027,20 @@
             const safeLocal = (m.local || "").replace(/'/g, "\\'");
             const safeVisitor = (m.visitor || "").replace(/'/g, "\\'");
             const safeFecha = (m.fecha || "").replace(/'/g, "\\'");
-            const valGL = m.golesLocal !== undefined && m.golesLocal !== null ? m.golesLocal : "";
-            const valGV = m.golesVisitor !== undefined && m.golesVisitor !== null ? m.golesVisitor : "";
+            const valGL =
+              m.golesLocal !== undefined && m.golesLocal !== null
+                ? m.golesLocal
+                : "";
+            const valGV =
+              m.golesVisitor !== undefined && m.golesVisitor !== null
+                ? m.golesVisitor
+                : "";
             const isNoProg = m.fechaRealAsignadaText === "No Programado";
 
             tableHtml += `
-              <tr style="${isNoProg ? 'opacity: 0.75; background: rgba(231, 76, 60, 0.05);' : ''}">
+              <tr style="${isNoProg ? "opacity: 0.75; background: rgba(231, 76, 60, 0.05);" : ""}">
                 <td>
-                  <select class="input-elite-sm ${isNoProg ? 'border-danger text-danger' : ''}" onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'fechaRealAsignadaText', this.value)">
+                  <select class="input-elite-sm ${isNoProg ? "border-danger text-danger" : ""}" onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'fechaRealAsignadaText', this.value)">
                     <option value="">Pendiente</option>
                     <option value="No Programado" ${m.fechaRealAsignadaText === "No Programado" ? "selected" : ""}>🚫 No Programado</option>
                     <option value="Viernes" ${m.fechaRealAsignadaText === "Viernes" ? "selected" : ""}>Viernes</option>
@@ -3125,56 +5049,56 @@
                   </select>
                 </td>
                 <td>
-                  <input type="time" class="input-elite-sm" value="${m.horaRealAsignada || ""}" ${isNoProg ? 'disabled' : ''}
+                  <input type="time" class="input-elite-sm" value="${m.horaRealAsignada || ""}" ${isNoProg ? "disabled" : ""}
                     onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'horaRealAsignada', this.value)">
                 </td>
                 <td>
                   ${getCategoryBadge(m._cat)}
-                  ${isNoProg ? '<span class="badge bg-danger text-white ms-1" style="font-size:0.58rem; letter-spacing:0.5px;">OFICIO</span>' : ''}
+                  ${isNoProg ? '<span class="badge bg-danger text-white ms-1" style="font-size:0.58rem; letter-spacing:0.5px;">OFICIO</span>' : ""}
                 </td>
                 <td class="text-center">
-                  <select class="input-elite-sm text-center fw-bold ${m.camerinoLocal ? 'text-primary-glow' : 'text-white-50'}" style="width: 54px; padding: 2px 2px; font-size: 0.72rem;" ${isNoProg ? 'disabled' : ''}
+                  <select class="input-elite-sm text-center fw-bold ${m.camerinoLocal ? "text-primary-glow" : "text-white-50"}" style="width: 54px; padding: 2px 2px; font-size: 0.72rem;" ${isNoProg ? "disabled" : ""}
                     onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'camerinoLocal', this.value)">
                     <option value="">-</option>
-                    <option value="1" ${m.camerinoLocal == '1' ? 'selected' : ''}>C1</option>
-                    <option value="2" ${m.camerinoLocal == '2' ? 'selected' : ''}>C2</option>
-                    <option value="3" ${m.camerinoLocal == '3' ? 'selected' : ''}>C3</option>
-                    <option value="4" ${m.camerinoLocal == '4' ? 'selected' : ''}>C4</option>
+                    <option value="1" ${m.camerinoLocal == "1" ? "selected" : ""}>C1</option>
+                    <option value="2" ${m.camerinoLocal == "2" ? "selected" : ""}>C2</option>
+                    <option value="3" ${m.camerinoLocal == "3" ? "selected" : ""}>C3</option>
+                    <option value="4" ${m.camerinoLocal == "4" ? "selected" : ""}>C4</option>
                   </select>
                 </td>
                 <td>
                   <div class="d-flex align-items-center justify-content-center gap-3">
                     <div class="d-flex align-items-center gap-2 justify-content-end" style="width:40%">
                       <span class="team-name-elite-table text-end">${m.local}</span>
-                      <input type="number" class="input-elite-sm input-elite-score" value="${valGL}" placeholder="-" min="0" ${isNoProg ? 'disabled' : ''}
+                      <input type="number" class="input-elite-sm input-elite-score" value="${valGL}" placeholder="-" min="0" ${isNoProg ? "disabled" : ""}
                         onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'golesLocal', this.value)">
                     </div>
                     <span class="text-primary-glow fw-900" style="font-size:0.7rem">VS</span>
                     <div class="d-flex align-items-center gap-2 justify-content-start" style="width:40%">
-                      <input type="number" class="input-elite-sm input-elite-score" value="${valGV}" placeholder="-" min="0" ${isNoProg ? 'disabled' : ''}
+                      <input type="number" class="input-elite-sm input-elite-score" value="${valGV}" placeholder="-" min="0" ${isNoProg ? "disabled" : ""}
                         onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'golesVisitor', this.value)">
                       <span class="team-name-elite-table text-start">${m.visitor}</span>
                     </div>
                   </div>
                 </td>
                 <td class="text-center">
-                  <select class="input-elite-sm text-center fw-bold ${m.camerinoVisitor ? 'text-primary-glow' : 'text-white-50'}" style="width: 54px; padding: 2px 2px; font-size: 0.72rem;" ${isNoProg ? 'disabled' : ''}
+                  <select class="input-elite-sm text-center fw-bold ${m.camerinoVisitor ? "text-primary-glow" : "text-white-50"}" style="width: 54px; padding: 2px 2px; font-size: 0.72rem;" ${isNoProg ? "disabled" : ""}
                     onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'camerinoVisitor', this.value)">
                     <option value="">-</option>
-                    <option value="1" ${m.camerinoVisitor == '1' ? 'selected' : ''}>C1</option>
-                    <option value="2" ${m.camerinoVisitor == '2' ? 'selected' : ''}>C2</option>
-                    <option value="3" ${m.camerinoVisitor == '3' ? 'selected' : ''}>C3</option>
-                    <option value="4" ${m.camerinoVisitor == '4' ? 'selected' : ''}>C4</option>
+                    <option value="1" ${m.camerinoVisitor == "1" ? "selected" : ""}>C1</option>
+                    <option value="2" ${m.camerinoVisitor == "2" ? "selected" : ""}>C2</option>
+                    <option value="3" ${m.camerinoVisitor == "3" ? "selected" : ""}>C3</option>
+                    <option value="4" ${m.camerinoVisitor == "4" ? "selected" : ""}>C4</option>
                   </select>
                 </td>
                 <td>
                   <div class="row g-2">
                     <div class="col-6">
-                      <input type="text" class="input-elite-sm" value="${m.vocalAsignado || ""}" placeholder="Vocal..." ${isNoProg ? 'disabled' : ''}
+                      <input type="text" class="input-elite-sm" value="${m.vocalAsignado || ""}" placeholder="Vocal..." ${isNoProg ? "disabled" : ""}
                         onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'vocalAsignado', this.value)">
                     </div>
                     <div class="col-6">
-                      <input type="text" class="input-elite-sm" value="${m.veedorAsignado || ""}" placeholder="Veedor..." ${isNoProg ? 'disabled' : ''}
+                      <input type="text" class="input-elite-sm" value="${m.veedorAsignado || ""}" placeholder="Veedor..." ${isNoProg ? "disabled" : ""}
                         onchange="updateMatchField('${m._fixId}', '${safeLocal}', '${safeVisitor}', '${safeFecha}', 'veedorAsignado', this.value)">
                     </div>
                   </div>
@@ -3196,10 +5120,28 @@
       }
 
       function exportToExcel() {
-        const rows = [["DÍA", "HORA", "CATEGORÍA", "CAM L", "LOCAL", "GL", "GV", "VISITANTE", "CAM V", "VOCAL", "VEEDOR"]];
+        const rows = [
+          [
+            "DÍA",
+            "HORA",
+            "CATEGORÍA",
+            "CAM L",
+            "LOCAL",
+            "GL",
+            "GV",
+            "VISITANTE",
+            "CAM V",
+            "VOCAL",
+            "VEEDOR",
+          ],
+        ];
         fixturesMap.forEach((meta) => {
-          meta.data.forEach(m => {
-            if (m.jornada === currentJornada && !m.isRest && m.local !== "DESCANSA") {
+          meta.data.forEach((m) => {
+            if (
+              m.jornada === currentJornada &&
+              !m.isRest &&
+              m.local !== "DESCANSA"
+            ) {
               rows.push([
                 m.fechaRealAsignadaText || "Pend",
                 m.horaRealAsignada || "--:--",
@@ -3211,7 +5153,7 @@
                 m.visitor,
                 m.camerinoVisitor ? `C${m.camerinoVisitor}` : "",
                 m.vocalAsignado || "",
-                m.veedorAsignado || ""
+                m.veedorAsignado || "",
               ]);
             }
           });
@@ -3224,21 +5166,47 @@
 
       function exportarTodoElFixtureExcel() {
         if (!fixturesMap || fixturesMap.size === 0) {
-          return Swal.fire("Aviso", "No hay fixtures cargados para exportar.", "info");
+          return Swal.fire(
+            "Aviso",
+            "No hay fixtures cargados para exportar.",
+            "info",
+          );
         }
 
         const campSelect = document.getElementById("campSelect");
-        const campName = campSelect && campSelect.options[campSelect.selectedIndex] ? campSelect.options[campSelect.selectedIndex].text : "Campeonato";
+        const campName =
+          campSelect && campSelect.options[campSelect.selectedIndex]
+            ? campSelect.options[campSelect.selectedIndex].text
+            : "Campeonato";
 
         const wb = XLSX.utils.book_new();
 
         // 1. Hoja "Fixture General" (Organizado cronológicamente por Jornada con todas las categorías)
         const rowsGeneral = [
           ["LIGA DEPORTIVA BARRIAL ARGELIA ALTA (LDBAA)"],
-          [`FIXTURE OFICIAL Y PROGRAMACIÓN DE PARTIDOS - ${campName.toUpperCase()}`],
-          [`Generado el: ${new Date().toLocaleDateString('es-EC')} ${new Date().toLocaleTimeString('es-EC')}`],
+          [
+            `FIXTURE OFICIAL Y PROGRAMACIÓN DE PARTIDOS - ${campName.toUpperCase()}`,
+          ],
+          [
+            `Generado el: ${new Date().toLocaleDateString("es-EC")} ${new Date().toLocaleTimeString("es-EC")}`,
+          ],
           [],
-          ["JORNADA", "FECHA CALENDARIO", "ETAPA / VUELTA", "DÍA", "HORA", "CATEGORÍA", "CAM L", "EQUIPO LOCAL", "GL", "GV", "EQUIPO VISITANTE", "CAM V", "MESA (VOCAL)", "MESA (VEEDOR)"]
+          [
+            "JORNADA",
+            "FECHA CALENDARIO",
+            "ETAPA / VUELTA",
+            "DÍA",
+            "HORA",
+            "CATEGORÍA",
+            "CAM L",
+            "EQUIPO LOCAL",
+            "GL",
+            "GV",
+            "EQUIPO VISITANTE",
+            "CAM V",
+            "MESA (VOCAL)",
+            "MESA (VEEDOR)",
+          ],
         ];
 
         let maxJ = 0;
@@ -3251,18 +5219,26 @@
             if (!matchesByJornada[j]) matchesByJornada[j] = [];
             matchesByJornada[j].push({
               ...m,
-              _category: meta.category
+              _category: meta.category,
             });
           });
         });
 
-        const dayRank = { Viernes: 1, Sábado: 2, Domingo: 3, "No Programado": 4, "": 5, undefined: 5 };
+        const dayRank = {
+          Viernes: 1,
+          Sábado: 2,
+          Domingo: 3,
+          "No Programado": 4,
+          "": 5,
+          undefined: 5,
+        };
 
         for (let j = 1; j <= maxJ; j++) {
           const list = matchesByJornada[j] || [];
           const calInfo = CALENDARIO_OFICIAL[j] || {
             date: `Semana ${j}`,
-            vuelta: j <= 13 ? "1ra Vuelta" : (j <= 24 ? "2da Vuelta" : "Fases Finales")
+            vuelta:
+              j <= 13 ? "1ra Vuelta" : j <= 24 ? "2da Vuelta" : "Fases Finales",
           };
 
           // Ordenar partidos de la jornada: por día y hora
@@ -3270,11 +5246,14 @@
             const rankA = dayRank[a.fechaRealAsignadaText] || 5;
             const rankB = dayRank[b.fechaRealAsignadaText] || 5;
             if (rankA !== rankB) return rankA - rankB;
-            return (a.horaRealAsignada || "99:99").localeCompare(b.horaRealAsignada || "99:99");
+            return (a.horaRealAsignada || "99:99").localeCompare(
+              b.horaRealAsignada || "99:99",
+            );
           });
 
           list.forEach((m) => {
-            const isRest = m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA";
+            const isRest =
+              m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA";
             if (isRest) {
               const freeTeam = m.local === "DESCANSA" ? m.visitor : m.local;
               rowsGeneral.push([
@@ -3291,7 +5270,7 @@
                 "DESCANSA",
                 "-",
                 "",
-                ""
+                "",
               ]);
             } else {
               rowsGeneral.push([
@@ -3303,12 +5282,16 @@
                 m._category,
                 m.camerinoLocal ? `C${m.camerinoLocal}` : "",
                 m.local,
-                m.golesLocal !== null && m.golesLocal !== undefined ? m.golesLocal : "",
-                m.golesVisitor !== null && m.golesVisitor !== undefined ? m.golesVisitor : "",
+                m.golesLocal !== null && m.golesLocal !== undefined
+                  ? m.golesLocal
+                  : "",
+                m.golesVisitor !== null && m.golesVisitor !== undefined
+                  ? m.golesVisitor
+                  : "",
                 m.visitor,
                 m.camerinoVisitor ? `C${m.camerinoVisitor}` : "",
                 m.vocalAsignado || "",
-                m.veedorAsignado || ""
+                m.veedorAsignado || "",
               ]);
             }
           });
@@ -3321,7 +5304,9 @@
         XLSX.utils.book_append_sheet(wb, wsGeneral, "Fixture General");
 
         // 2. Hojas individuales por cada Categoría (MÁXIMA, PRIMERA, FEMENINO)
-        const categoriesPresent = Array.from(fixturesMap.values()).map(x => x.category);
+        const categoriesPresent = Array.from(fixturesMap.values()).map(
+          (x) => x.category,
+        );
         const uniqueCats = [...new Set(categoriesPresent)];
 
         uniqueCats.forEach((catName) => {
@@ -3329,16 +5314,39 @@
             [`LDBAA - FIXTURE DE ${catName.toUpperCase()}`],
             [`Campeonato: ${campName}`],
             [],
-            ["JORNADA", "FECHA CALENDARIO", "ETAPA / FASE", "DÍA", "HORA", "CAM L", "LOCAL", "GL", "GV", "VISITANTE", "CAM V", "VOCAL", "VEEDOR"]
+            [
+              "JORNADA",
+              "FECHA CALENDARIO",
+              "ETAPA / FASE",
+              "DÍA",
+              "HORA",
+              "CAM L",
+              "LOCAL",
+              "GL",
+              "GV",
+              "VISITANTE",
+              "CAM V",
+              "VOCAL",
+              "VEEDOR",
+            ],
           ];
 
           fixturesMap.forEach((meta) => {
             if (meta.category === catName) {
-              const sortedData = [...meta.data].sort((a, b) => (parseInt(a.jornada) || 0) - (parseInt(b.jornada) || 0));
+              const sortedData = [...meta.data].sort(
+                (a, b) =>
+                  (parseInt(a.jornada) || 0) - (parseInt(b.jornada) || 0),
+              );
               sortedData.forEach((m) => {
                 const j = parseInt(m.jornada) || 1;
-                const calInfo = CALENDARIO_OFICIAL[j] || { date: `Semana ${j}`, vuelta: "" };
-                const isRest = m.isRest || m.local === "DESCANSA" || m.visitor === "DESCANSA";
+                const calInfo = CALENDARIO_OFICIAL[j] || {
+                  date: `Semana ${j}`,
+                  vuelta: "",
+                };
+                const isRest =
+                  m.isRest ||
+                  m.local === "DESCANSA" ||
+                  m.visitor === "DESCANSA";
                 if (isRest) {
                   const freeTeam = m.local === "DESCANSA" ? m.visitor : m.local;
                   catRows.push([
@@ -3354,7 +5362,7 @@
                     "DESCANSA",
                     "-",
                     "",
-                    ""
+                    "",
                   ]);
                 } else {
                   catRows.push([
@@ -3365,19 +5373,25 @@
                     m.horaRealAsignada || "--:--",
                     m.camerinoLocal ? `C${m.camerinoLocal}` : "",
                     m.local,
-                    m.golesLocal !== null && m.golesLocal !== undefined ? m.golesLocal : "",
-                    m.golesVisitor !== null && m.golesVisitor !== undefined ? m.golesVisitor : "",
+                    m.golesLocal !== null && m.golesLocal !== undefined
+                      ? m.golesLocal
+                      : "",
+                    m.golesVisitor !== null && m.golesVisitor !== undefined
+                      ? m.golesVisitor
+                      : "",
                     m.visitor,
                     m.camerinoVisitor ? `C${m.camerinoVisitor}` : "",
                     m.vocalAsignado || "",
-                    m.veedorAsignado || ""
+                    m.veedorAsignado || "",
                   ]);
                 }
               });
             }
           });
 
-          const cleanSheetName = catName.substring(0, 30).replace(/[:\\/?*\[\]]/g, "");
+          const cleanSheetName = catName
+            .substring(0, 30)
+            .replace(/[:\\/?*\[\]]/g, "");
           const wsCat = XLSX.utils.aoa_to_sheet(catRows);
           XLSX.utils.book_append_sheet(wb, wsCat, cleanSheetName);
         });
@@ -3392,39 +5406,44 @@
           icon: "success",
           confirmButtonColor: "#2ecc71",
           background: "#121212",
-          color: "#ffffff"
+          color: "#ffffff",
         });
       }
 
       async function exportToImage() {
         const target = document.getElementById("render-target-elite");
-        const header = document.querySelector("#capture-header h4").cloneNode(true);
+        const header = document
+          .querySelector("#capture-header h4")
+          .cloneNode(true);
         header.style.textAlign = "center";
         header.style.marginBottom = "30px";
         header.style.fontSize = "2rem";
-        
+
         const captureDiv = document.createElement("div");
         captureDiv.style.padding = "40px";
         captureDiv.style.background = "#0b1118"; // Fondo oscuro uniforme para captura
         captureDiv.appendChild(header);
         captureDiv.appendChild(target.cloneNode(true));
-        
-        // El clon no tendrá valores de inputs, debemos copiarlos manualmente si fuera necesario, 
+
+        // El clon no tendrá valores de inputs, debemos copiarlos manualmente si fuera necesario,
         // pero es mejor capturar el DOM real y ocultar lo que no queremos.
-        
+
         Swal.fire({
           title: "Generando Imagen...",
-          didOpen: () => Swal.showLoading()
+          didOpen: () => Swal.showLoading(),
         });
 
         const originalHeader = document.getElementById("capture-header");
         originalHeader.style.display = "none";
-        
+
         try {
-          const canvas = await html2canvas(document.getElementById("fixturesList"), {
-            backgroundColor: "#0b1219",
-            scale: 2
-          });
+          const canvas = await html2canvas(
+            document.getElementById("fixturesList"),
+            {
+              backgroundColor: "#0b1219",
+              scale: 2,
+            },
+          );
           const link = document.createElement("a");
           link.download = `LDBAA_Jornada_${currentJornada}.png`;
           link.href = canvas.toDataURL();
@@ -3446,7 +5465,8 @@
             ) {
               if (field === "golesLocal" || field === "golesVisitor") {
                 const parsed = parseInt(val, 10);
-                m[field] = val === "" || val === null || isNaN(parsed) ? null : parsed;
+                m[field] =
+                  val === "" || val === null || isNaN(parsed) ? null : parsed;
                 if (m.golesLocal === null && m.golesVisitor === null) {
                   m.isFinalized = false;
                 }
