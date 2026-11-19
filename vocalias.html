@@ -1349,8 +1349,11 @@
               meta.data.forEach((x) => {
                 if (isMatchProgrammed(x)) {
                   const j = parseInt(x.jornada) || 1;
-                  jornadasProgramadas.add(j);
-                  counts[j] = (counts[j] || 0) + 1;
+                  // Limitar a las 8 fechas oficiales del campeonato
+                  if (j <= 8) {
+                    jornadasProgramadas.add(j);
+                    counts[j] = (counts[j] || 0) + 1;
+                  }
                 }
               });
             }
