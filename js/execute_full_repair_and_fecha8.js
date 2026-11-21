@@ -1,5 +1,20 @@
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
+
+function resolveJsonPath(filename) {
+  const candidates = [
+    path.join(__dirname, '../json', filename),
+    path.join(__dirname, 'json', filename),
+    path.join(__dirname, filename),
+    path.join(process.cwd(), 'json', filename),
+    path.join(process.cwd(), filename)
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return path.join(__dirname, '../json', filename);
+}
 
 const API_KEY = "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00";
 const PRIMERA_ID = "jyic2A9h9G3v3iAwIYR8";
@@ -88,9 +103,10 @@ async function execute() {
   const docFemenino = await getDoc(FEMENINO_ID);
   const docMaxima = await getDoc(MAXIMA_ID);
 
-  fs.writeFileSync(`backup_pre_fix_${PRIMERA_ID}_${timestamp}.json`, JSON.stringify(docPrimera, null, 2));
-  fs.writeFileSync(`backup_pre_fix_${FEMENINO_ID}_${timestamp}.json`, JSON.stringify(docFemenino, null, 2));
-  fs.writeFileSync(`backup_pre_fix_${MAXIMA_ID}_${timestamp}.json`, JSON.stringify(docMaxima, null, 2));
+  const jsonDir = fs.existsSync(path.join(__dirname, '../json')) ? path.join(__dirname, '../json') : (fs.existsSync(path.join(process.cwd(), 'json')) ? path.join(process.cwd(), 'json') : __dirname);
+  fs.writeFileSync(path.join(jsonDir, `backup_pre_fix_${PRIMERA_ID}_${timestamp}.json`), JSON.stringify(docPrimera, null, 2));
+  fs.writeFileSync(path.join(jsonDir, `backup_pre_fix_${FEMENINO_ID}_${timestamp}.json`), JSON.stringify(docFemenino, null, 2));
+  fs.writeFileSync(path.join(jsonDir, `backup_pre_fix_${MAXIMA_ID}_${timestamp}.json`), JSON.stringify(docMaxima, null, 2));
   console.log("✅ Respaldos de seguridad creados con éxito.");
 
   // =========================================================================
@@ -100,7 +116,7 @@ async function execute() {
   const femValues = docFemenino.fields.data.arrayValue.values;
 
   // 2.1 Restaurar Idx 11 (PORTOVIEJO FC vs MANCHESTER) desde backup_k5SOL1Q5cPuwHA6MMf22.json
-  const bFem = JSON.parse(fs.readFileSync('backup_k5SOL1Q5cPuwHA6MMf22.json', 'utf8'));
+  const bFem = JSON.parse(fs.readFileSync(resolveJsonPath('backup_k5SOL1Q5cPuwHA6MMf22.json'), 'utf8'));
   const restoredFem11 = bFem.fields.data.arrayValue.values[11];
   console.log(`  -> Restaurando Idx 11: ${restoredFem11.mapValue.fields.local?.stringValue} vs ${restoredFem11.mapValue.fields.visitor?.stringValue} con vocalía guardada.`);
   femValues[11] = restoredFem11;
@@ -128,7 +144,7 @@ async function execute() {
   const maxValues = docMaxima.fields.data.arrayValue.values;
 
   // 3.1 Restaurar Idx 4 (SPENCER vs MANCHESTER de Fecha 5) desde backup_Kjqtm2Ss23JKFicur3uw.json
-  const bMax = JSON.parse(fs.readFileSync('backup_Kjqtm2Ss23JKFicur3uw.json', 'utf8'));
+  const bMax = JSON.parse(fs.readFileSync(resolveJsonPath('backup_Kjqtm2Ss23JKFicur3uw.json'), 'utf8'));
   const restoredMax4 = bMax.fields.data.arrayValue.values[4];
   console.log(`  -> Restaurando Idx 4 (Fecha 5): ${restoredMax4.mapValue.fields.local?.stringValue} vs ${restoredMax4.mapValue.fields.visitor?.stringValue} con vocalía completa, reporte y marcador ${restoredMax4.mapValue.fields.golesLocal?.integerValue}-${restoredMax4.mapValue.fields.golesVisitor?.integerValue}.`);
   maxValues[4] = restoredMax4;

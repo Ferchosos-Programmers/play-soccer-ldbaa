@@ -1,5 +1,6 @@
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
 
 const API_KEY = "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00";
 const MAXIMA_DOC_ID = "Kjqtm2Ss23JKFicur3uw";
@@ -36,7 +37,8 @@ async function run() {
   }
 
   const doc = getRes.body;
-  fs.writeFileSync(`backup_maxima_before_spencer_estudiantes_${Date.now()}.json`, JSON.stringify(doc, null, 2));
+  const jsonDir = fs.existsSync(path.join(__dirname, '../json')) ? path.join(__dirname, '../json') : (fs.existsSync(path.join(process.cwd(), 'json')) ? path.join(process.cwd(), 'json') : __dirname);
+  fs.writeFileSync(path.join(jsonDir, `backup_maxima_before_spencer_estudiantes_${Date.now()}.json`), JSON.stringify(doc, null, 2));
 
   const values = doc.fields.data.arrayValue.values;
   console.log(`Total de partidos en MÁXIMA: ${values.length}`);

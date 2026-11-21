@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const https = require('https');
 const API_KEY = 'AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00';
 
@@ -46,9 +47,10 @@ async function run() {
     console.log(`Live reports found: ${liveReports.length}`);
 
     // Check all backup files for this cat id
-    const bFiles = fs.readdirSync('.').filter(f => f.startsWith('backup_') && f.includes(cat.id));
+    const jsonDir = fs.existsSync(path.join(__dirname, '../json')) ? path.join(__dirname, '../json') : (fs.existsSync(path.join(process.cwd(), 'json')) ? path.join(process.cwd(), 'json') : '.');
+    const bFiles = fs.readdirSync(jsonDir).filter(f => f.startsWith('backup_') && f.includes(cat.id));
     for (const bf of bFiles) {
-      const bJson = JSON.parse(fs.readFileSync(bf, 'utf8'));
+      const bJson = JSON.parse(fs.readFileSync(path.join(jsonDir, bf), 'utf8'));
       const bReports = extractReports(bJson);
       console.log(`Checking ${bf} (found ${bReports.length} reports)...`);
       bReports.forEach(br => {

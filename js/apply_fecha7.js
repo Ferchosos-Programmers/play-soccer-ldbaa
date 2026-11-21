@@ -1,5 +1,6 @@
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
 
 const API_KEY = "AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00";
 const MAXIMA_DOC_ID = "Kjqtm2Ss23JKFicur3uw";
@@ -38,7 +39,8 @@ async function updateCategory(docId, categoryName, updaterFn) {
   }
 
   const doc = getRes.body;
-  const backupName = `backup_${docId}_before_j7_${Date.now()}.json`;
+  const jsonDir = fs.existsSync(path.join(__dirname, '../json')) ? path.join(__dirname, '../json') : (fs.existsSync(path.join(process.cwd(), 'json')) ? path.join(process.cwd(), 'json') : __dirname);
+  const backupName = path.join(jsonDir, `backup_${docId}_before_j7_${Date.now()}.json`);
   fs.writeFileSync(backupName, JSON.stringify(doc, null, 2));
   console.log(`Backup guardado en: ${backupName}`);
 

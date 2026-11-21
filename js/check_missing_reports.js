@@ -1,6 +1,21 @@
 const https = require('https');
 const fs = require('fs');
+const path = require('path');
 const API_KEY = 'AIzaSyAzRTlx96sL8rxcgLauftrTWpr5VlwjV00';
+
+function resolveJsonPath(filename) {
+  const candidates = [
+    path.join(__dirname, '../json', filename),
+    path.join(__dirname, 'json', filename),
+    path.join(__dirname, filename),
+    path.join(process.cwd(), 'json', filename),
+    path.join(process.cwd(), filename)
+  ];
+  for (const c of candidates) {
+    if (fs.existsSync(c)) return c;
+  }
+  return path.join(__dirname, '../json', filename);
+}
 
 function parseFirestore(doc) {
   const vals = doc.fields?.data?.arrayValue?.values || [];
@@ -61,7 +76,8 @@ async function compare() {
 
     // Collect all unique vocal reports and finalized info across all backups
     const backupDataByMatchKey = {};
-    for (const bPath of cat.backups) {
+    for (const bFile of cat.backups) {
+      const bPath = resolveJsonPath(bFile);
       if (!fs.existsSync(bPath)) continue;
       const bMatches = parseBackupFile(bPath);
       bMatches.forEach(bm => {
