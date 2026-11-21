@@ -1429,11 +1429,21 @@
             ]);
             teamsSnapshot.forEach((doc) => {
               const d = doc.data();
-              if (d.name) logosMap[d.name] = d.logo || "img/logo.png";
+              if (d.name) {
+                const logoUrl = d.logo || "img/logo.png";
+                logosMap[d.name] = logoUrl;
+                logosMap[d.name.trim()] = logoUrl;
+                logosMap[normalizeTeamName(d.name)] = logoUrl;
+              }
             });
             teamsSnapshot2.forEach((doc) => {
               const d = doc.data();
-              if (d.name) logosMap[d.name] = d.logo || "img/logo.png";
+              if (d.name) {
+                const logoUrl = d.logo || "img/logo.png";
+                logosMap[d.name] = logoUrl;
+                logosMap[d.name.trim()] = logoUrl;
+                logosMap[normalizeTeamName(d.name)] = logoUrl;
+              }
             });
             championshipTeamsCache.set(campId, logosMap);
           } catch (eLogos) {
@@ -1480,19 +1490,38 @@
 
         const resolveLogo = (teamName) => {
           if (!teamName) return "img/logo.png";
-          if (logosMap[teamName]) return logosMap[teamName];
-          const stripped = teamName
+          const raw = String(teamName);
+          const trimmed = raw.trim();
+          if (logosMap[raw]) return logosMap[raw];
+          if (logosMap[trimmed]) return logosMap[trimmed];
+          if (logosMap[trimmed + " "]) return logosMap[trimmed + " "];
+          const norm = normalizeTeamName(raw);
+          if (logosMap[norm]) return logosMap[norm];
+
+          const stripped = trimmed
             .replace(
               /^(C\.?D\.?|CLUB\s+DEPORTIVO|CLUB|DEP\.?|S\.?D\.?|F\.?C\.?)\s+/i,
               "",
             )
             .trim();
           if (logosMap[stripped]) return logosMap[stripped];
+          if (logosMap[stripped + " "]) return logosMap[stripped + " "];
+          const normStripped = normalizeTeamName(stripped);
+          if (logosMap[normStripped]) return logosMap[normStripped];
+
           if (logosMap["CD " + stripped]) return logosMap["CD " + stripped];
+          if (logosMap["CD " + stripped + " "])
+            return logosMap["CD " + stripped + " "];
           if (logosMap["SD " + stripped]) return logosMap["SD " + stripped];
+          if (logosMap["SD " + stripped + " "])
+            return logosMap["SD " + stripped + " "];
           if (logosMap["DEP " + stripped]) return logosMap["DEP " + stripped];
+          if (logosMap["DEP " + stripped + " "])
+            return logosMap["DEP " + stripped + " "];
+          if (logosMap[stripped + " FC"]) return logosMap[stripped + " FC"];
           return "img/logo.png";
         };
+        window.resolveLogo = resolveLogo;
 
         matches.forEach((m) => {
           const cardCol = document.createElement("div");
@@ -3754,12 +3783,42 @@
                   .where("championshipId", "==", cleanCamp)
                   .get()
                   .catch(() => ({ forEach: () => {} })),
+                db
+                  .collection("teams")
+                  .where("name", "==", cleanTeam + " ")
+                  .where("championshipId", "==", cleanCamp)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+                db
+                  .collection("teams")
+                  .where("name", "==", teamName)
+                  .where("campeonatoId", "==", cleanCamp)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+                db
+                  .collection("teams")
+                  .where("name", "==", cleanTeam)
+                  .where("campeonatoId", "==", cleanCamp)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+                db
+                  .collection("teams")
+                  .where("name", "==", cleanTeam + " ")
+                  .where("campeonatoId", "==", cleanCamp)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
               );
               if (strippedTeam && strippedTeam !== cleanTeam) {
                 teamQueryPromises.push(
                   db
                     .collection("teams")
                     .where("name", "==", strippedTeam)
+                    .where("championshipId", "==", cleanCamp)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                  db
+                    .collection("teams")
+                    .where("name", "==", strippedTeam + " ")
                     .where("championshipId", "==", cleanCamp)
                     .get()
                     .catch(() => ({ forEach: () => {} })),
@@ -3770,6 +3829,12 @@
                   db
                     .collection("teams")
                     .where("name", "==", "CD " + cleanTeam)
+                    .where("championshipId", "==", cleanCamp)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                  db
+                    .collection("teams")
+                    .where("name", "==", "CD " + cleanTeam + " ")
                     .where("championshipId", "==", cleanCamp)
                     .get()
                     .catch(() => ({ forEach: () => {} })),
@@ -3787,12 +3852,22 @@
                   .where("name", "==", cleanTeam)
                   .get()
                   .catch(() => ({ forEach: () => {} })),
+                db
+                  .collection("teams")
+                  .where("name", "==", cleanTeam + " ")
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
               );
               if (strippedTeam && strippedTeam !== cleanTeam) {
                 teamQueryPromises.push(
                   db
                     .collection("teams")
                     .where("name", "==", strippedTeam)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                  db
+                    .collection("teams")
+                    .where("name", "==", strippedTeam + " ")
                     .get()
                     .catch(() => ({ forEach: () => {} })),
                 );
@@ -3802,6 +3877,11 @@
                   db
                     .collection("teams")
                     .where("name", "==", "CD " + cleanTeam)
+                    .get()
+                    .catch(() => ({ forEach: () => {} })),
+                  db
+                    .collection("teams")
+                    .where("name", "==", "CD " + cleanTeam + " ")
                     .get()
                     .catch(() => ({ forEach: () => {} })),
                 );
@@ -3846,6 +3926,25 @@
               if (snap && snap.forEach) snap.forEach(processTeamDoc);
             });
 
+            // Si las queries directas de nombre no encontraron el equipo, buscamos en los equipos del campeonato activo
+            if (validTeamIdsForCat.size === 0 && cleanCamp) {
+              const campTeamsSnaps = await Promise.all([
+                db
+                  .collection("teams")
+                  .where("championshipId", "==", cleanCamp)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+                db
+                  .collection("teams")
+                  .where("campeonatoId", "==", cleanCamp)
+                  .get()
+                  .catch(() => ({ forEach: () => {} })),
+              ]);
+              campTeamsSnaps.forEach((snap) => {
+                if (snap && snap.forEach) snap.forEach(processTeamDoc);
+              });
+            }
+
             // Si existen teamIds para este equipo y categoría, traemos únicamente los jugadores vinculados por su teamId
             const teamIdsToQuery =
               validTeamIdsForCat.size > 0 ? validTeamIdsForCat : allClubTeamIds;
@@ -3861,16 +3960,23 @@
               teamIdSnaps = await Promise.all(idPromises);
             } else {
               // Fallback quirúrgico si no se encontró teamId (por ejemplo si el equipo aún no tiene doc en teams)
-              let pQuery = db
-                .collection("players")
-                .where("teamName", "==", teamName);
+              let pQueries = [
+                db.collection("players").where("teamName", "==", teamName),
+                db.collection("players").where("teamName", "==", cleanTeam),
+                db
+                  .collection("players")
+                  .where("teamName", "==", cleanTeam + " "),
+              ];
               if (cleanCamp) {
-                pQuery = pQuery.where("campeonatoId", "==", cleanCamp);
+                pQueries = pQueries.map((q) =>
+                  q.where("campeonatoId", "==", cleanCamp),
+                );
               }
-              const pSnap = await pQuery
-                .get()
-                .catch(() => ({ forEach: () => {} }));
-              teamIdSnaps = [pSnap];
+              teamIdSnaps = await Promise.all(
+                pQueries.map((q) =>
+                  q.get().catch(() => ({ forEach: () => {} })),
+                ),
+              );
             }
 
             const playersList = [];
@@ -7875,8 +7981,26 @@
             championshipTeamsCache &&
             championshipTeamsCache.get(campId)) ||
           {};
-        const localLogo = teamsLogos[data.local] || "img/logo.png";
-        const visitorLogo = teamsLogos[data.visitor] || "img/logo.png";
+        const getLogoSafe = (name) => {
+          if (!name) return "img/logo.png";
+          const raw = String(name);
+          const trimmed = raw.trim();
+          if (teamsLogos[raw]) return teamsLogos[raw];
+          if (teamsLogos[trimmed]) return teamsLogos[trimmed];
+          if (teamsLogos[trimmed + " "]) return teamsLogos[trimmed + " "];
+          if (
+            typeof normalizeTeamName === "function" &&
+            teamsLogos[normalizeTeamName(raw)]
+          ) {
+            return teamsLogos[normalizeTeamName(raw)];
+          }
+          if (typeof window.resolveLogo === "function") {
+            return window.resolveLogo(name);
+          }
+          return "img/logo.png";
+        };
+        const localLogo = getLogoSafe(data.local);
+        const visitorLogo = getLogoSafe(data.visitor);
 
         const renderPlayerRows = (players) => {
           if (!players || players.length === 0) {

@@ -395,7 +395,7 @@ async function execute() {
   // 6) Domingo 14:40 | RIVER PLATE (C3) vs 3 DE JULIO (C1) | Vocal: SPENCER | Veedor: INDEPENDIENTE -> Idx 54
   const p54 = priValues[54].mapValue.fields;
   p54.local = { stringValue: "RIVER PLATE" };
-  p54.visitor = { stringValue: "3 DE JULIO" };
+  p54.visitor = { stringValue: "3 DE JULIO " };
   p54.jornada = { integerValue: "8" };
   p54.fechaRealAsignadaText = { stringValue: "Domingo" };
   p54.dia = { stringValue: "Domingo" };
